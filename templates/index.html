@@ -143,10 +143,10 @@
               <p class="text-sm uppercase tracking-[0.2em] text-mint/90">Digital banking layer</p>
               <h2 class="mt-2 text-2xl font-semibold">Operational dashboard meets product landing page.</h2>
             </div>
-            <div class="flex flex-wrap gap-3">
-              <a href="#assistantSection" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Try agent chat</a>
-              <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
-            </div>
+          <div class="flex flex-col items-end gap-3">
+            <a href="#assistantSection" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Try agent chat</a>
+            <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
+          </div>
           </div>
         </section>
         <section class="glass animate-rise rounded-[30px] p-5" style="animation-delay: 0.06s;">
@@ -168,12 +168,12 @@
       </div>
 
       <main class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section class="glass mesh relative rounded-[34px] p-7 sm:p-8">
+        <section class="glass mesh relative rounded-[34px] p-8 sm:p-12 xl:p-16">
           <div class="relative z-10">
-            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
+            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
               Premium ledger operations
             </div>
-            <div class="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+            <div class="grid gap-10 xl:grid-cols-[1.05fr_0.95fr] xl:items-center">
               <div class="max-w-3xl pl-6 lg:pl-10">
                 <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
                   CCAB that feels product-ready, not prototype-only.
@@ -188,24 +188,24 @@
                   <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">LLM-ready transaction flow</div>
                 </div>
               </div>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
+              <div class="grid min-w-0 gap-4 sm:grid-cols-2">
+                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-6 shadow-soft">
                   <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Current account</p>
-                  <p class="mt-3 text-3xl font-semibold tracking-tight truncate lg:text-[2rem]" id="accountLabel">{{ overview.account }}</p>
-                  <div class="mt-4 flex items-center gap-2 text-sm text-mint">
+                  <p class="mt-4 truncate text-[1.8rem] font-semibold tracking-tight lg:text-[2.2rem]" id="accountLabel" title="{{ overview.account }}">{{ overview.account }}</p>
+                  <div class="mt-5 flex items-center gap-2 text-sm text-mint">
                     <span class="inline-flex h-2.5 w-2.5 rounded-full bg-mint"></span>
                     <span>Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></span>
                   </div>
                 </div>
-                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
+                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-6 shadow-soft">
                   <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Net flow</p>
-                  <p class="mt-3 text-3xl font-semibold text-glow truncate lg:text-[2rem]" id="netFlowValue">{{ overview.income - overview.expense }}</p>
-                  <p class="mt-4 text-sm leading-7 text-slate-300">Incoming versus outgoing CPC</p>
+                  <p class="mt-4 truncate text-[1.8rem] font-semibold text-glow lg:text-[2.2rem]" id="netFlowValue">{{ overview.income - overview.expense }}</p>
+                  <p class="mt-5 text-sm leading-7 text-slate-300">Incoming vs outgoing CPC</p>
                 </div>
               </div>
             </div>
 
-            <div class="mt-8 grid gap-4 sm:grid-cols-3">
+            <div class="mt-12 grid gap-4 sm:grid-cols-3">
               <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
                 <p class="text-sm text-slate-300">Live balance</p>
                 <p class="mt-3 text-3xl font-semibold"><span id="balanceValue">{{ overview.balance }}</span> CPC</p>
@@ -261,7 +261,7 @@
                   </div>
                   <div class="rounded-2xl bg-mint/15 px-3 py-2 text-sm font-semibold text-mint">24/7 Watch</div>
                 </div>
-                <div class="mt-5 space-y-3">
+                <div class="mt-6 space-y-4">
                   <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 0s;">SHA256-linked blocks preserve audit continuity</div>
                   <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 0.5s;">angel reward issuance is wired to successful verification</div>
                   <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 1s;">File locks reduce concurrent write conflicts during transfer bursts</div>
@@ -468,7 +468,9 @@
     const assistantPreview = document.getElementById("assistantPreview");
     const assistantPreviewBody = document.getElementById("assistantPreviewBody");
 
-    confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
+    if (confidenceBar.dataset.width) {
+      confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
+    }
 
     function renderTransactions(items) {
       if (!items || items.length === 0) {
@@ -558,6 +560,7 @@
       mobilePointer.textContent = data.latest_pointer;
       mobileStatus.textContent = data.chain_ok ? "Healthy" : "Attention";
       accountLabel.textContent = data.account;
+      accountLabel.title = data.account;
       netFlowValue.textContent = data.income - data.expense;
       headerBlocks.textContent = data.block_count;
       chainBadge.textContent = data.chain_ok ? "healthy" : "issue detected";
