@@ -136,32 +136,71 @@
         </nav>
       </header>
 
+      <div class="mb-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <section class="glass animate-rise rounded-[30px] p-5" style="animation-delay: 0.04s;">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p class="text-sm uppercase tracking-[0.2em] text-mint/90">Digital banking layer</p>
+              <h2 class="mt-2 text-2xl font-semibold">Operational dashboard meets product landing page.</h2>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <a href="#assistantSection" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Try agent chat</a>
+              <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
+            </div>
+          </div>
+        </section>
+        <section class="glass animate-rise rounded-[30px] p-5" style="animation-delay: 0.06s;">
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Availability</p>
+              <p class="mt-2 text-xl font-semibold">24/7</p>
+            </div>
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Transfer mode</p>
+              <p class="mt-2 text-xl font-semibold">Instant</p>
+            </div>
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Security</p>
+              <p class="mt-2 text-xl font-semibold">SHA256</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <main class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <section class="glass mesh relative rounded-[34px] p-7 sm:p-8">
           <div class="relative z-10">
             <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
               Premium ledger operations
             </div>
-            <div class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-              <div>
+            <div class="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+              <div class="max-w-3xl pl-6 lg:pl-10">
                 <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
-                  Banking UI that feels product-ready, not prototype-only.
+                  CCAB that feels product-ready, not prototype-only.
                 </h1>
                 <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
                   Track balances, submit transfers, validate chain health, and prepare a language-driven transaction
                   flow from one polished command surface designed for demos, reviews, and future LLM orchestration.
                 </p>
-              </div>
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div class="rounded-[24px] border border-white/10 bg-white/5 p-4 shadow-soft">
-                  <p class="text-sm text-slate-300">Current account</p>
-                  <p class="mt-2 text-2xl font-semibold" id="accountLabel">{{ overview.account }}</p>
-                  <p class="mt-3 text-sm text-mint">Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Account-linked controls</div>
+                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Chain verification rewards</div>
+                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">LLM-ready transaction flow</div>
                 </div>
-                <div class="rounded-[24px] border border-white/10 bg-white/5 p-4 shadow-soft">
-                  <p class="text-sm text-slate-300">Net flow</p>
-                  <p class="mt-2 text-2xl font-semibold text-glow" id="netFlowValue">{{ overview.income - overview.expense }}</p>
-                  <p class="mt-3 text-sm text-slate-300">Incoming versus outgoing CPC</p>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
+                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Current account</p>
+                  <p class="mt-3 text-3xl font-semibold tracking-tight truncate lg:text-[2rem]" id="accountLabel">{{ overview.account }}</p>
+                  <div class="mt-4 flex items-center gap-2 text-sm text-mint">
+                    <span class="inline-flex h-2.5 w-2.5 rounded-full bg-mint"></span>
+                    <span>Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></span>
+                  </div>
+                </div>
+                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
+                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Net flow</p>
+                  <p class="mt-3 text-3xl font-semibold text-glow truncate lg:text-[2rem]" id="netFlowValue">{{ overview.income - overview.expense }}</p>
+                  <p class="mt-4 text-sm leading-7 text-slate-300">Incoming versus outgoing CPC</p>
                 </div>
               </div>
             </div>
@@ -209,7 +248,7 @@
                     <span id="confidenceLabel">{{ 'Stable' if overview.chain_ok else 'Attention required' }}</span>
                   </div>
                   <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-white/10">
-                    <div id="confidenceBar" class="h-full rounded-full bg-gradient-to-r from-mint to-trust" style="width: {{ 96 if overview.chain_ok else 38 }}%"></div>
+                    <div id="confidenceBar" data-width="{{ 96 if overview.chain_ok else 38 }}" class="h-full rounded-full bg-gradient-to-r from-mint to-trust"></div>
                   </div>
                 </div>
               </section>
@@ -223,9 +262,9 @@
                   <div class="rounded-2xl bg-mint/15 px-3 py-2 text-sm font-semibold text-mint">24/7 Watch</div>
                 </div>
                 <div class="mt-5 space-y-3">
-                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">SHA256-linked blocks preserve audit continuity</div>
-                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">angel reward issuance is wired to successful verification</div>
-                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">File locks reduce concurrent write conflicts during transfer bursts</div>
+                  <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 0s;">SHA256-linked blocks preserve audit continuity</div>
+                  <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 0.5s;">angel reward issuance is wired to successful verification</div>
+                  <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 1s;">File locks reduce concurrent write conflicts during transfer bursts</div>
                 </div>
               </section>
             </div>
@@ -248,7 +287,7 @@
               <input id="senderInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" value="{{ overview.account }}" placeholder="Sender account">
               <input id="receiverInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="Receiver account">
               <input id="amountInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" type="number" min="1" placeholder="Amount">
-              <button class="w-full rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 font-semibold text-abyss transition hover:scale-[1.01]">Send transfer</button>
+              <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 font-semibold text-abyss transition hover:scale-[1.01]">Send transfer</button>
             </form>
             <p id="transferMessage" class="mt-4 min-h-6 text-sm text-slate-300"></p>
           </section>
@@ -259,7 +298,7 @@
                 <p class="text-sm text-slate-300">Chain verification</p>
                 <h2 class="mt-2 text-2xl font-semibold">One-click audit</h2>
               </div>
-              <button id="verifyButton" class="rounded-2xl border border-mint/30 bg-mint/10 px-4 py-3 font-semibold text-mint transition hover:bg-mint/15">
+              <button id="verifyButton" type="button" class="rounded-2xl border border-mint/30 bg-mint/10 px-4 py-3 font-semibold text-mint transition hover:bg-mint/15">
                 Verify + Reward
               </button>
             </div>
@@ -268,7 +307,7 @@
             </p>
           </section>
 
-          <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.2s;">
+          <section id="assistantSection" class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.2s;">
             <div class="flex items-start justify-between gap-4">
               <div>
                 <p class="text-sm text-slate-300">LLM command console</p>
@@ -277,14 +316,14 @@
               <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Agent Ready</span>
             </div>
             <p class="mt-3 text-sm leading-7 text-slate-300">
-              This chat box is designed as your future tool-calling surface. Users can describe a transfer or verification
+              Users can describe a transfer or verification
               request in natural language, then an LLM can map that intent to on-chain actions.
             </p>
 
             <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
-              <button class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Transfer 15 CPC from b1128015 to guest</button>
-              <button class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Verify the chain and explain the reward</button>
-              <button class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Show my latest transactions</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Transfer 15 CPC from b1128015 to guest</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Verify the chain and explain the reward</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Show my latest transactions</button>
             </div>
 
             <div id="chatFeed" class="scrollbar-thin mt-5 h-72 space-y-3 overflow-y-auto rounded-[24px] border border-white/10 bg-black/10 p-4">
@@ -293,11 +332,16 @@
               </div>
             </div>
 
+            <div id="assistantPreview" class="mt-4 hidden rounded-[24px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Action preview</p>
+              <div id="assistantPreviewBody" class="mt-3 text-sm leading-7 text-slate-200"></div>
+            </div>
+
             <form id="assistantForm" class="mt-4 space-y-3">
               <textarea id="assistantInput" rows="3" class="w-full resize-none rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="Example: transfer 12 CPC from b1128015 to guest"></textarea>
               <div class="flex items-center justify-between gap-3">
                 <p class="text-xs leading-6 text-slate-400">Today this is a smart UI placeholder. Next step: connect OpenAI tool calls to execute verified actions.</p>
-                <button class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/15">Send</button>
+                <button type="submit" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/15">Send</button>
               </div>
             </form>
           </section>
@@ -311,7 +355,7 @@
               <p class="text-sm text-slate-300">Recent transactions</p>
               <h2 class="mt-2 text-2xl font-semibold">Activity feed</h2>
             </div>
-            <button id="refreshButton" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200">
+            <button id="refreshButton" type="button" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200">
               Refresh
             </button>
           </div>
@@ -320,8 +364,8 @@
             <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
               <div class="flex items-center justify-between gap-3">
                 <div>
-                  <p class="font-medium">{{ item.sender }} -&gt; {{ item.receiver }}</p>
-                  <p class="mt-1 text-sm text-slate-300">Block #{{ item.block }} . Counterparty {{ item.counterparty }}</p>
+                  <p class="font-medium">{{ item.sender }} &rarr; {{ item.receiver }}</p>
+                  <p class="mt-1 text-sm text-slate-300">Block #{{ item.block }} &middot; Counterparty {{ item.counterparty }}</p>
                 </div>
                 <div class="rounded-full px-3 py-2 text-sm font-semibold {{ 'bg-mint/15 text-mint' if item.direction == 'in' else 'bg-rose-400/10 text-rose-200' }}">
                   {{ '+' if item.direction == 'in' else '-' }}{{ item.amount }} CPC
@@ -365,11 +409,41 @@
           </div>
         </section>
       </section>
+
+      <section id="experienceSection" class="mt-6 grid gap-6 lg:grid-cols-3">
+        <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.32s;">
+          <p class="text-sm text-slate-300">Why it feels better</p>
+          <h3 class="mt-2 text-2xl font-semibold">Clear transaction storytelling</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">
+            The old landing page had stronger brand storytelling and cleaner product framing. That strength is now
+            merged here through clearer labels, stronger calls to action, and more deliberate empty-space rhythm.
+          </p>
+        </article>
+        <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.36s;">
+          <p class="text-sm text-slate-300">What carries over</p>
+          <h3 class="mt-2 text-2xl font-semibold">Feature-led product positioning</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">
+            The original landing page had richer marketing sections, stronger CTA treatment, and a friendlier mobile
+            app preview. This dashboard keeps the operational tools, while reintroducing those commercial cues.
+          </p>
+        </article>
+        <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.4s;">
+          <p class="text-sm text-slate-300">What is new</p>
+          <h3 class="mt-2 text-2xl font-semibold">LLM-ready interaction layer</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">
+            The new chat console is the main structural expansion. It turns the page from a dashboard into a future
+            agent product surface where language can drive balance queries, chain verification, and transfers.
+          </p>
+        </article>
+      </section>
     </div>
   </div>
 
+  <script id="boot-data" type="application/json">{{ {"account": overview.account} | tojson }}</script>
+
   <script>
-    const state = { account: {{ overview.account | tojson }} };
+    const bootData = JSON.parse(document.getElementById("boot-data").textContent);
+    const state = { account: bootData.account };
 
     const balanceValue = document.getElementById("balanceValue");
     const transactionCount = document.getElementById("transactionCount");
@@ -391,14 +465,26 @@
     const confidenceBar = document.getElementById("confidenceBar");
     const headerBlocks = document.getElementById("headerBlocks");
     const chatFeed = document.getElementById("chatFeed");
+    const assistantPreview = document.getElementById("assistantPreview");
+    const assistantPreviewBody = document.getElementById("assistantPreviewBody");
+
+    confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
 
     function renderTransactions(items) {
+      if (!items || items.length === 0) {
+        activityList.innerHTML = `
+          <div class="rounded-[26px] border border-dashed border-white/10 bg-white/5 p-6 text-sm text-slate-300">
+            No transactions found for this account yet.
+          </div>
+        `;
+        return;
+      }
       activityList.innerHTML = items.map((item) => `
         <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="font-medium">${item.sender} -> ${item.receiver}</p>
-              <p class="mt-1 text-sm text-slate-300">Block #${item.block} . Counterparty ${item.counterparty}</p>
+              <p class="font-medium">${item.sender} &rarr; ${item.receiver}</p>
+              <p class="mt-1 text-sm text-slate-300">Block #${item.block} &middot; Counterparty ${item.counterparty}</p>
             </div>
             <div class="rounded-full px-3 py-2 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-200"}">
               ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
@@ -418,6 +504,48 @@
       chatFeed.scrollTop = chatFeed.scrollHeight;
     }
 
+    function renderAssistantPreview(actionPreview) {
+      if (!actionPreview) {
+        assistantPreview.classList.add("hidden");
+        assistantPreviewBody.innerHTML = "";
+        return;
+      }
+
+      if (actionPreview.type === "transfer") {
+        assistantPreviewBody.innerHTML = `
+          <div class="rounded-2xl border border-mint/20 bg-mint/10 px-4 py-3">
+            Transfer preview: <strong>${actionPreview.sender}</strong> &rarr; <strong>${actionPreview.receiver}</strong> for <strong>${actionPreview.amount} CPC</strong>
+          </div>
+        `;
+      } else if (actionPreview.type === "verify") {
+        assistantPreviewBody.innerHTML = `
+          <div class="rounded-2xl border border-trust/20 bg-trust/10 px-4 py-3">
+            Verification preview: run chain audit for <strong>${actionPreview.account}</strong> and then process angel reward if the chain is healthy.
+          </div>
+        `;
+      } else if (actionPreview.type === "balance_lookup") {
+        assistantPreviewBody.innerHTML = `
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            Balance preview: <strong>${actionPreview.account}</strong> currently has <strong>${actionPreview.balance} CPC</strong>.
+          </div>
+        `;
+      } else if (actionPreview.type === "history_lookup") {
+        assistantPreviewBody.innerHTML = `
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            History preview: fetch recent transactions for <strong>${actionPreview.account}</strong>.
+          </div>
+        `;
+      } else {
+        assistantPreviewBody.innerHTML = `
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            Assistant preview is ready for future tool execution.
+          </div>
+        `;
+      }
+
+      assistantPreview.classList.remove("hidden");
+    }
+
     function applyOverview(data) {
       state.account = data.account;
       balanceValue.textContent = data.balance;
@@ -435,15 +563,20 @@
       chainBadge.textContent = data.chain_ok ? "healthy" : "issue detected";
       chainBadge.className = data.chain_ok ? "text-mint" : "text-rose-300";
       confidenceLabel.textContent = data.chain_ok ? "Stable" : "Attention required";
-      confidenceBar.style.width = `${data.chain_ok ? 96 : 38}%`;
+      confidenceBar.dataset.width = data.chain_ok ? 96 : 38;
+      confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
       renderTransactions(data.recent_transactions);
       document.getElementById("senderInput").value = data.account;
     }
 
     async function refreshOverview() {
-      const response = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
-      const data = await response.json();
-      applyOverview(data);
+      try {
+        const response = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
+        const data = await response.json();
+        applyOverview(data);
+      } catch (error) {
+        transferMessage.textContent = "Unable to refresh overview right now.";
+      }
     }
 
     document.getElementById("refreshButton").addEventListener("click", refreshOverview);
@@ -455,54 +588,62 @@
       const amount = document.getElementById("amountInput").value.trim();
       transferMessage.textContent = "Submitting transfer...";
 
-      const response = await fetch("/api/transfer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender, receiver, amount })
-      });
-      const data = await response.json();
+      try {
+        const response = await fetch("/api/transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sender, receiver, amount })
+        });
+        const data = await response.json();
 
-      if (!response.ok) {
-        transferMessage.textContent = data.error || "Transfer failed.";
-        return;
+        if (!response.ok) {
+          transferMessage.textContent = data.error || "Transfer failed.";
+          return;
+        }
+
+        if (data.sealed_block) {
+          sealIndicator.classList.remove("hidden");
+          sealIndicator.classList.add("flex");
+          transferMessage.textContent = `${data.message} Block #${data.block_index} sealed successfully.`;
+          setTimeout(() => {
+            sealIndicator.classList.add("hidden");
+            sealIndicator.classList.remove("flex");
+          }, 2600);
+        } else {
+          transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
+        }
+
+        state.account = sender;
+        applyOverview(data.overview);
+        document.getElementById("receiverInput").value = "";
+        document.getElementById("amountInput").value = "";
+      } catch (error) {
+        transferMessage.textContent = "Network error while submitting transfer.";
       }
-
-      if (data.sealed_block) {
-        sealIndicator.classList.remove("hidden");
-        sealIndicator.classList.add("flex");
-        transferMessage.textContent = `${data.message} Block #${data.block_index} sealed successfully.`;
-        setTimeout(() => {
-          sealIndicator.classList.add("hidden");
-          sealIndicator.classList.remove("flex");
-        }, 2600);
-      } else {
-        transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
-      }
-
-      state.account = sender;
-      applyOverview(data.overview);
-      document.getElementById("receiverInput").value = "";
-      document.getElementById("amountInput").value = "";
     });
 
     document.getElementById("verifyButton").addEventListener("click", async () => {
       verifyMessage.textContent = "Running chain verification...";
 
-      const response = await fetch("/api/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account: state.account })
-      });
-      const data = await response.json();
+      try {
+        const response = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account: state.account })
+        });
+        const data = await response.json();
 
-      if (!response.ok) {
-        verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`;
-        if (data.overview) applyOverview(data.overview);
-        return;
+        if (!response.ok) {
+          verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`;
+          if (data.overview) applyOverview(data.overview);
+          return;
+        }
+
+        verifyMessage.textContent = `${data.message} Reward stored in Block #${data.reward_block}.`;
+        applyOverview(data.overview);
+      } catch (error) {
+        verifyMessage.textContent = "Network error while verifying chain.";
       }
-
-      verifyMessage.textContent = `${data.message} Reward stored in Block #${data.reward_block}.`;
-      applyOverview(data.overview);
     });
 
     document.querySelectorAll(".prompt-chip").forEach((chip) => {
@@ -520,18 +661,23 @@
       addChatBubble(message, "user");
       input.value = "";
 
-      const response = await fetch("/api/assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account: state.account, message })
-      });
-      const data = await response.json();
-      addChatBubble(data.reply, "assistant");
+      try {
+        const response = await fetch("/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account: state.account, message })
+        });
+        const data = await response.json();
+        addChatBubble(data.reply, "assistant");
+        renderAssistantPreview(data.action_preview);
 
-      if (data.action_preview && data.action_preview.type === "transfer") {
-        document.getElementById("senderInput").value = data.action_preview.sender;
-        document.getElementById("receiverInput").value = data.action_preview.receiver;
-        document.getElementById("amountInput").value = data.action_preview.amount;
+        if (data.action_preview && data.action_preview.type === "transfer") {
+          document.getElementById("senderInput").value = data.action_preview.sender;
+          document.getElementById("receiverInput").value = data.action_preview.receiver;
+          document.getElementById("amountInput").value = data.action_preview.amount;
+        }
+      } catch (error) {
+        addChatBubble("The assistant endpoint is temporarily unavailable. Please try again.", "assistant");
       }
     });
   </script>

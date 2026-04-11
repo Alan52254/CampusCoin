@@ -1,6 +1,7 @@
 Sha256 of previous block: f28e1300540352059b6cf1db0f3193987a512480ca4111812b4c9f8c7226a1de
-Next block: None
+Next block: 63.txt
 angel, b1128015, 10
 angel, b1128015, 10
 angel, b1128015, 10
 angel, b1128015, 10
+b1128015, b1228030, 100
