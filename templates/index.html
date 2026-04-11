@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -173,53 +173,39 @@
             <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
               Premium ledger operations
             </div>
-            <div class="mt-6 grid gap-x-10 gap-y-8 xl:grid-cols-12 xl:items-start">
-              <div class="xl:col-span-7 pl-6 lg:pl-10">
-                <h1 class="text-4xl font-semibold leading-tight sm:text-5xl pr-4">
+            <div class="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+              <div class="max-w-3xl pl-6 lg:pl-10">
+                <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
                   CCAB that feels product-ready, not prototype-only.
                 </h1>
-                <p class="mt-5 text-base leading-8 text-slate-300 sm:text-lg pr-4">
+                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
                   Track balances, submit transfers, validate chain health, and prepare a language-driven transaction
                   flow from one polished command surface designed for demos, reviews, and future LLM orchestration.
                 </p>
-              </div>
-
-              <div class="xl:col-span-5 grid gap-4 sm:grid-cols-2 xl:mt-24">
-                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-6 shadow-soft">
-                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Current account</p>
-                  <p class="mt-4" id="accountLabel" title="{{ overview.account }}">
-                    <span class="block text-[1.75rem] font-semibold leading-none tracking-[0.08em] text-slate-100 lg:text-[2.05rem]">
-                      {{ overview.account[:5] if overview.account|length > 5 else overview.account }}
-                    </span>
-                    {% if overview.account|length > 5 %}
-                    <span class="mt-1 block text-[0.95rem] font-medium uppercase tracking-[0.32em] text-slate-300 lg:text-[1.05rem]">
-                      {{ overview.account[5:] }}
-                    </span>
-                    {% endif %}
-                  </p>
-                  <div class="mt-5 flex items-center gap-2 text-sm text-mint">
-                    <span class="inline-flex h-2.5 w-2.5 rounded-full bg-mint"></span>
-                    <span>Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></span>
-                  </div>
-                </div>
-
-                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-6 shadow-soft">
-                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Net flow</p>
-                  <p class="mt-4 truncate text-[1.8rem] font-semibold text-glow lg:text-[2.2rem]" id="netFlowValue">{{ overview.income - overview.expense }}</p>
-                  <p class="mt-5 text-sm leading-7 text-slate-300">Incoming vs outgoing CPC</p>
-                </div>
-              </div>
-
-              <div class="xl:col-span-7 pl-6 lg:pl-10">
-                <div class="flex flex-wrap gap-3">
+                <div class="mt-6 flex flex-wrap gap-3">
                   <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Account-linked controls</div>
                   <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Chain verification rewards</div>
                   <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">LLM-ready transaction flow</div>
                 </div>
               </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
+                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Current account</p>
+                  <p class="mt-3 text-3xl font-semibold tracking-tight truncate lg:text-[2rem]" id="accountLabel" title="{{ overview.account }}">{{ overview.account }}</p>
+                  <div class="mt-4 flex items-center gap-2 text-sm text-mint">
+                    <span class="inline-flex h-2.5 w-2.5 rounded-full bg-mint"></span>
+                    <span>Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></span>
+                  </div>
+                </div>
+                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
+                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Net flow</p>
+                  <p class="mt-3 text-3xl font-semibold text-glow truncate lg:text-[2rem]" id="netFlowValue">{{ overview.income - overview.expense }}</p>
+                  <p class="mt-4 text-sm leading-7 text-slate-300">Incoming versus outgoing CPC</p>
+                </div>
+              </div>
             </div>
 
-            <div class="mt-12 grid gap-4 sm:grid-cols-3">
+            <div class="mt-8 grid gap-4 sm:grid-cols-3">
               <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
                 <p class="text-sm text-slate-300">Live balance</p>
                 <p class="mt-3 text-3xl font-semibold"><span id="balanceValue">{{ overview.balance }}</span> CPC</p>
@@ -486,31 +472,6 @@
       confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
     }
 
-    function formatAccountDisplay(account) {
-      const normalized = (account || "").trim();
-      if (normalized.length <= 5) {
-        return { primary: normalized, secondary: "" };
-      }
-      return {
-        primary: normalized.slice(0, 5),
-        secondary: normalized.slice(5),
-      };
-    }
-
-    function renderAccountLabel(account) {
-      const parts = formatAccountDisplay(account);
-      if (parts.secondary) {
-        accountLabel.innerHTML = `
-          <span class="block text-[1.75rem] font-semibold leading-none tracking-[0.08em] text-slate-100 lg:text-[2.05rem]">${parts.primary}</span>
-          <span class="mt-1 block text-[0.95rem] font-medium uppercase tracking-[0.32em] text-slate-300 lg:text-[1.05rem]">${parts.secondary}</span>
-        `;
-      } else {
-        accountLabel.innerHTML = `
-          <span class="block text-[1.75rem] font-semibold leading-none tracking-[0.08em] text-slate-100 lg:text-[2.05rem]">${parts.primary}</span>
-        `;
-      }
-    }
-
     function renderTransactions(items) {
       if (!items || items.length === 0) {
         activityList.innerHTML = `
@@ -598,7 +559,7 @@
       mobileBlocks.textContent = data.block_count;
       mobilePointer.textContent = data.latest_pointer;
       mobileStatus.textContent = data.chain_ok ? "Healthy" : "Attention";
-      renderAccountLabel(data.account);
+      accountLabel.textContent = data.account;
       accountLabel.title = data.account;
       netFlowValue.textContent = data.income - data.expense;
       headerBlocks.textContent = data.block_count;
