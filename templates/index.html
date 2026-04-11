@@ -84,18 +84,14 @@
       pointer-events: none;
     }
     .mesh::before {
-      width: 16rem;
-      height: 16rem;
-      top: -4rem;
-      right: -2rem;
+      width: 16rem; height: 16rem;
+      top: -4rem; right: -2rem;
       background: rgba(94, 234, 212, 0.18);
       animation: aurora 9s ease-in-out infinite;
     }
     .mesh::after {
-      width: 18rem;
-      height: 18rem;
-      bottom: -5rem;
-      left: -4rem;
+      width: 18rem; height: 18rem;
+      bottom: -5rem; left: -4rem;
       background: rgba(125, 211, 252, 0.15);
       animation: aurora 12s ease-in-out infinite reverse;
     }
@@ -143,10 +139,10 @@
               <p class="text-sm uppercase tracking-[0.2em] text-mint/90">Digital banking layer</p>
               <h2 class="mt-2 text-2xl font-semibold">Operational dashboard meets product landing page.</h2>
             </div>
-          <div class="flex flex-col items-end gap-3">
-            <a href="#assistantSection" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Try agent chat</a>
-            <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
-          </div>
+            <div class="flex flex-col items-end gap-3">
+              <a href="#assistantSection" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Try agent chat</a>
+              <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
+            </div>
           </div>
         </section>
         <section class="glass animate-rise rounded-[30px] p-5" style="animation-delay: 0.06s;">
@@ -307,41 +303,49 @@
             </p>
           </section>
 
+          <!-- ── LLM Assistant ── -->
           <section id="assistantSection" class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.2s;">
             <div class="flex items-start justify-between gap-4">
               <div>
                 <p class="text-sm text-slate-300">LLM command console</p>
                 <h2 class="mt-2 text-2xl font-semibold">Language-driven banking</h2>
               </div>
-              <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Agent Ready</span>
+              <div class="flex items-center gap-2">
+                <button id="clearChatBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400 transition hover:bg-white/10" title="清除對話記憶">清除</button>
+                <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Agent Ready</span>
+              </div>
             </div>
             <p class="mt-3 text-sm leading-7 text-slate-300">
-              Users can describe a transfer or verification
-              request in natural language, then an LLM can map that intent to on-chain actions.
+              輸入一句話，LLM 自動解析並執行區塊鏈任務。
             </p>
 
             <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Transfer 15 CPC from b1128015 to guest</button>
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Verify the chain and explain the reward</button>
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Show my latest transactions</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">幫我轉 15 CPC 給 guest</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">驗證帳本鏈並領取獎勵</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">查詢我的餘額</button>
+              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">顯示最近交易紀錄</button>
             </div>
 
             <div id="chatFeed" class="scrollbar-thin mt-5 h-72 space-y-3 overflow-y-auto rounded-[24px] border border-white/10 bg-black/10 p-4">
               <div class="max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100">
-                I am your future CampusCoin transaction assistant. Try describing a transfer, a balance question, or a chain audit request in natural language.
+                我是你的 CampusCoin 助手。你可以用中文自然地告訴我要做什麼，例如轉帳、查餘額、驗證帳本，或任何問題。
               </div>
             </div>
 
+            <!-- ACTION PREVIEW + 確認按鈕 -->
             <div id="assistantPreview" class="mt-4 hidden rounded-[24px] border border-white/10 bg-white/5 p-4">
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Action preview</p>
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Action Preview</p>
               <div id="assistantPreviewBody" class="mt-3 text-sm leading-7 text-slate-200"></div>
+              <button id="confirmActionBtn" class="hidden mt-4 w-full rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 font-semibold text-abyss transition hover:scale-[1.01]">
+                ✓ 確認執行
+              </button>
             </div>
 
             <form id="assistantForm" class="mt-4 space-y-3">
-              <textarea id="assistantInput" rows="3" class="w-full resize-none rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="Example: transfer 12 CPC from b1128015 to guest"></textarea>
+              <textarea id="assistantInput" rows="3" class="w-full resize-none rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="例如：幫我轉 10 CPC 給 guest"></textarea>
               <div class="flex items-center justify-between gap-3">
-                <p class="text-xs leading-6 text-slate-400">Today this is a smart UI placeholder. Next step: connect OpenAI tool calls to execute verified actions.</p>
-                <button type="submit" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/15">Send</button>
+                <p class="text-xs leading-6 text-slate-400">CampusCoin Agent</p>
+                <button type="submit" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/15">送出</button>
               </div>
             </form>
           </section>
@@ -355,9 +359,7 @@
               <p class="text-sm text-slate-300">Recent transactions</p>
               <h2 class="mt-2 text-2xl font-semibold">Activity feed</h2>
             </div>
-            <button id="refreshButton" type="button" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200">
-              Refresh
-            </button>
+            <button id="refreshButton" type="button" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200">Refresh</button>
           </div>
           <div id="activityList" class="mt-5 space-y-3">
             {% for item in overview.recent_transactions %}
@@ -414,26 +416,17 @@
         <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.32s;">
           <p class="text-sm text-slate-300">Why it feels better</p>
           <h3 class="mt-2 text-2xl font-semibold">Clear transaction storytelling</h3>
-          <p class="mt-4 text-sm leading-7 text-slate-300">
-            The old landing page had stronger brand storytelling and cleaner product framing. That strength is now
-            merged here through clearer labels, stronger calls to action, and more deliberate empty-space rhythm.
-          </p>
+          <p class="mt-4 text-sm leading-7 text-slate-300">The old landing page had stronger brand storytelling and cleaner product framing. That strength is now merged here through clearer labels, stronger calls to action, and more deliberate empty-space rhythm.</p>
         </article>
         <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.36s;">
           <p class="text-sm text-slate-300">What carries over</p>
           <h3 class="mt-2 text-2xl font-semibold">Feature-led product positioning</h3>
-          <p class="mt-4 text-sm leading-7 text-slate-300">
-            The original landing page had richer marketing sections, stronger CTA treatment, and a friendlier mobile
-            app preview. This dashboard keeps the operational tools, while reintroducing those commercial cues.
-          </p>
+          <p class="mt-4 text-sm leading-7 text-slate-300">The original landing page had richer marketing sections, stronger CTA treatment, and a friendlier mobile app preview. This dashboard keeps the operational tools, while reintroducing those commercial cues.</p>
         </article>
         <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.4s;">
           <p class="text-sm text-slate-300">What is new</p>
           <h3 class="mt-2 text-2xl font-semibold">LLM-ready interaction layer</h3>
-          <p class="mt-4 text-sm leading-7 text-slate-300">
-            The new chat console is the main structural expansion. It turns the page from a dashboard into a future
-            agent product surface where language can drive balance queries, chain verification, and transfers.
-          </p>
+          <p class="mt-4 text-sm leading-7 text-slate-300">The new chat console is the main structural expansion. It turns the page from a dashboard into a future agent product surface where language can drive balance queries, chain verification, and transfers.</p>
         </article>
       </section>
     </div>
@@ -445,28 +438,29 @@
     const bootData = JSON.parse(document.getElementById("boot-data").textContent);
     const state = { account: bootData.account };
 
-    const balanceValue = document.getElementById("balanceValue");
+    const balanceValue     = document.getElementById("balanceValue");
     const transactionCount = document.getElementById("transactionCount");
-    const latestBlock = document.getElementById("latestBlock");
-    const incomeValue = document.getElementById("incomeValue");
-    const expenseValue = document.getElementById("expenseValue");
-    const chainBadge = document.getElementById("chainBadge");
-    const mobileBalance = document.getElementById("mobileBalance");
-    const mobileBlocks = document.getElementById("mobileBlocks");
-    const mobilePointer = document.getElementById("mobilePointer");
-    const mobileStatus = document.getElementById("mobileStatus");
-    const activityList = document.getElementById("activityList");
-    const transferMessage = document.getElementById("transferMessage");
-    const verifyMessage = document.getElementById("verifyMessage");
-    const sealIndicator = document.getElementById("sealIndicator");
-    const accountLabel = document.getElementById("accountLabel");
-    const netFlowValue = document.getElementById("netFlowValue");
-    const confidenceLabel = document.getElementById("confidenceLabel");
-    const confidenceBar = document.getElementById("confidenceBar");
-    const headerBlocks = document.getElementById("headerBlocks");
-    const chatFeed = document.getElementById("chatFeed");
+    const latestBlock      = document.getElementById("latestBlock");
+    const incomeValue      = document.getElementById("incomeValue");
+    const expenseValue     = document.getElementById("expenseValue");
+    const chainBadge       = document.getElementById("chainBadge");
+    const mobileBalance    = document.getElementById("mobileBalance");
+    const mobileBlocks     = document.getElementById("mobileBlocks");
+    const mobilePointer    = document.getElementById("mobilePointer");
+    const mobileStatus     = document.getElementById("mobileStatus");
+    const activityList     = document.getElementById("activityList");
+    const transferMessage  = document.getElementById("transferMessage");
+    const verifyMessage    = document.getElementById("verifyMessage");
+    const sealIndicator    = document.getElementById("sealIndicator");
+    const accountLabel     = document.getElementById("accountLabel");
+    const netFlowValue     = document.getElementById("netFlowValue");
+    const confidenceLabel  = document.getElementById("confidenceLabel");
+    const confidenceBar    = document.getElementById("confidenceBar");
+    const headerBlocks     = document.getElementById("headerBlocks");
+    const chatFeed         = document.getElementById("chatFeed");
     const assistantPreview = document.getElementById("assistantPreview");
     const assistantPreviewBody = document.getElementById("assistantPreviewBody");
+    const confirmActionBtn = document.getElementById("confirmActionBtn");
 
     if (confidenceBar.dataset.width) {
       confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
@@ -474,11 +468,7 @@
 
     function renderTransactions(items) {
       if (!items || items.length === 0) {
-        activityList.innerHTML = `
-          <div class="rounded-[26px] border border-dashed border-white/10 bg-white/5 p-6 text-sm text-slate-300">
-            No transactions found for this account yet.
-          </div>
-        `;
+        activityList.innerHTML = `<div class="rounded-[26px] border border-dashed border-white/10 bg-white/5 p-6 text-sm text-slate-300">No transactions found for this account yet.</div>`;
         return;
       }
       activityList.innerHTML = items.map((item) => `
@@ -506,70 +496,125 @@
       chatFeed.scrollTop = chatFeed.scrollHeight;
     }
 
+    function applyOverview(data) {
+      state.account = data.account;
+      balanceValue.textContent      = data.balance;
+      transactionCount.textContent  = data.transaction_count;
+      latestBlock.textContent       = data.latest_block;
+      incomeValue.textContent       = data.income;
+      expenseValue.textContent      = data.expense;
+      mobileBalance.textContent     = data.balance;
+      mobileBlocks.textContent      = data.block_count;
+      mobilePointer.textContent     = data.latest_pointer;
+      mobileStatus.textContent      = data.chain_ok ? "Healthy" : "Attention";
+      accountLabel.textContent      = data.account;
+      accountLabel.title            = data.account;
+      netFlowValue.textContent      = data.income - data.expense;
+      headerBlocks.textContent      = data.block_count;
+      chainBadge.textContent        = data.chain_ok ? "healthy" : "issue detected";
+      chainBadge.className          = data.chain_ok ? "text-mint" : "text-rose-300";
+      confidenceLabel.textContent   = data.chain_ok ? "Stable" : "Attention required";
+      confidenceBar.dataset.width   = data.chain_ok ? 96 : 38;
+      confidenceBar.style.width     = `${confidenceBar.dataset.width}%`;
+      renderTransactions(data.recent_transactions);
+      document.getElementById("senderInput").value = data.account;
+    }
+
+    function resetConfirmBtn() {
+      confirmActionBtn.classList.add("hidden");
+      confirmActionBtn.disabled = false;
+      confirmActionBtn.textContent = "✓ 確認執行";
+      confirmActionBtn.onclick = null;
+    }
+
     function renderAssistantPreview(actionPreview) {
+      resetConfirmBtn();
+
       if (!actionPreview) {
         assistantPreview.classList.add("hidden");
         assistantPreviewBody.innerHTML = "";
         return;
       }
 
+      assistantPreview.classList.remove("hidden");
+
       if (actionPreview.type === "transfer") {
         assistantPreviewBody.innerHTML = `
           <div class="rounded-2xl border border-mint/20 bg-mint/10 px-4 py-3">
             Transfer preview: <strong>${actionPreview.sender}</strong> &rarr; <strong>${actionPreview.receiver}</strong> for <strong>${actionPreview.amount} CPC</strong>
-          </div>
-        `;
+          </div>`;
+        confirmActionBtn.classList.remove("hidden");
+        confirmActionBtn.onclick = async () => {
+          confirmActionBtn.disabled = true;
+          confirmActionBtn.textContent = "執行中...";
+          try {
+            const res = await fetch("/api/transfer", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sender: actionPreview.sender, receiver: actionPreview.receiver, amount: actionPreview.amount })
+            });
+            const result = await res.json();
+            if (!res.ok) {
+              addChatBubble(`❌ 轉帳失敗：${result.error}`, "assistant");
+            } else {
+              addChatBubble(`✅ 轉帳成功！${result.message} 存入 Block #${result.block_index}`, "assistant");
+              applyOverview(result.overview);
+            }
+          } catch (e) {
+            addChatBubble("❌ 網路錯誤，請重試。", "assistant");
+          }
+          resetConfirmBtn();
+          assistantPreview.classList.add("hidden");
+        };
+
       } else if (actionPreview.type === "verify") {
         assistantPreviewBody.innerHTML = `
           <div class="rounded-2xl border border-trust/20 bg-trust/10 px-4 py-3">
-            Verification preview: run chain audit for <strong>${actionPreview.account}</strong> and then process angel reward if the chain is healthy.
-          </div>
-        `;
+            Verification preview: 對 <strong>${actionPreview.account}</strong> 執行帳本驗證，通過後從 angel 領取 10 CPC 獎勵。
+          </div>`;
+        confirmActionBtn.classList.remove("hidden");
+        confirmActionBtn.onclick = async () => {
+          confirmActionBtn.disabled = true;
+          confirmActionBtn.textContent = "驗證中...";
+          try {
+            const res = await fetch("/api/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ account: actionPreview.account })
+            });
+            const result = await res.json();
+            if (!res.ok) {
+              addChatBubble(`❌ 驗證失敗：${(result.issues || []).join(" | ")}`, "assistant");
+              if (result.overview) applyOverview(result.overview);
+            } else {
+              addChatBubble(`✅ ${result.message} 獎勵存入 Block #${result.reward_block}`, "assistant");
+              applyOverview(result.overview);
+            }
+          } catch (e) {
+            addChatBubble("❌ 網路錯誤，請重試。", "assistant");
+          }
+          resetConfirmBtn();
+          assistantPreview.classList.add("hidden");
+        };
+
       } else if (actionPreview.type === "balance_lookup") {
         assistantPreviewBody.innerHTML = `
           <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            Balance preview: <strong>${actionPreview.account}</strong> currently has <strong>${actionPreview.balance} CPC</strong>.
-          </div>
-        `;
+            餘額查詢：<strong>${actionPreview.account}</strong> 目前有 <strong>${actionPreview.balance} CPC</strong>。
+          </div>`;
+
       } else if (actionPreview.type === "history_lookup") {
         assistantPreviewBody.innerHTML = `
           <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            History preview: fetch recent transactions for <strong>${actionPreview.account}</strong>.
-          </div>
-        `;
+            交易紀錄查詢：已取得 <strong>${actionPreview.account}</strong> 的最近交易。
+          </div>`;
+
       } else {
         assistantPreviewBody.innerHTML = `
           <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             Assistant preview is ready for future tool execution.
-          </div>
-        `;
+          </div>`;
       }
-
-      assistantPreview.classList.remove("hidden");
-    }
-
-    function applyOverview(data) {
-      state.account = data.account;
-      balanceValue.textContent = data.balance;
-      transactionCount.textContent = data.transaction_count;
-      latestBlock.textContent = data.latest_block;
-      incomeValue.textContent = data.income;
-      expenseValue.textContent = data.expense;
-      mobileBalance.textContent = data.balance;
-      mobileBlocks.textContent = data.block_count;
-      mobilePointer.textContent = data.latest_pointer;
-      mobileStatus.textContent = data.chain_ok ? "Healthy" : "Attention";
-      accountLabel.textContent = data.account;
-      accountLabel.title = data.account;
-      netFlowValue.textContent = data.income - data.expense;
-      headerBlocks.textContent = data.block_count;
-      chainBadge.textContent = data.chain_ok ? "healthy" : "issue detected";
-      chainBadge.className = data.chain_ok ? "text-mint" : "text-rose-300";
-      confidenceLabel.textContent = data.chain_ok ? "Stable" : "Attention required";
-      confidenceBar.dataset.width = data.chain_ok ? 96 : 38;
-      confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
-      renderTransactions(data.recent_transactions);
-      document.getElementById("senderInput").value = data.account;
     }
 
     async function refreshOverview() {
@@ -586,11 +631,10 @@
 
     document.getElementById("transferForm").addEventListener("submit", async (event) => {
       event.preventDefault();
-      const sender = document.getElementById("senderInput").value.trim();
+      const sender   = document.getElementById("senderInput").value.trim();
       const receiver = document.getElementById("receiverInput").value.trim();
-      const amount = document.getElementById("amountInput").value.trim();
+      const amount   = document.getElementById("amountInput").value.trim();
       transferMessage.textContent = "Submitting transfer...";
-
       try {
         const response = await fetch("/api/transfer", {
           method: "POST",
@@ -598,24 +642,15 @@
           body: JSON.stringify({ sender, receiver, amount })
         });
         const data = await response.json();
-
-        if (!response.ok) {
-          transferMessage.textContent = data.error || "Transfer failed.";
-          return;
-        }
-
+        if (!response.ok) { transferMessage.textContent = data.error || "Transfer failed."; return; }
         if (data.sealed_block) {
           sealIndicator.classList.remove("hidden");
           sealIndicator.classList.add("flex");
-          transferMessage.textContent = `${data.message} Block #${data.block_index} sealed successfully.`;
-          setTimeout(() => {
-            sealIndicator.classList.add("hidden");
-            sealIndicator.classList.remove("flex");
-          }, 2600);
+          transferMessage.textContent = `${data.message} Block #${data.block_index} sealed.`;
+          setTimeout(() => { sealIndicator.classList.add("hidden"); sealIndicator.classList.remove("flex"); }, 2600);
         } else {
           transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
         }
-
         state.account = sender;
         applyOverview(data.overview);
         document.getElementById("receiverInput").value = "";
@@ -627,7 +662,6 @@
 
     document.getElementById("verifyButton").addEventListener("click", async () => {
       verifyMessage.textContent = "Running chain verification...";
-
       try {
         const response = await fetch("/api/verify", {
           method: "POST",
@@ -635,13 +669,11 @@
           body: JSON.stringify({ account: state.account })
         });
         const data = await response.json();
-
         if (!response.ok) {
           verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`;
           if (data.overview) applyOverview(data.overview);
           return;
         }
-
         verifyMessage.textContent = `${data.message} Reward stored in Block #${data.reward_block}.`;
         applyOverview(data.overview);
       } catch (error) {
@@ -655,14 +687,36 @@
       });
     });
 
+    document.getElementById("clearChatBtn").addEventListener("click", async () => {
+      try {
+        await fetch("/api/assistant/clear", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account: state.account })
+        });
+      } catch (_) {}
+      chatFeed.innerHTML = `<div class="max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100">對話已清除。有什麼我可以幫你的嗎？</div>`;
+      resetConfirmBtn();
+      assistantPreview.classList.add("hidden");
+    });
+
     document.getElementById("assistantForm").addEventListener("submit", async (event) => {
       event.preventDefault();
-      const input = document.getElementById("assistantInput");
+      const input   = document.getElementById("assistantInput");
       const message = input.value.trim();
       if (!message) return;
 
       addChatBubble(message, "user");
       input.value = "";
+      resetConfirmBtn();
+      assistantPreview.classList.add("hidden");
+
+      // 顯示思考中
+      const thinkingEl = document.createElement("div");
+      thinkingEl.className = "max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-400 italic";
+      thinkingEl.textContent = "思考中...";
+      chatFeed.appendChild(thinkingEl);
+      chatFeed.scrollTop = chatFeed.scrollHeight;
 
       try {
         const response = await fetch("/api/assistant", {
@@ -671,16 +725,12 @@
           body: JSON.stringify({ account: state.account, message })
         });
         const data = await response.json();
+        thinkingEl.remove();
         addChatBubble(data.reply, "assistant");
         renderAssistantPreview(data.action_preview);
-
-        if (data.action_preview && data.action_preview.type === "transfer") {
-          document.getElementById("senderInput").value = data.action_preview.sender;
-          document.getElementById("receiverInput").value = data.action_preview.receiver;
-          document.getElementById("amountInput").value = data.action_preview.amount;
-        }
       } catch (error) {
-        addChatBubble("The assistant endpoint is temporarily unavailable. Please try again.", "assistant");
+        thinkingEl.remove();
+        addChatBubble("助手暫時無法回應，請確認 LM Studio 已啟動。", "assistant");
       }
     });
   </script>

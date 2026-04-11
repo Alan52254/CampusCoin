@@ -20,9 +20,18 @@ from ledger_core import (  # noqa: E402
     verify_chain,
 )
 
+# ── LLM assistant (falls back gracefully if import fails) ────────────────────
+try:
+    from llm_assistant import build_assistant_reply as _llm_reply, clear_history as _clear_history
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+
 
 app = Flask(__name__)
 
+
+# ── Helper: serialise transactions ────────────────────────────────────────────
 
 def serialize_transactions(account: str, limit: int = 8):
     rows = get_account_log(account)
@@ -44,6 +53,8 @@ def serialize_transactions(account: str, limit: int = 8):
     return items
 
 
+# ── Helper: build full dashboard payload ──────────────────────────────────────
+
 def build_dashboard_payload(account: str):
     blocks = list(iter_block_paths())
     latest_index = blocks[-1][0] if blocks else 0
@@ -53,7 +64,7 @@ def build_dashboard_payload(account: str):
         _, latest_pointer = parse_metadata(latest_path)
 
     rows = get_account_log(account)
-    income = sum(amount for _, sender, receiver, amount in rows if receiver == account)
+    income  = sum(amount for _, sender, receiver, amount in rows if receiver == account)
     expense = sum(amount for _, sender, receiver, amount in rows if sender == account)
 
     return {
@@ -70,85 +81,97 @@ def build_dashboard_payload(account: str):
     }
 
 
-def build_assistant_reply(message: str, account: str):
+# ── Rule-based fallback (kept for reference / offline use) ───────────────────
+
+def _rule_based_reply(message: str, account: str) -> dict:
+    """Original rule-based parser, used when LLM is unavailable."""
     normalized = " ".join(message.strip().split())
     lowered = normalized.lower()
     suggestions = [
-        "Transfer 15 CPC from b1128015 to guest",
-        "Verify the chain and explain the reward",
-        "Show my latest transactions",
+        "幫我轉 15 CPC 給 guest",
+        "查詢我的餘額",
+        "驗證帳本鏈並領取獎勵",
+        "顯示最近的交易紀錄",
     ]
 
     if not normalized:
         return {
-            "reply": "Tell me what you want to do on-chain. I can preview transfers, explain balances, or prepare a chain verification flow.",
+            "reply": "請輸入你想做的事，例如轉帳、查餘額或驗證帳本。",
             "intent": "empty",
             "suggestions": suggestions,
             "action_preview": None,
         }
 
     transfer_match = re.search(
-        r"(?:transfer|send)\s+(\d+)\s*(?:cpc)?\s+(?:from\s+([A-Za-z0-9_]+)\s+)?(?:to|into)\s+([A-Za-z0-9_]+)",
+        r"(?:transfer|send|轉)\s+(\d+)\s*(?:cpc)?\s+(?:from\s+([A-Za-z0-9_]+)\s+)?(?:to|into|給)\s+([A-Za-z0-9_]+)",
         lowered,
     )
     if transfer_match:
-        amount = int(transfer_match.group(1))
-        sender = transfer_match.group(2) or account
+        amount   = int(transfer_match.group(1))
+        sender   = transfer_match.group(2) or account
         receiver = transfer_match.group(3)
         return {
-            "reply": f"I parsed a transfer request: {sender} -> {receiver} for {amount} CPC. The live LLM agent can later confirm and execute this through the transfer API.",
+            "reply": f"偵測到轉帳請求：{sender} → {receiver}，金額 {amount} CPC。請確認後執行。",
             "intent": "transfer",
             "suggestions": suggestions,
-            "action_preview": {
-                "type": "transfer",
-                "sender": sender,
-                "receiver": receiver,
-                "amount": amount,
-            },
+            "action_preview": {"type": "transfer", "sender": sender, "receiver": receiver, "amount": amount},
         }
 
-    if "verify" in lowered or "chain" in lowered or "audit" in lowered:
+    if any(k in lowered for k in ("verify", "chain", "audit", "驗證", "帳本")):
         return {
-            "reply": "This looks like a chain verification request. Once your LLM is connected, it can call the verify endpoint and explain any broken hash links before rewarding the user.",
+            "reply": "偵測到帳本驗證請求。驗證通過後將從 angel 取得 10 CPC 獎勵。",
             "intent": "verify",
             "suggestions": suggestions,
-            "action_preview": {
-                "type": "verify",
-                "account": account,
-            },
+            "action_preview": {"type": "verify", "account": account},
         }
 
-    if "balance" in lowered or "how much" in lowered:
+    if any(k in lowered for k in ("balance", "how much", "餘額", "多少")):
         balance = get_balance(account)
         return {
-            "reply": f"{account} currently has {balance} CPC available. A future LLM tool call can also compare inflow versus outflow and narrate the result.",
+            "reply": f"{account} 目前餘額為 {balance} CPC。",
             "intent": "balance",
             "suggestions": suggestions,
-            "action_preview": {
-                "type": "balance_lookup",
-                "account": account,
-                "balance": balance,
-            },
+            "action_preview": {"type": "balance_lookup", "account": account, "balance": balance},
         }
 
-    if "transaction" in lowered or "history" in lowered or "recent" in lowered:
+    if any(k in lowered for k in ("transaction", "history", "recent", "交易", "記錄")):
         return {
-            "reply": "I can surface recent activity and summarize it for the user. The future LLM layer can turn this into natural-language insights like unusual spending, transfer streaks, or recent counterparties.",
+            "reply": "已找到最近的交易記錄，顯示在下方。",
             "intent": "history",
             "suggestions": suggestions,
-            "action_preview": {
-                "type": "history_lookup",
-                "account": account,
-            },
+            "action_preview": {"type": "history_lookup", "account": account},
         }
 
     return {
-        "reply": "The chat surface is ready for an LLM connector. Right now I can classify requests and prepare action previews; later you can wire this to OpenAI or another model for tool-driven on-chain execution.",
+        "reply": "無法識別指令。你可以試試：「轉 10 CPC 給 guest」或「驗證帳本」。",
         "intent": "general",
         "suggestions": suggestions,
         "action_preview": None,
     }
 
+
+# ── Unified assistant entry point ─────────────────────────────────────────────
+
+def build_assistant_reply(message: str, account: str) -> dict:
+    """
+    Try the LLM assistant first; fall back to rule-based if unavailable.
+    Injects ledger helpers so llm_assistant.py stays decoupled from Flask.
+    """
+    if LLM_AVAILABLE:
+        def _get_log(acc, limit=10):
+            return serialize_transactions(acc, limit=limit)
+
+        return _llm_reply(
+            message=message,
+            account=account,
+            get_balance_fn=get_balance,
+            get_log_fn=_get_log,
+        )
+
+    return _rule_based_reply(message, account)
+
+
+# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get("/")
 def index():
@@ -165,16 +188,16 @@ def api_overview():
 @app.get("/api/log")
 def api_log():
     account = request.args.get("account", "b1128015")
-    limit = int(request.args.get("limit", "20"))
-    rows = serialize_transactions(account, limit=limit)
+    limit   = int(request.args.get("limit", "20"))
+    rows    = serialize_transactions(account, limit=limit)
     return jsonify({"account": account, "transactions": rows})
 
 
 @app.post("/api/transfer")
 def api_transfer():
-    payload = request.get_json(silent=True) or {}
-    sender = (payload.get("sender") or "").strip()
-    receiver = (payload.get("receiver") or "").strip()
+    payload    = request.get_json(silent=True) or {}
+    sender     = (payload.get("sender")   or "").strip()
+    receiver   = (payload.get("receiver") or "").strip()
     amount_raw = payload.get("amount")
 
     if not sender or not receiver:
@@ -190,8 +213,8 @@ def api_transfer():
 
     with ledger_lock():
         previous_last_block = last_block_index()
-        block_index, _ = append_transaction(sender, receiver, amount)
-        sealed_block = block_index > previous_last_block
+        block_index, _      = append_transaction(sender, receiver, amount)
+        sealed_block        = block_index > previous_last_block
 
     return jsonify(
         {
@@ -232,6 +255,22 @@ def api_assistant():
     account = (payload.get("account") or "b1128015").strip()
     message = payload.get("message") or ""
     return jsonify(build_assistant_reply(message, account))
+
+
+@app.post("/api/assistant/clear")
+def api_assistant_clear():
+    payload = request.get_json(silent=True) or {}
+    account = (payload.get("account") or "b1128015").strip()
+    if LLM_AVAILABLE:
+        _clear_history(account)
+    return jsonify({"ok": True})
+
+
+# ── Health check (useful inside Docker) ───────────────────────────────────────
+
+@app.get("/api/health")
+def api_health():
+    return jsonify({"ok": True, "llm_enabled": LLM_AVAILABLE})
 
 
 if __name__ == "__main__":
