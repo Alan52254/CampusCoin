@@ -187,7 +187,16 @@
               <div class="xl:col-span-5 grid gap-4 sm:grid-cols-2 xl:mt-24">
                 <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-6 shadow-soft">
                   <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Current account</p>
-                  <p class="mt-4 truncate text-[1.8rem] font-semibold tracking-[0.08em] lg:text-[2.2rem]" id="accountLabel" title="{{ overview.account }}">{{ overview.account[:5] ~ ' ' ~ overview.account[5:] if overview.account|length > 5 else overview.account }}</p>
+                  <p class="mt-4" id="accountLabel" title="{{ overview.account }}">
+                    <span class="block text-[1.75rem] font-semibold leading-none tracking-[0.08em] text-slate-100 lg:text-[2.05rem]">
+                      {{ overview.account[:5] if overview.account|length > 5 else overview.account }}
+                    </span>
+                    {% if overview.account|length > 5 %}
+                    <span class="mt-1 block text-[0.95rem] font-medium uppercase tracking-[0.32em] text-slate-300 lg:text-[1.05rem]">
+                      {{ overview.account[5:] }}
+                    </span>
+                    {% endif %}
+                  </p>
                   <div class="mt-5 flex items-center gap-2 text-sm text-mint">
                     <span class="inline-flex h-2.5 w-2.5 rounded-full bg-mint"></span>
                     <span>Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></span>
@@ -480,9 +489,26 @@
     function formatAccountDisplay(account) {
       const normalized = (account || "").trim();
       if (normalized.length <= 5) {
-        return normalized;
+        return { primary: normalized, secondary: "" };
       }
-      return `${normalized.slice(0, 5)} ${normalized.slice(5)}`;
+      return {
+        primary: normalized.slice(0, 5),
+        secondary: normalized.slice(5),
+      };
+    }
+
+    function renderAccountLabel(account) {
+      const parts = formatAccountDisplay(account);
+      if (parts.secondary) {
+        accountLabel.innerHTML = `
+          <span class="block text-[1.75rem] font-semibold leading-none tracking-[0.08em] text-slate-100 lg:text-[2.05rem]">${parts.primary}</span>
+          <span class="mt-1 block text-[0.95rem] font-medium uppercase tracking-[0.32em] text-slate-300 lg:text-[1.05rem]">${parts.secondary}</span>
+        `;
+      } else {
+        accountLabel.innerHTML = `
+          <span class="block text-[1.75rem] font-semibold leading-none tracking-[0.08em] text-slate-100 lg:text-[2.05rem]">${parts.primary}</span>
+        `;
+      }
     }
 
     function renderTransactions(items) {
@@ -572,7 +598,7 @@
       mobileBlocks.textContent = data.block_count;
       mobilePointer.textContent = data.latest_pointer;
       mobileStatus.textContent = data.chain_ok ? "Healthy" : "Attention";
-      accountLabel.textContent = formatAccountDisplay(data.account);
+      renderAccountLabel(data.account);
       accountLabel.title = data.account;
       netFlowValue.textContent = data.income - data.expense;
       headerBlocks.textContent = data.block_count;
