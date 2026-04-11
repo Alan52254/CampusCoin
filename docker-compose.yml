@@ -1,0 +1,44 @@
+services:
+  client1:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./shared_storage:/storage
+    environment:
+      - STORAGE_PATH=/storage
+    command: tail -f /dev/null
+
+  client2:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./shared_storage:/storage
+    environment:
+      - STORAGE_PATH=/storage
+    command: tail -f /dev/null
+
+  client3:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./shared_storage:/storage
+    environment:
+      - STORAGE_PATH=/storage
+    command: tail -f /dev/null
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./shared_storage:/storage
+    environment:
+      - STORAGE_PATH=/storage
+    ports:
+      - "5001:5001"
+    command: python app.py

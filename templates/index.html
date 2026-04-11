@@ -1,0 +1,539 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin Agent Banking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            abyss: "#06111b",
+            midnight: "#0b1f31",
+            tide: "#12314b",
+            trust: "#7dd3fc",
+            mint: "#5eead4",
+            glow: "#f6c86b",
+            panel: "rgba(255,255,255,0.08)"
+          },
+          boxShadow: {
+            glass: "0 24px 80px rgba(2, 10, 22, 0.42)",
+            soft: "0 16px 40px rgba(7, 17, 30, 0.22)"
+          },
+          keyframes: {
+            floaty: {
+              "0%, 100%": { transform: "translateY(0px)" },
+              "50%": { transform: "translateY(-10px)" }
+            },
+            pulseRing: {
+              "0%": { transform: "scale(0.92)", opacity: "0.18" },
+              "70%": { transform: "scale(1.08)", opacity: "0.55" },
+              "100%": { transform: "scale(1.16)", opacity: "0" }
+            },
+            aurora: {
+              "0%, 100%": { transform: "translate3d(0,0,0) scale(1)" },
+              "50%": { transform: "translate3d(10px,-12px,0) scale(1.05)" }
+            },
+            rise: {
+              "0%": { opacity: "0", transform: "translateY(14px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" }
+            }
+          },
+          animation: {
+            floaty: "floaty 6s ease-in-out infinite",
+            pulseRing: "pulseRing 1.8s ease-out infinite",
+            aurora: "aurora 10s ease-in-out infinite",
+            rise: "rise 0.65s ease-out both"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: "Segoe UI Variable Display", "Aptos", sans-serif;
+      background:
+        radial-gradient(circle at 12% 15%, rgba(94, 234, 212, 0.18), transparent 20%),
+        radial-gradient(circle at 88% 10%, rgba(125, 211, 252, 0.16), transparent 24%),
+        radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.14), transparent 22%),
+        linear-gradient(160deg, #041019 0%, #0a1f31 42%, #112d46 100%);
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 24px 80px rgba(2, 10, 22, 0.42);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-strong {
+      background: linear-gradient(180deg, rgba(18,49,75,0.92), rgba(8,22,36,0.92));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 24px 80px rgba(2, 10, 22, 0.5);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+    .mesh::before, .mesh::after {
+      content: "";
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(70px);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .mesh::before {
+      width: 16rem;
+      height: 16rem;
+      top: -4rem;
+      right: -2rem;
+      background: rgba(94, 234, 212, 0.18);
+      animation: aurora 9s ease-in-out infinite;
+    }
+    .mesh::after {
+      width: 18rem;
+      height: 18rem;
+      bottom: -5rem;
+      left: -4rem;
+      background: rgba(125, 211, 252, 0.15);
+      animation: aurora 12s ease-in-out infinite reverse;
+    }
+    .grid-noise::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent 80%);
+      pointer-events: none;
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 8px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.14);
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <div class="relative overflow-hidden">
+    <div class="grid-noise absolute inset-0"></div>
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <header class="glass animate-rise mb-8 flex flex-col gap-5 rounded-[30px] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss">CC</div>
+          <div>
+            <p class="text-lg font-semibold tracking-wide">CampusCoin Agent Banking</p>
+            <p class="text-sm text-slate-300">Commercial dashboard layer for your containerized shared ledger</p>
+          </div>
+        </div>
+        <nav class="flex flex-wrap gap-3 text-sm text-slate-300">
+          <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2"><span id="headerBlocks">{{ overview.block_count }}</span> blocks online</span>
+          <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Shared volume active</span>
+          <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Agent-ready chat</span>
+        </nav>
+      </header>
+
+      <main class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <section class="glass mesh relative rounded-[34px] p-7 sm:p-8">
+          <div class="relative z-10">
+            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
+              Premium ledger operations
+            </div>
+            <div class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+              <div>
+                <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
+                  Banking UI that feels product-ready, not prototype-only.
+                </h1>
+                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+                  Track balances, submit transfers, validate chain health, and prepare a language-driven transaction
+                  flow from one polished command surface designed for demos, reviews, and future LLM orchestration.
+                </p>
+              </div>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div class="rounded-[24px] border border-white/10 bg-white/5 p-4 shadow-soft">
+                  <p class="text-sm text-slate-300">Current account</p>
+                  <p class="mt-2 text-2xl font-semibold" id="accountLabel">{{ overview.account }}</p>
+                  <p class="mt-3 text-sm text-mint">Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></p>
+                </div>
+                <div class="rounded-[24px] border border-white/10 bg-white/5 p-4 shadow-soft">
+                  <p class="text-sm text-slate-300">Net flow</p>
+                  <p class="mt-2 text-2xl font-semibold text-glow" id="netFlowValue">{{ overview.income - overview.expense }}</p>
+                  <p class="mt-3 text-sm text-slate-300">Incoming versus outgoing CPC</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 grid gap-4 sm:grid-cols-3">
+              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+                <p class="text-sm text-slate-300">Live balance</p>
+                <p class="mt-3 text-3xl font-semibold"><span id="balanceValue">{{ overview.balance }}</span> CPC</p>
+              </div>
+              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+                <p class="text-sm text-slate-300">Transactions tracked</p>
+                <p class="mt-3 text-3xl font-semibold" id="transactionCount">{{ overview.transaction_count }}</p>
+              </div>
+              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+                <p class="text-sm text-slate-300">Latest block</p>
+                <p class="mt-3 text-3xl font-semibold">#<span id="latestBlock">{{ overview.latest_block }}</span></p>
+              </div>
+            </div>
+
+            <div class="mt-8 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+              <section class="glass-strong rounded-[30px] p-6">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p class="text-sm text-slate-300">Account cockpit</p>
+                    <h2 class="mt-2 text-3xl font-semibold tracking-tight">Operational overview</h2>
+                  </div>
+                  <div class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-right">
+                    <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Pointer</p>
+                    <p class="mt-2 text-sm font-semibold" id="mobilePointer">{{ overview.latest_pointer }}</p>
+                  </div>
+                </div>
+                <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                  <div class="rounded-[24px] border border-white/10 bg-white/10 p-4">
+                    <p class="text-sm text-slate-300">Incoming</p>
+                    <p class="mt-2 text-2xl font-semibold text-mint" id="incomeValue">{{ overview.income }}</p>
+                  </div>
+                  <div class="rounded-[24px] border border-white/10 bg-white/10 p-4">
+                    <p class="text-sm text-slate-300">Outgoing</p>
+                    <p class="mt-2 text-2xl font-semibold text-rose-200" id="expenseValue">{{ overview.expense }}</p>
+                  </div>
+                </div>
+                <div class="mt-5 rounded-[24px] border border-white/10 bg-black/10 p-4">
+                  <div class="flex items-center justify-between text-sm text-slate-300">
+                    <span>Verification confidence</span>
+                    <span id="confidenceLabel">{{ 'Stable' if overview.chain_ok else 'Attention required' }}</span>
+                  </div>
+                  <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-white/10">
+                    <div id="confidenceBar" class="h-full rounded-full bg-gradient-to-r from-mint to-trust" style="width: {{ 96 if overview.chain_ok else 38 }}%"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="glass rounded-[30px] p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-300">Security posture</p>
+                    <h2 class="mt-2 text-2xl font-semibold">Built to reassure</h2>
+                  </div>
+                  <div class="rounded-2xl bg-mint/15 px-3 py-2 text-sm font-semibold text-mint">24/7 Watch</div>
+                </div>
+                <div class="mt-5 space-y-3">
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">SHA256-linked blocks preserve audit continuity</div>
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">angel reward issuance is wired to successful verification</div>
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">File locks reduce concurrent write conflicts during transfer bursts</div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <aside class="space-y-6">
+          <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.08s;">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-300">Transfer CPC</p>
+                <h2 class="mt-2 text-2xl font-semibold">Instant movement</h2>
+              </div>
+              <div id="sealIndicator" class="hidden relative h-14 w-14 items-center justify-center">
+                <span class="absolute inset-0 rounded-full border border-mint/60 animate-pulseRing"></span>
+                <span class="relative flex h-11 w-11 items-center justify-center rounded-full bg-mint/20 text-lg">Seal</span>
+              </div>
+            </div>
+            <form id="transferForm" class="mt-5 space-y-4">
+              <input id="senderInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" value="{{ overview.account }}" placeholder="Sender account">
+              <input id="receiverInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="Receiver account">
+              <input id="amountInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" type="number" min="1" placeholder="Amount">
+              <button class="w-full rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 font-semibold text-abyss transition hover:scale-[1.01]">Send transfer</button>
+            </form>
+            <p id="transferMessage" class="mt-4 min-h-6 text-sm text-slate-300"></p>
+          </section>
+
+          <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.14s;">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-sm text-slate-300">Chain verification</p>
+                <h2 class="mt-2 text-2xl font-semibold">One-click audit</h2>
+              </div>
+              <button id="verifyButton" class="rounded-2xl border border-mint/30 bg-mint/10 px-4 py-3 font-semibold text-mint transition hover:bg-mint/15">
+                Verify + Reward
+              </button>
+            </div>
+            <p id="verifyMessage" class="mt-4 min-h-6 text-sm leading-7 text-slate-300">
+              Successful validation adds 10 CPC from angel to the current account.
+            </p>
+          </section>
+
+          <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.2s;">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-sm text-slate-300">LLM command console</p>
+                <h2 class="mt-2 text-2xl font-semibold">Language-driven banking</h2>
+              </div>
+              <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Agent Ready</span>
+            </div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">
+              This chat box is designed as your future tool-calling surface. Users can describe a transfer or verification
+              request in natural language, then an LLM can map that intent to on-chain actions.
+            </p>
+
+            <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
+              <button class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Transfer 15 CPC from b1128015 to guest</button>
+              <button class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Verify the chain and explain the reward</button>
+              <button class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Show my latest transactions</button>
+            </div>
+
+            <div id="chatFeed" class="scrollbar-thin mt-5 h-72 space-y-3 overflow-y-auto rounded-[24px] border border-white/10 bg-black/10 p-4">
+              <div class="max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100">
+                I am your future CampusCoin transaction assistant. Try describing a transfer, a balance question, or a chain audit request in natural language.
+              </div>
+            </div>
+
+            <form id="assistantForm" class="mt-4 space-y-3">
+              <textarea id="assistantInput" rows="3" class="w-full resize-none rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="Example: transfer 12 CPC from b1128015 to guest"></textarea>
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-xs leading-6 text-slate-400">Today this is a smart UI placeholder. Next step: connect OpenAI tool calls to execute verified actions.</p>
+                <button class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/15">Send</button>
+              </div>
+            </form>
+          </section>
+        </aside>
+      </main>
+
+      <section class="mt-6 grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+        <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.24s;">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm text-slate-300">Recent transactions</p>
+              <h2 class="mt-2 text-2xl font-semibold">Activity feed</h2>
+            </div>
+            <button id="refreshButton" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200">
+              Refresh
+            </button>
+          </div>
+          <div id="activityList" class="mt-5 space-y-3">
+            {% for item in overview.recent_transactions %}
+            <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ item.sender }} -&gt; {{ item.receiver }}</p>
+                  <p class="mt-1 text-sm text-slate-300">Block #{{ item.block }} . Counterparty {{ item.counterparty }}</p>
+                </div>
+                <div class="rounded-full px-3 py-2 text-sm font-semibold {{ 'bg-mint/15 text-mint' if item.direction == 'in' else 'bg-rose-400/10 text-rose-200' }}">
+                  {{ '+' if item.direction == 'in' else '-' }}{{ item.amount }} CPC
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.28s;">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm text-slate-300">Mobile experience</p>
+              <h2 class="mt-2 text-2xl font-semibold">App-like companion surface</h2>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Commercial preview</div>
+          </div>
+          <div class="mt-6 rounded-[30px] border border-white/10 bg-slate-950/40 p-4">
+            <div class="mx-auto max-w-[300px] rounded-[34px] border border-white/10 bg-gradient-to-b from-tide/95 to-abyss/95 p-4 shadow-glass">
+              <div class="mx-auto mb-4 h-1.5 w-16 rounded-full bg-white/20"></div>
+              <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
+                <p class="text-sm text-slate-300">Available balance</p>
+                <p class="mt-2 text-3xl font-semibold"><span id="mobileBalance">{{ overview.balance }}</span> CPC</p>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                  <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                    <p class="text-xs text-slate-300">Blocks</p>
+                    <p class="mt-1 font-semibold" id="mobileBlocks">{{ overview.block_count }}</p>
+                  </div>
+                  <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                    <p class="text-xs text-slate-300">Status</p>
+                    <p class="mt-1 font-semibold" id="mobileStatus">{{ 'Healthy' if overview.chain_ok else 'Attention' }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm">App Store</div>
+                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm">Google Play</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const state = { account: {{ overview.account | tojson }} };
+
+    const balanceValue = document.getElementById("balanceValue");
+    const transactionCount = document.getElementById("transactionCount");
+    const latestBlock = document.getElementById("latestBlock");
+    const incomeValue = document.getElementById("incomeValue");
+    const expenseValue = document.getElementById("expenseValue");
+    const chainBadge = document.getElementById("chainBadge");
+    const mobileBalance = document.getElementById("mobileBalance");
+    const mobileBlocks = document.getElementById("mobileBlocks");
+    const mobilePointer = document.getElementById("mobilePointer");
+    const mobileStatus = document.getElementById("mobileStatus");
+    const activityList = document.getElementById("activityList");
+    const transferMessage = document.getElementById("transferMessage");
+    const verifyMessage = document.getElementById("verifyMessage");
+    const sealIndicator = document.getElementById("sealIndicator");
+    const accountLabel = document.getElementById("accountLabel");
+    const netFlowValue = document.getElementById("netFlowValue");
+    const confidenceLabel = document.getElementById("confidenceLabel");
+    const confidenceBar = document.getElementById("confidenceBar");
+    const headerBlocks = document.getElementById("headerBlocks");
+    const chatFeed = document.getElementById("chatFeed");
+
+    function renderTransactions(items) {
+      activityList.innerHTML = items.map((item) => `
+        <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="font-medium">${item.sender} -> ${item.receiver}</p>
+              <p class="mt-1 text-sm text-slate-300">Block #${item.block} . Counterparty ${item.counterparty}</p>
+            </div>
+            <div class="rounded-full px-3 py-2 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-200"}">
+              ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function addChatBubble(text, role = "assistant") {
+      const wrapper = document.createElement("div");
+      wrapper.className = role === "user"
+        ? "ml-auto max-w-[92%] rounded-[22px] border border-white/10 bg-white/10 px-4 py-3 text-sm leading-7 text-slate-100"
+        : "max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100";
+      wrapper.textContent = text;
+      chatFeed.appendChild(wrapper);
+      chatFeed.scrollTop = chatFeed.scrollHeight;
+    }
+
+    function applyOverview(data) {
+      state.account = data.account;
+      balanceValue.textContent = data.balance;
+      transactionCount.textContent = data.transaction_count;
+      latestBlock.textContent = data.latest_block;
+      incomeValue.textContent = data.income;
+      expenseValue.textContent = data.expense;
+      mobileBalance.textContent = data.balance;
+      mobileBlocks.textContent = data.block_count;
+      mobilePointer.textContent = data.latest_pointer;
+      mobileStatus.textContent = data.chain_ok ? "Healthy" : "Attention";
+      accountLabel.textContent = data.account;
+      netFlowValue.textContent = data.income - data.expense;
+      headerBlocks.textContent = data.block_count;
+      chainBadge.textContent = data.chain_ok ? "healthy" : "issue detected";
+      chainBadge.className = data.chain_ok ? "text-mint" : "text-rose-300";
+      confidenceLabel.textContent = data.chain_ok ? "Stable" : "Attention required";
+      confidenceBar.style.width = `${data.chain_ok ? 96 : 38}%`;
+      renderTransactions(data.recent_transactions);
+      document.getElementById("senderInput").value = data.account;
+    }
+
+    async function refreshOverview() {
+      const response = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
+      const data = await response.json();
+      applyOverview(data);
+    }
+
+    document.getElementById("refreshButton").addEventListener("click", refreshOverview);
+
+    document.getElementById("transferForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const sender = document.getElementById("senderInput").value.trim();
+      const receiver = document.getElementById("receiverInput").value.trim();
+      const amount = document.getElementById("amountInput").value.trim();
+      transferMessage.textContent = "Submitting transfer...";
+
+      const response = await fetch("/api/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender, receiver, amount })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        transferMessage.textContent = data.error || "Transfer failed.";
+        return;
+      }
+
+      if (data.sealed_block) {
+        sealIndicator.classList.remove("hidden");
+        sealIndicator.classList.add("flex");
+        transferMessage.textContent = `${data.message} Block #${data.block_index} sealed successfully.`;
+        setTimeout(() => {
+          sealIndicator.classList.add("hidden");
+          sealIndicator.classList.remove("flex");
+        }, 2600);
+      } else {
+        transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
+      }
+
+      state.account = sender;
+      applyOverview(data.overview);
+      document.getElementById("receiverInput").value = "";
+      document.getElementById("amountInput").value = "";
+    });
+
+    document.getElementById("verifyButton").addEventListener("click", async () => {
+      verifyMessage.textContent = "Running chain verification...";
+
+      const response = await fetch("/api/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: state.account })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`;
+        if (data.overview) applyOverview(data.overview);
+        return;
+      }
+
+      verifyMessage.textContent = `${data.message} Reward stored in Block #${data.reward_block}.`;
+      applyOverview(data.overview);
+    });
+
+    document.querySelectorAll(".prompt-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        document.getElementById("assistantInput").value = chip.textContent.trim();
+      });
+    });
+
+    document.getElementById("assistantForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const input = document.getElementById("assistantInput");
+      const message = input.value.trim();
+      if (!message) return;
+
+      addChatBubble(message, "user");
+      input.value = "";
+
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: state.account, message })
+      });
+      const data = await response.json();
+      addChatBubble(data.reply, "assistant");
+
+      if (data.action_preview && data.action_preview.type === "transfer") {
+        document.getElementById("senderInput").value = data.action_preview.sender;
+        document.getElementById("receiverInput").value = data.action_preview.receiver;
+        document.getElementById("amountInput").value = data.action_preview.amount;
+      }
+    });
+  </script>
+</body>
+</html>

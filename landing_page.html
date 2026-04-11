@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin Digital Banking</title>
+  <style>
+    :root {
+      --bg-deep: #081a2b;
+      --bg-mid: #0f2841;
+      --bg-soft: #11395c;
+      --card: rgba(255, 255, 255, 0.14);
+      --card-strong: rgba(255, 255, 255, 0.2);
+      --stroke: rgba(255, 255, 255, 0.22);
+      --text: #edf7ff;
+      --muted: #b4cadb;
+      --accent: #42d3c8;
+      --accent-soft: #86efe6;
+      --gold: #f4c56f;
+      --shadow: 0 24px 80px rgba(3, 12, 26, 0.45);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI Variable Display", "Trebuchet MS", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(66, 211, 200, 0.26), transparent 24%),
+        radial-gradient(circle at 88% 12%, rgba(121, 185, 255, 0.24), transparent 22%),
+        radial-gradient(circle at 50% 88%, rgba(84, 132, 255, 0.16), transparent 24%),
+        linear-gradient(160deg, #05101b 0%, #0b2034 40%, #123557 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      top: 10%;
+      left: -80px;
+      background: rgba(66, 211, 200, 0.16);
+    }
+
+    body::after {
+      width: 380px;
+      height: 380px;
+      right: -120px;
+      bottom: 10%;
+      background: rgba(74, 125, 255, 0.18);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.09));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 20px;
+      border-radius: 999px;
+      margin-bottom: 30px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(66, 211, 200, 0.95), rgba(130, 239, 230, 0.65));
+      color: #05233b;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+
+    .brand-copy strong,
+    .hero-copy h1,
+    .section-heading h2,
+    .cta-copy h2 {
+      font-family: "Bahnschrift", "Aptos Display", "Segoe UI Variable Display Semib", sans-serif;
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-copy span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 34px;
+    }
+
+    .hero-copy,
+    .hero-preview,
+    .feature-grid article,
+    .security-grid article,
+    .download-card {
+      border-radius: var(--radius-xl);
+    }
+
+    .hero-copy {
+      padding: 42px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--accent-soft);
+      background: rgba(66, 211, 200, 0.1);
+      border: 1px solid rgba(134, 239, 230, 0.22);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(2.8rem, 4vw, 4.7rem);
+      line-height: 0.98;
+      margin: 0 0 18px;
+      letter-spacing: -0.04em;
+      max-width: 10ch;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      max-width: 54ch;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 30px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 20px;
+      border-radius: 18px;
+      font-weight: 700;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7cf0e3);
+      color: #062237;
+      box-shadow: 0 18px 36px rgba(66, 211, 200, 0.28);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--text);
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .nav-cta:hover {
+      transform: translateY(-2px);
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .metric {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .hero-preview {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-preview::before {
+      content: "";
+      position: absolute;
+      inset: 22px 22px auto auto;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(244, 197, 111, 0.28), transparent 70%);
+    }
+
+    .preview-stack {
+      display: grid;
+      gap: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .balance-card {
+      border-radius: 28px;
+      padding: 26px;
+      background: linear-gradient(160deg, rgba(8, 31, 52, 0.94), rgba(24, 62, 95, 0.82));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 20px 40px rgba(4, 13, 30, 0.38);
+    }
+
+    .balance-row,
+    .transaction-row,
+    .phone-top,
+    .download-badges {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .balance-label {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .balance-amount {
+      font-size: clamp(2.2rem, 3vw, 3rem);
+      margin: 10px 0 6px;
+      letter-spacing: -0.04em;
+    }
+
+    .balance-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(66, 211, 200, 0.14);
+      color: var(--accent-soft);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .mini-card,
+    .transaction-card,
+    .phone-shell,
+    .download-panel {
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .mini-card {
+      padding: 22px;
+    }
+
+    .mini-card h3,
+    .section-heading h2,
+    .download-panel h3,
+    .feature-grid h3,
+    .security-grid h3 {
+      margin: 0 0 12px;
+    }
+
+    .mini-card p,
+    .feature-grid p,
+    .security-grid p,
+    .download-panel p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .progress-track {
+      height: 10px;
+      width: 100%;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      margin: 16px 0 10px;
+    }
+
+    .progress-fill {
+      width: 76%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #9ff8ef);
+    }
+
+    .transaction-card {
+      padding: 22px;
+    }
+
+    .transaction-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .transaction-row {
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .transaction-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .transaction-row strong,
+    .phone-screen strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .transaction-row span,
+    .phone-screen span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .transaction-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .pill-income {
+      background: rgba(82, 226, 177, 0.14);
+      color: #9bf2cd;
+    }
+
+    .pill-expense {
+      background: rgba(255, 123, 123, 0.12);
+      color: #ffb3b3;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 20px;
+      margin: 56px 0 20px;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      max-width: 46ch;
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    .feature-grid,
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature-grid article,
+    .security-grid article {
+      padding: 28px;
+    }
+
+    .icon-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+      background: linear-gradient(145deg, rgba(66, 211, 200, 0.22), rgba(255, 255, 255, 0.08));
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--accent-soft);
+      font-size: 1.3rem;
+    }
+
+    .download-card {
+      margin-top: 56px;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .cta-copy {
+      padding: 16px 6px 16px 8px;
+    }
+
+    .cta-copy h2 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 3vw, 3.1rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      max-width: 11ch;
+    }
+
+    .cta-copy p {
+      margin: 0 0 24px;
+      max-width: 52ch;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .download-badges {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .store-badge {
+      min-width: 176px;
+      padding: 14px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .store-badge small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .download-panel {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 0.88fr 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .phone-shell {
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(5, 17, 29, 0.96), rgba(12, 31, 51, 0.94));
+      box-shadow: 0 30px 50px rgba(3, 10, 24, 0.42);
+    }
+
+    .phone-screen {
+      min-height: 310px;
+      border-radius: 26px;
+      padding: 18px;
+      background:
+        radial-gradient(circle at top, rgba(66, 211, 200, 0.22), transparent 35%),
+        linear-gradient(180deg, rgba(11, 37, 60, 0.96), rgba(7, 22, 37, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .phone-dot {
+      width: 34px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 0 auto 16px;
+    }
+
+    .mini-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .mini-stat {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mini-stat strong {
+      font-size: 1.15rem;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+      padding: 0 4px;
+      color: rgba(237, 247, 255, 0.72);
+      font-size: 0.92rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .download-card,
+      .download-panel,
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid,
+      .security-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero-copy h1,
+      .cta-copy h2 {
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page-shell {
+        padding: 18px 16px 54px;
+      }
+
+      .topbar {
+        border-radius: 28px;
+        padding: 18px;
+        flex-wrap: wrap;
+      }
+
+      .nav-links {
+        width: 100%;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.88rem;
+      }
+
+      .hero-copy,
+      .hero-preview,
+      .feature-grid article,
+      .security-grid article,
+      .download-card {
+        border-radius: 26px;
+      }
+
+      .hero-copy,
+      .hero-preview,
+      .download-card {
+        padding: 24px;
+      }
+
+      .hero-metrics,
+      .feature-grid,
+      .security-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="brand-mark">CC</div>
+        <div class="brand-copy">
+          <strong>CampusCoin</strong>
+          <span>Digital banking for modern student finance</span>
+        </div>
+      </div>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#overview">Overview</a>
+        <a href="#features">Features</a>
+        <a href="#security">Security</a>
+        <a href="#download">Mobile App</a>
+      </nav>
+      <a class="nav-cta" href="#download">Open Account</a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy glass">
+        <div class="eyebrow">Trusted daily by campus communities and digital-first teams</div>
+        <h1>Banking that feels calm, clear, and in control.</h1>
+        <p>
+          Move money, track spending, and manage shared balances with a secure digital banking experience
+          built around transparency. CampusCoin combines real-time transfers, strong safeguards, and a
+          beautifully simple interface that earns confidence at a glance.
+        </p>
+        <div class="hero-actions">
+          <a class="btn-primary" href="#download">Get the mobile app</a>
+          <a class="btn-secondary" href="#overview">See account preview</a>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric">
+            <strong>99.98%</strong>
+            <span>platform availability</span>
+          </div>
+          <div class="metric">
+            <strong>24/7</strong>
+            <span>fraud monitoring</span>
+          </div>
+          <div class="metric">
+            <strong>Instant</strong>
+            <span>peer transfers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-preview glass" id="overview">
+        <div class="preview-stack">
+          <div class="balance-card">
+            <div class="balance-row">
+              <div>
+                <div class="balance-label">Primary account</div>
+                <div class="balance-amount">$12,480.35</div>
+                <div class="balance-chip">+8.4% this month</div>
+              </div>
+              <svg width="70" height="52" viewBox="0 0 70 52" fill="none" aria-hidden="true">
+                <rect x="1.5" y="1.5" width="67" height="49" rx="14.5" stroke="rgba(255,255,255,0.2)"/>
+                <circle cx="28" cy="26" r="10" fill="rgba(255,255,255,0.15)"/>
+                <circle cx="40" cy="26" r="10" fill="rgba(255,255,255,0.26)"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card-grid">
+            <div class="mini-card">
+              <h3>Spending insights</h3>
+              <p>Your essentials are ahead of target, and subscriptions are neatly grouped for one-tap control.</p>
+              <div class="progress-track">
+                <div class="progress-fill"></div>
+              </div>
+              <p>76% of this month’s budgeting goal protected.</p>
+            </div>
+
+            <div class="transaction-card">
+              <h3>Recent activity</h3>
+              <div class="transaction-list">
+                <div class="transaction-row">
+                  <div>
+                    <strong>Library refund</strong>
+                    <span>2 minutes ago</span>
+                  </div>
+                  <div class="transaction-pill pill-income">+$24.00</div>
+                </div>
+                <div class="transaction-row">
+                  <div>
+                    <strong>Coffee hall</strong>
+                    <span>Today, 09:12</span>
+                  </div>
+                  <div class="transaction-pill pill-expense">-$6.80</div>
+                </div>
+                <div class="transaction-row">
+                  <div>
+                    <strong>Roommate split</strong>
+                    <span>Yesterday</span>
+                  </div>
+                  <div class="transaction-pill pill-income">+$18.50</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">Everyday banking, refined</div>
+          <h2>Designed to make money movement feel effortless.</h2>
+        </div>
+        <p>
+          A polished experience matters, but so does control. Every core action is presented with a clear state,
+          sensible context, and just enough detail to help users trust what happens next.
+        </p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="glass">
+          <div class="icon-wrap">↗</div>
+          <h3>Instant transfers</h3>
+          <p>Send money between accounts in seconds with visible confirmation states and transaction timelines.</p>
+        </article>
+        <article class="glass">
+          <div class="icon-wrap">◌</div>
+          <h3>Smart account overview</h3>
+          <p>See balances, goals, and patterns in one glance without losing detail when you need it.</p>
+        </article>
+        <article class="glass">
+          <div class="icon-wrap">⌁</div>
+          <h3>Shared payment tools</h3>
+          <p>Split costs, track incoming repayments, and keep group finances tidy across everyday moments.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="security">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">Confidence by design</div>
+          <h2>Security cues that reassure without adding friction.</h2>
+        </div>
+        <p>
+          Trust-building colors, clear status badges, and layered safeguards work together so users feel protected
+          long before they read the fine print.
+        </p>
+      </div>
+
+      <div class="security-grid">
+        <article class="glass">
+          <div class="icon-wrap">✓</div>
+          <h3>Biometric sign-in</h3>
+          <p>Fast authentication through Face ID or fingerprint keeps access simple and personal.</p>
+        </article>
+        <article class="glass">
+          <div class="icon-wrap">▣</div>
+          <h3>Real-time alerts</h3>
+          <p>Every high-risk sign-in, transfer, and device change generates immediate notifications.</p>
+        </article>
+        <article class="glass">
+          <div class="icon-wrap">⛨</div>
+          <h3>Encrypted by default</h3>
+          <p>Account data and transfer activity stay protected with modern encryption across the full flow.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="download-card glass" id="download">
+      <div class="cta-copy">
+        <div class="eyebrow">Download the mobile banking app</div>
+        <h2>Take the account view with you everywhere.</h2>
+        <p>
+          Built for quick balance checks, fast approvals, and secure transfers on the go. The mobile experience
+          mirrors the same visual calm and transaction clarity as the desktop surface.
+        </p>
+        <div class="download-badges">
+          <a class="store-badge" href="#">
+            <small>Download on the</small>
+            <strong>App Store</strong>
+          </a>
+          <a class="store-badge" href="#">
+            <small>Get it on</small>
+            <strong>Google Play</strong>
+          </a>
+        </div>
+      </div>
+
+      <div class="download-panel">
+        <div class="phone-shell">
+          <div class="phone-screen">
+            <div class="phone-dot"></div>
+            <div class="phone-top">
+              <div>
+                <span>CampusCoin App</span>
+                <strong>Wallet Overview</strong>
+              </div>
+              <div class="balance-chip">Secured</div>
+            </div>
+
+            <div class="mini-stat-grid">
+              <div class="mini-stat">
+                <span>Available</span>
+                <strong>$4,320</strong>
+              </div>
+              <div class="mini-stat">
+                <span>Rewards</span>
+                <strong>312 pts</strong>
+              </div>
+              <div class="mini-stat">
+                <span>Transfers</span>
+                <strong>18 today</strong>
+              </div>
+              <div class="mini-stat">
+                <span>Protection</span>
+                <strong>Active</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3>Built for fast trust on small screens</h3>
+          <p>
+            Large balance cards, clear transaction labels, and tidy action hierarchy make the experience readable,
+            stable, and reassuring across devices.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>CampusCoin Digital Banking</div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Security</a>
+        <a href="#">Support</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

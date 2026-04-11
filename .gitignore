@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.ledger.lock
+shared_storage/.ledger.lock
+
+tmp_ledger_test/
+tmp_ledger_test2/
+tmp_ledger_test3/
+tmp_ledger_test4/
