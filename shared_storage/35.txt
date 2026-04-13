@@ -1,7 +1,0 @@
-Sha256 of previous block: b67afc13b87212e7e4c58617680211b008cf7ff7f4048505023dd86196224664
-Next block: 36.txt
-b1128015, guest, 4
-guest, B, 9
-A, C, 7
-guest, b1128015, 10
-b1128015, B, 2

@@ -1,7 +1,7 @@
-Sha256 of previous block: 1a8dfe0d364f781d4cf18acc51a3306a9471ec279ed4505f6246d1eb52cc6292
+Sha256 of previous block: ba6210bc2ba053fb7e4afea2aa915afad9b0fa6f82d0efd2da9ece7eccee4487
 Next block: 6.txt
-C, b1128015, 4
-A, C, 5
-A, guest, 3
-b1128015, guest, 3
-b1128015, B, 10
+B, b1128015, 6
+B, A, 5
+b1128015, guest, 1
+A, guest, 6
+A, B, 2

@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 from contextlib import contextmanager
 from pathlib import Path
@@ -136,24 +137,27 @@ def append_transaction(sender: str, receiver: str, amount: int) -> tuple[int, Pa
     return index, path
 
 
-def get_balance(account: str) -> int:
+def get_account_stats(account: str) -> dict:
+    """一次掃描所有區塊，同時取得餘額與交易記錄，避免重複 I/O。"""
     balance = 0
-    for _, path in iter_block_paths():
+    rows: list[tuple[int, str, str, int]] = []
+    for index, path in iter_block_paths():
         for sender, receiver, amount in get_transactions(path):
             if receiver == account:
                 balance += amount
-            if sender == account:
+                rows.append((index, sender, receiver, amount))
+            elif sender == account:
                 balance -= amount
-    return balance
+                rows.append((index, sender, receiver, amount))
+    return {"balance": balance, "log": rows}
+
+
+def get_balance(account: str) -> int:
+    return get_account_stats(account)["balance"]
 
 
 def get_account_log(account: str) -> list[tuple[int, str, str, int]]:
-    rows = []
-    for index, path in iter_block_paths():
-        for sender, receiver, amount in get_transactions(path):
-            if sender == account or receiver == account:
-                rows.append((index, sender, receiver, amount))
-    return rows
+    return get_account_stats(account)["log"]
 
 
 def verify_chain() -> list[str]:
@@ -182,6 +186,49 @@ def verify_chain() -> list[str]:
         previous_path = path
 
     return issues
+
+
+# ── 帳號密碼管理 ──────────────────────────────────────────────────────────────
+
+def _accounts_path() -> Path:
+    return STORAGE / "accounts.json"
+
+
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def load_accounts() -> dict:
+    path = _accounts_path()
+    if not path.exists():
+        # 預設帳號（密碼明文：password）
+        defaults = {
+            "b1128015": _hash_password("password"),
+            "guest":    _hash_password("password"),
+            "angel":    _hash_password("angel"),
+        }
+        path.write_text(json.dumps(defaults, indent=2), encoding="utf-8")
+        return defaults
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def verify_account(account: str, password: str) -> bool:
+    """回傳 True 表示帳號密碼正確。"""
+    accounts = load_accounts()
+    hashed = accounts.get(account)
+    if hashed is None:
+        return False
+    return hashed == _hash_password(password)
+
+
+def register_account(account: str, password: str) -> bool:
+    """新增帳號，若帳號已存在回傳 False。"""
+    accounts = load_accounts()
+    if account in accounts:
+        return False
+    accounts[account] = _hash_password(password)
+    _accounts_path().write_text(json.dumps(accounts, indent=2), encoding="utf-8")
+    return True
 
 
 @contextmanager

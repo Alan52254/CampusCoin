@@ -5,13 +5,8 @@ CampusCoin LLM assistant — 支援所有相容 OpenAI API 的本地模型
 （LM Studio、Ollama 等）
 
 設定方式（.env 或環境變數）：
-  LM_STUDIO_MODEL   模型名稱，需與 LM Studio 介面上顯示的完全一致
-                    （預設：qwen2.5-7b-instruct）
+  LM_STUDIO_MODEL   模型名稱（預設：qwen2.5-3b-instruct）
   LM_STUDIO_URL     伺服器位址（預設：http://localhost:1234/v1）
-
-查詢目前載入模型名稱的方法：
-  啟動 LM Studio → Local Server → 上方顯示的 model identifier 複製過來貼到環境變數
-  或執行：curl http://localhost:1234/v1/models
 """
 
 import json
@@ -21,16 +16,17 @@ from typing import Any
 from openai import OpenAI
 
 # ── 設定 ──────────────────────────────────────────────────────────────────────
-MODEL    = os.getenv("LM_STUDIO_MODEL", "qwen2.5-7b-instruct")
-BASE_URL = os.getenv("LM_STUDIO_URL",   "http://localhost:1234/v1")
+MODEL    = os.getenv("LM_STUDIO_MODEL", "qwen/qwen2.5-3b-instruct")
+BASE_URL = os.getenv("LM_STUDIO_URL",   "http://127.0.0.1:1234/v1")
+TIMEOUT  = int(os.getenv("LM_TIMEOUT", "30"))   # 秒，超時直接 fallback
 
 # ── 對話歷史（每個帳戶獨立儲存） ─────────────────────────────────────────────
 _histories: dict[str, list[dict]] = {}
-MAX_HISTORY = 20   # 保留最近 10 輪對話（20 則訊息）
+MAX_HISTORY = 10   # 保留最近 5 輪對話（context 越短越快）
 
 # ── LM Studio 客戶端 ──────────────────────────────────────────────────────────
 def _get_client() -> OpenAI:
-    return OpenAI(api_key="lm-studio", base_url=BASE_URL)
+    return OpenAI(api_key="lm-studio", base_url=BASE_URL, timeout=TIMEOUT)
 
 # ── 工具定義 ──────────────────────────────────────────────────────────────────
 TOOLS: list[dict] = [
@@ -104,23 +100,26 @@ TOOLS: list[dict] = [
 
 # ── System prompt（包含帳戶資訊，不需要每則訊息重複） ─────────────────────────
 def _system_prompt(account: str) -> str:
-    return f"""你是 CampusCoin 助手，一個校園區塊鏈帳本系統的 AI 代理人。
-目前登入帳戶：{account}
+    return f"""You are CampusCoin assistant. Current account: {account}
 
-你可以呼叫以下工具幫助使用者：
-- transfer      → 帳戶間轉帳 CPC
-- verify_chain  → 驗證帳本完整性並領取 10 CPC 獎勵
-- check_balance → 查詢帳戶餘額
-- check_log     → 查詢最近交易紀錄
+Tools available:
+- transfer(sender, receiver, amount): send CPC between accounts
+- verify_chain(account): audit ledger integrity, earn 10 CPC reward
+- check_balance(account): query CPC balance
+- check_log(account, limit): query recent transactions
 
-規則：
-1. 使用者意圖符合上述工具時，一律呼叫對應工具。
-2. 轉帳與驗證屬於「寫入操作」，需回傳 action_preview 讓前端請使用者確認，不要自行執行。
-3. 餘額查詢與交易紀錄屬於「讀取操作」，可直接描述結果。
-4. 意圖不明時，請簡短反問使用者。
-5. 使用使用者相同的語言（中文或英文）回答。
-6. 回答簡潔友善，記住之前的對話內容。
-"""
+Intent recognition (call the matching tool):
+- Transfer intent: "transfer", "send", "轉帳", "匯款", "我要轉", "幫我轉", "send money", "I want to transfer"
+  → If receiver or amount is missing, ask the user for the missing info.
+- Verify intent: "verify", "audit", "驗證", "帳本", "check chain"
+- Balance intent: "balance", "how much", "餘額", "多少錢", "查餘額"
+- History intent: "history", "transactions", "交易", "記錄", "log"
+
+Rules:
+1. When intent matches a tool, ALWAYS call the tool — never just reply with text.
+2. If transfer parameters are incomplete, ask for the missing ones (e.g. "Who do you want to send to, and how much?").
+3. Reply in the same language the user used (Chinese or English).
+4. Keep replies concise."""
 
 # ── 對話歷史操作 ──────────────────────────────────────────────────────────────
 def clear_history(account: str) -> None:
@@ -171,7 +170,7 @@ def build_assistant_reply(
             tools=TOOLS,
             tool_choice="auto",
             temperature=0.2,
-            max_tokens=400,
+            max_tokens=300,
         )
     except Exception as exc:
         history.pop()   # 失敗時撤銷剛加入的訊息
@@ -274,46 +273,6 @@ def build_assistant_reply(
         "suggestions": suggestions,
         "action_preview": None,
     }
-
-
-# ── 私有工具函式 ──────────────────────────────────────────────────────────────
-
-def _narrate(client, original_messages, assistant_msg, tool_call, tool_result: dict) -> str:
-    """把工具結果送回模型，讓它組成自然語言回答。"""
-    follow_up_messages = original_messages + [
-        {
-            "role": "assistant",
-            "content": None,
-            "tool_calls": [
-                {
-                    "id":       tool_call.id,
-                    "type":     "function",
-                    "function": {
-                        "name":      tool_call.function.name,
-                        "arguments": tool_call.function.arguments,
-                    },
-                }
-            ],
-        },
-        {
-            "role":         "tool",
-            "tool_call_id": tool_call.id,
-            "content":      json.dumps(tool_result, ensure_ascii=False),
-        },
-    ]
-
-    try:
-        follow_up = client.chat.completions.create(
-            model=MODEL,
-            messages=follow_up_messages,
-            tools=TOOLS,
-            tool_choice="none",
-            temperature=0.2,
-            max_tokens=300,
-        )
-        return follow_up.choices[0].message.content or ""
-    except Exception:
-        return f"已解析你的請求：{tool_call.function.name}（{tool_result}）"
 
 
 def _error_reply(msg: str) -> dict:

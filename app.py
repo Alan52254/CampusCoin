@@ -1,8 +1,10 @@
+import csv
+import io
 import re
 import sys
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,11 +14,15 @@ sys.path.insert(0, str(SHARED_STORAGE_DIR))
 from ledger_core import (  # noqa: E402
     append_transaction,
     get_account_log,
+    get_account_stats,
     get_balance,
+    get_transactions,
     iter_block_paths,
     last_block_index,
     ledger_lock,
     parse_metadata,
+    register_account,
+    verify_account,
     verify_chain,
 )
 
@@ -63,13 +69,27 @@ def build_dashboard_payload(account: str):
         _, latest_path = blocks[-1]
         _, latest_pointer = parse_metadata(latest_path)
 
-    rows = get_account_log(account)
+    # 一次掃描取得餘額與交易記錄，不重複 I/O
+    stats = get_account_stats(account)
+    rows  = stats["log"]
     income  = sum(amount for _, sender, receiver, amount in rows if receiver == account)
     expense = sum(amount for _, sender, receiver, amount in rows if sender == account)
 
+    recent = []
+    for block_index, sender, receiver, amount in reversed(rows[-8:]):
+        direction = "in" if receiver == account else "out"
+        recent.append({
+            "block": block_index,
+            "sender": sender,
+            "receiver": receiver,
+            "amount": amount,
+            "direction": direction,
+            "counterparty": sender if direction == "in" else receiver,
+        })
+
     return {
         "account": account,
-        "balance": get_balance(account),
+        "balance": stats["balance"],
         "transaction_count": len(rows),
         "block_count": latest_index,
         "latest_block": latest_index,
@@ -77,7 +97,7 @@ def build_dashboard_payload(account: str):
         "income": income,
         "expense": expense,
         "chain_ok": len(verify_chain()) == 0,
-        "recent_transactions": serialize_transactions(account),
+        "recent_transactions": recent,
     }
 
 
@@ -198,10 +218,14 @@ def api_transfer():
     payload    = request.get_json(silent=True) or {}
     sender     = (payload.get("sender")   or "").strip()
     receiver   = (payload.get("receiver") or "").strip()
+    password   = (payload.get("password") or "").strip()
     amount_raw = payload.get("amount")
 
     if not sender or not receiver:
         return jsonify({"ok": False, "error": "Sender and receiver are required."}), 400
+
+    if not verify_account(sender, password):
+        return jsonify({"ok": False, "error": "帳號或密碼錯誤。"}), 403
 
     try:
         amount = int(amount_raw)
@@ -225,6 +249,36 @@ def api_transfer():
             "overview": build_dashboard_payload(sender),
         }
     )
+
+
+@app.post("/api/login")
+def api_login():
+    payload  = request.get_json(silent=True) or {}
+    account  = (payload.get("account") or "").strip()
+    password = (payload.get("password") or "").strip()
+
+    if not account or not password:
+        return jsonify({"ok": False, "error": "Account and password are required."}), 400
+
+    if not verify_account(account, password):
+        return jsonify({"ok": False, "error": "Invalid account or password."}), 401
+
+    return jsonify({"ok": True, "account": account, "overview": build_dashboard_payload(account)})
+
+
+@app.post("/api/register")
+def api_register():
+    payload  = request.get_json(silent=True) or {}
+    account  = (payload.get("account")  or "").strip()
+    password = (payload.get("password") or "").strip()
+
+    if not account or not password:
+        return jsonify({"ok": False, "error": "帳號與密碼不能為空。"}), 400
+
+    if not register_account(account, password):
+        return jsonify({"ok": False, "error": f"帳號 {account} 已存在。"}), 409
+
+    return jsonify({"ok": True, "message": f"帳號 {account} 註冊成功。"})
 
 
 @app.post("/api/verify")
@@ -271,6 +325,89 @@ def api_assistant_clear():
 @app.get("/api/health")
 def api_health():
     return jsonify({"ok": True, "llm_enabled": LLM_AVAILABLE})
+
+
+@app.get("/api/search")
+def api_search():
+    account      = request.args.get("account", "b1128015")
+    counterparty = request.args.get("counterparty", "").strip().lower()
+    min_amount   = request.args.get("min_amount", type=int)
+    max_amount   = request.args.get("max_amount", type=int)
+    block_filter = request.args.get("block", type=int)
+
+    rows = get_account_log(account)
+    results = []
+    for block_index, sender, receiver, amount in rows:
+        if counterparty and counterparty not in (sender.lower(), receiver.lower()):
+            continue
+        if min_amount is not None and amount < min_amount:
+            continue
+        if max_amount is not None and amount > max_amount:
+            continue
+        if block_filter is not None and block_index != block_filter:
+            continue
+        direction = "in" if receiver == account else "out"
+        results.append({
+            "block": block_index,
+            "sender": sender,
+            "receiver": receiver,
+            "amount": amount,
+            "direction": direction,
+            "counterparty": sender if direction == "in" else receiver,
+        })
+    results.reverse()
+    return jsonify({"account": account, "transactions": results})
+
+
+@app.get("/api/export/csv")
+def api_export_csv():
+    account = request.args.get("account", "b1128015")
+    rows    = get_account_log(account)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Block", "Sender", "Receiver", "Amount", "Direction"])
+    for block_index, sender, receiver, amount in rows:
+        direction = "in" if receiver == account else "out"
+        writer.writerow([block_index, sender, receiver, amount, direction])
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={account}_transactions.csv"},
+    )
+
+
+@app.get("/api/blocks")
+def api_blocks():
+    blocks = []
+    for index, path in iter_block_paths():
+        prev_hash, next_block = parse_metadata(path)
+        txs = get_transactions(path)
+        blocks.append({
+            "index":    index,
+            "prev_hash": prev_hash[:20] + "..." if len(prev_hash) > 20 else prev_hash,
+            "next_block": next_block,
+            "tx_count": len(txs),
+            "transactions": [{"sender": s, "receiver": r, "amount": a} for s, r, a in txs],
+        })
+    return jsonify({"blocks": blocks})
+
+
+@app.get("/api/leaderboard")
+def api_leaderboard():
+    balances: dict[str, int] = {}
+    for _, path in iter_block_paths():
+        for sender, receiver, amount in get_transactions(path):
+            balances[sender]   = balances.get(sender, 0)   - amount
+            balances[receiver] = balances.get(receiver, 0) + amount
+
+    leaderboard = sorted(
+        [{"account": k, "balance": v} for k, v in balances.items()],
+        key=lambda x: x["balance"],
+        reverse=True,
+    )
+    return jsonify({"leaderboard": leaderboard})
 
 
 if __name__ == "__main__":

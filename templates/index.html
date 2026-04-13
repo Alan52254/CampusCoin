@@ -3,49 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CampusCoin Agent Banking</title>
+  <title>CampusCoin — Agent Banking</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            abyss: "#06111b",
-            midnight: "#0b1f31",
-            tide: "#12314b",
-            trust: "#7dd3fc",
-            mint: "#5eead4",
-            glow: "#f6c86b",
-            panel: "rgba(255,255,255,0.08)"
-          },
-          boxShadow: {
-            glass: "0 24px 80px rgba(2, 10, 22, 0.42)",
-            soft: "0 16px 40px rgba(7, 17, 30, 0.22)"
+            abyss: "#06111b", midnight: "#0b1f31", tide: "#12314b",
+            trust: "#7dd3fc", mint: "#5eead4", glow: "#f6c86b",
           },
           keyframes: {
-            floaty: {
-              "0%, 100%": { transform: "translateY(0px)" },
-              "50%": { transform: "translateY(-10px)" }
-            },
-            pulseRing: {
-              "0%": { transform: "scale(0.92)", opacity: "0.18" },
-              "70%": { transform: "scale(1.08)", opacity: "0.55" },
-              "100%": { transform: "scale(1.16)", opacity: "0" }
-            },
-            aurora: {
-              "0%, 100%": { transform: "translate3d(0,0,0) scale(1)" },
-              "50%": { transform: "translate3d(10px,-12px,0) scale(1.05)" }
-            },
-            rise: {
-              "0%": { opacity: "0", transform: "translateY(14px)" },
-              "100%": { opacity: "1", transform: "translateY(0)" }
-            }
+            rise: { "0%": { opacity: "0", transform: "translateY(14px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
+            pulseRing: { "0%": { transform: "scale(0.92)", opacity: "0.18" }, "70%": { transform: "scale(1.08)", opacity: "0.55" }, "100%": { transform: "scale(1.16)", opacity: "0" } }
           },
           animation: {
-            floaty: "floaty 6s ease-in-out infinite",
-            pulseRing: "pulseRing 1.8s ease-out infinite",
-            aurora: "aurora 10s ease-in-out infinite",
-            rise: "rise 0.65s ease-out both"
+            rise: "rise 0.5s ease-out both",
+            pulseRing: "pulseRing 1.8s ease-out infinite"
           }
         }
       }
@@ -55,684 +29,917 @@
     :root { color-scheme: dark; }
     body {
       font-family: "Segoe UI Variable Display", "Aptos", sans-serif;
-      background:
-        radial-gradient(circle at 12% 15%, rgba(94, 234, 212, 0.18), transparent 20%),
-        radial-gradient(circle at 88% 10%, rgba(125, 211, 252, 0.16), transparent 24%),
-        radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.14), transparent 22%),
-        linear-gradient(160deg, #041019 0%, #0a1f31 42%, #112d46 100%);
+      background: radial-gradient(circle at 15% 10%, rgba(94,234,212,0.10) 0%, transparent 30%),
+                  radial-gradient(circle at 85% 5%,  rgba(125,211,252,0.10) 0%, transparent 30%),
+                  linear-gradient(160deg, #041019 0%, #0a1f31 45%, #112d46 100%);
     }
     .glass {
-      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 24px 80px rgba(2, 10, 22, 0.42);
+      background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.11);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
-    .glass-strong {
-      background: linear-gradient(180deg, rgba(18,49,75,0.92), rgba(8,22,36,0.92));
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 24px 80px rgba(2, 10, 22, 0.5);
+    .glass-dark {
+      background: linear-gradient(180deg, rgba(18,49,75,0.90), rgba(8,22,36,0.90));
+      border: 1px solid rgba(255,255,255,0.07);
       backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
     }
-    .mesh::before, .mesh::after {
-      content: "";
-      position: absolute;
-      border-radius: 9999px;
-      filter: blur(70px);
-      opacity: 0.45;
-      pointer-events: none;
+    .tab-btn { transition: all 0.18s; }
+    .tab-btn.active {
+      background: rgba(94,234,212,0.14);
+      color: #5eead4;
+      border-color: rgba(94,234,212,0.28);
     }
-    .mesh::before {
-      width: 16rem; height: 16rem;
-      top: -4rem; right: -2rem;
-      background: rgba(94, 234, 212, 0.18);
-      animation: aurora 9s ease-in-out infinite;
+    .input-field {
+      width: 100%;
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 0.75rem 1rem;
+      outline: none;
+      color: #f1f5f9;
     }
-    .mesh::after {
-      width: 18rem; height: 18rem;
-      bottom: -5rem; left: -4rem;
-      background: rgba(125, 211, 252, 0.15);
-      animation: aurora 12s ease-in-out infinite reverse;
+    .input-field::placeholder { color: #94a3b8; }
+    .input-field:focus { border-color: rgba(94,234,212,0.35); }
+    .btn-primary {
+      border-radius: 1rem;
+      background: linear-gradient(to right, #5eead4, #7dd3fc);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      color: #06111b;
+      transition: transform 0.15s;
     }
-    .grid-noise::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
-      background-size: 40px 40px;
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent 80%);
-      pointer-events: none;
+    .btn-primary:hover { transform: scale(1.015); }
+    .btn-ghost {
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.875rem;
+      color: #cbd5e1;
+      transition: background 0.15s;
     }
-    .scrollbar-thin::-webkit-scrollbar { width: 8px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.14);
-      border-radius: 999px;
+    .btn-ghost:hover { background: rgba(255,255,255,0.10); }
+    .btn-mint {
+      border-radius: 1rem;
+      border: 1px solid rgba(94,234,212,0.30);
+      background: rgba(94,234,212,0.10);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #5eead4;
+      transition: background 0.15s;
     }
+    .btn-mint:hover { background: rgba(94,234,212,0.18); }
+    .stat-card {
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 1.25rem;
+    }
+    .tx-card {
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 1rem;
+    }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.13); border-radius: 999px; }
+    label.field-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 0.5rem; }
   </style>
 </head>
 <body class="min-h-screen text-slate-100">
-  <div class="relative overflow-hidden">
-    <div class="grid-noise absolute inset-0"></div>
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <header class="glass animate-rise mb-8 flex flex-col gap-5 rounded-[30px] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss">CC</div>
-          <div>
-            <p class="text-lg font-semibold tracking-wide">CampusCoin Agent Banking</p>
-            <p class="text-sm text-slate-300">Commercial dashboard layer for your containerized shared ledger</p>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN OVERLAY
+══════════════════════════════════════════════════════ -->
+<div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#041019]/90 backdrop-blur-md p-4">
+  <div class="glass w-full max-w-sm rounded-[32px] p-8 shadow-2xl animate-rise my-auto">
+
+    <!-- Logo -->
+    <div class="mb-8 flex flex-col items-center gap-3">
+      <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss text-xl">CC</div>
+      <div class="text-center">
+        <p class="text-lg font-semibold" id="authTitle">Sign in</p>
+        <p class="text-xs text-slate-400 mt-0.5">CampusCoin Agent Banking</p>
+      </div>
+    </div>
+
+    <!-- Login panel -->
+    <div id="loginPanel">
+      <form id="loginForm" class="space-y-3">
+        <input id="loginAccount" class="input-field" placeholder="Account ID" autocomplete="username">
+        <input id="loginPassword" type="password" class="input-field" placeholder="Password" autocomplete="current-password">
+        <button type="submit" class="btn-primary w-full">Sign in</button>
+      </form>
+      <p id="loginError" class="mt-3 min-h-5 text-center text-sm text-rose-300"></p>
+      <p class="mt-5 text-center text-sm text-slate-400">
+        No account? <button type="button" onclick="toggleAuthPanel('register')" class="text-mint hover:underline">Create one</button>
+      </p>
+    </div>
+
+    <!-- Register panel -->
+    <div id="registerPanel" class="hidden">
+      <form id="registerForm" class="space-y-3">
+        <input id="regAccount"   class="input-field" placeholder="Choose account ID" autocomplete="username">
+        <input id="regPassword"  type="password" class="input-field" placeholder="Choose password" autocomplete="new-password">
+        <input id="regPassword2" type="password" class="input-field" placeholder="Confirm password" autocomplete="new-password">
+        <button type="submit" class="btn-primary w-full">Create account</button>
+      </form>
+      <p id="registerMsg" class="mt-3 min-h-5 text-center text-sm"></p>
+      <p class="mt-5 text-center text-sm text-slate-400">
+        Already have one? <button type="button" onclick="toggleAuthPanel('login')" class="text-mint hover:underline">Sign in</button>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 animate-rise">
+
+  <!-- ── Header ── -->
+  <header class="glass mb-6 flex flex-col gap-4 rounded-[28px] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss text-sm">CC</div>
+      <div>
+        <p class="font-semibold tracking-wide">CampusCoin Agent Banking</p>
+        <p class="text-xs text-slate-400">SHA256-secured campus blockchain ledger</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Chain status badge -->
+      <span id="headerChain" class="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs {{ 'border border-mint/30 bg-mint/10 text-mint' if overview.chain_ok else 'border border-rose-400/30 bg-rose-400/10 text-rose-300' }}">
+        Chain {{ 'Healthy ✓' if overview.chain_ok else 'Issue ✗' }}
+      </span>
+
+      <!-- Google-style user menu -->
+      <div class="relative">
+        <button id="userMenuBtn" onclick="toggleUserDropdown()"
+          class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 pr-3 hover:bg-white/10 transition">
+          <div id="avatarCircle"
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-xs font-bold text-abyss">
+            ?
+          </div>
+          <span id="headerAccountName" class="hidden sm:block text-sm font-medium max-w-[120px] truncate">—</span>
+          <svg class="h-3 w-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <!-- Dropdown -->
+        <div id="userDropdown"
+          class="hidden absolute right-0 top-full mt-2 w-64 glass rounded-[22px] overflow-hidden shadow-2xl z-50">
+          <!-- Profile section -->
+          <div class="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+            <div id="dropdownAvatar"
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-base font-bold text-abyss">
+              ?
+            </div>
+            <div class="min-w-0">
+              <p id="dropdownAccount" class="text-sm font-semibold truncate">—</p>
+              <p class="text-xs text-slate-400 mt-0.5"><span id="dropdownBalance">—</span> CPC</p>
+            </div>
+          </div>
+          <!-- Menu items -->
+          <div class="p-2">
+            <button onclick="logout()"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 hover:bg-white/10 transition text-left">
+              <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Sign out
+            </button>
           </div>
         </div>
-        <nav class="flex flex-wrap gap-3 text-sm text-slate-300">
-          <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2"><span id="headerBlocks">{{ overview.block_count }}</span> blocks online</span>
-          <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Shared volume active</span>
-          <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Agent-ready chat</span>
-        </nav>
-      </header>
-
-      <div class="mb-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <section class="glass animate-rise rounded-[30px] p-5" style="animation-delay: 0.04s;">
-          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p class="text-sm uppercase tracking-[0.2em] text-mint/90">Digital banking layer</p>
-              <h2 class="mt-2 text-2xl font-semibold">Operational dashboard meets product landing page.</h2>
-            </div>
-            <div class="flex flex-col items-end gap-3">
-              <a href="#assistantSection" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Try agent chat</a>
-              <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
-            </div>
-          </div>
-        </section>
-        <section class="glass animate-rise rounded-[30px] p-5" style="animation-delay: 0.06s;">
-          <div class="grid gap-3 sm:grid-cols-3">
-            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Availability</p>
-              <p class="mt-2 text-xl font-semibold">24/7</p>
-            </div>
-            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Transfer mode</p>
-              <p class="mt-2 text-xl font-semibold">Instant</p>
-            </div>
-            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Security</p>
-              <p class="mt-2 text-xl font-semibold">SHA256</p>
-            </div>
-          </div>
-        </section>
       </div>
-
-      <main class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section class="glass mesh relative rounded-[34px] p-8 sm:p-12 xl:p-16">
-          <div class="relative z-10">
-            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
-              Premium ledger operations
-            </div>
-            <div class="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
-              <div class="max-w-3xl pl-6 lg:pl-10">
-                <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
-                  CCAB that feels product-ready, not prototype-only.
-                </h1>
-                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-                  Track balances, submit transfers, validate chain health, and prepare a language-driven transaction
-                  flow from one polished command surface designed for demos, reviews, and future LLM orchestration.
-                </p>
-                <div class="mt-6 flex flex-wrap gap-3">
-                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Account-linked controls</div>
-                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Chain verification rewards</div>
-                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">LLM-ready transaction flow</div>
-                </div>
-              </div>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
-                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Current account</p>
-                  <p class="mt-3 text-3xl font-semibold tracking-tight truncate lg:text-[2rem]" id="accountLabel" title="{{ overview.account }}">{{ overview.account }}</p>
-                  <div class="mt-4 flex items-center gap-2 text-sm text-mint">
-                    <span class="inline-flex h-2.5 w-2.5 rounded-full bg-mint"></span>
-                    <span>Chain <span id="chainBadge">{{ 'healthy' if overview.chain_ok else 'issue detected' }}</span></span>
-                  </div>
-                </div>
-                <div class="min-w-0 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-soft">
-                  <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Net flow</p>
-                  <p class="mt-3 text-3xl font-semibold text-glow truncate lg:text-[2rem]" id="netFlowValue">{{ overview.income - overview.expense }}</p>
-                  <p class="mt-4 text-sm leading-7 text-slate-300">Incoming versus outgoing CPC</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-8 grid gap-4 sm:grid-cols-3">
-              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
-                <p class="text-sm text-slate-300">Live balance</p>
-                <p class="mt-3 text-3xl font-semibold"><span id="balanceValue">{{ overview.balance }}</span> CPC</p>
-              </div>
-              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
-                <p class="text-sm text-slate-300">Transactions tracked</p>
-                <p class="mt-3 text-3xl font-semibold" id="transactionCount">{{ overview.transaction_count }}</p>
-              </div>
-              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
-                <p class="text-sm text-slate-300">Latest block</p>
-                <p class="mt-3 text-3xl font-semibold">#<span id="latestBlock">{{ overview.latest_block }}</span></p>
-              </div>
-            </div>
-
-            <div class="mt-8 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-              <section class="glass-strong rounded-[30px] p-6">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <p class="text-sm text-slate-300">Account cockpit</p>
-                    <h2 class="mt-2 text-3xl font-semibold tracking-tight">Operational overview</h2>
-                  </div>
-                  <div class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-right">
-                    <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Pointer</p>
-                    <p class="mt-2 text-sm font-semibold" id="mobilePointer">{{ overview.latest_pointer }}</p>
-                  </div>
-                </div>
-                <div class="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div class="rounded-[24px] border border-white/10 bg-white/10 p-4">
-                    <p class="text-sm text-slate-300">Incoming</p>
-                    <p class="mt-2 text-2xl font-semibold text-mint" id="incomeValue">{{ overview.income }}</p>
-                  </div>
-                  <div class="rounded-[24px] border border-white/10 bg-white/10 p-4">
-                    <p class="text-sm text-slate-300">Outgoing</p>
-                    <p class="mt-2 text-2xl font-semibold text-rose-200" id="expenseValue">{{ overview.expense }}</p>
-                  </div>
-                </div>
-                <div class="mt-5 rounded-[24px] border border-white/10 bg-black/10 p-4">
-                  <div class="flex items-center justify-between text-sm text-slate-300">
-                    <span>Verification confidence</span>
-                    <span id="confidenceLabel">{{ 'Stable' if overview.chain_ok else 'Attention required' }}</span>
-                  </div>
-                  <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-white/10">
-                    <div id="confidenceBar" data-width="{{ 96 if overview.chain_ok else 38 }}" class="h-full rounded-full bg-gradient-to-r from-mint to-trust"></div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="glass rounded-[30px] p-6">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm text-slate-300">Security posture</p>
-                    <h2 class="mt-2 text-2xl font-semibold">Built to reassure</h2>
-                  </div>
-                  <div class="rounded-2xl bg-mint/15 px-3 py-2 text-sm font-semibold text-mint">24/7 Watch</div>
-                </div>
-                <div class="mt-6 space-y-4">
-                  <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 0s;">SHA256-linked blocks preserve audit continuity</div>
-                  <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 0.5s;">angel reward issuance is wired to successful verification</div>
-                  <div class="animate-floaty rounded-[22px] border border-white/10 bg-white/5 p-4" style="animation-delay: 1s;">File locks reduce concurrent write conflicts during transfer bursts</div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </section>
-
-        <aside class="space-y-6">
-          <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.08s;">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-slate-300">Transfer CPC</p>
-                <h2 class="mt-2 text-2xl font-semibold">Instant movement</h2>
-              </div>
-              <div id="sealIndicator" class="hidden relative h-14 w-14 items-center justify-center">
-                <span class="absolute inset-0 rounded-full border border-mint/60 animate-pulseRing"></span>
-                <span class="relative flex h-11 w-11 items-center justify-center rounded-full bg-mint/20 text-lg">Seal</span>
-              </div>
-            </div>
-            <form id="transferForm" class="mt-5 space-y-4">
-              <input id="senderInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" value="{{ overview.account }}" placeholder="Sender account">
-              <input id="receiverInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="Receiver account">
-              <input id="amountInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" type="number" min="1" placeholder="Amount">
-              <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 font-semibold text-abyss transition hover:scale-[1.01]">Send transfer</button>
-            </form>
-            <p id="transferMessage" class="mt-4 min-h-6 text-sm text-slate-300"></p>
-          </section>
-
-          <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.14s;">
-            <div class="flex items-center justify-between gap-4">
-              <div>
-                <p class="text-sm text-slate-300">Chain verification</p>
-                <h2 class="mt-2 text-2xl font-semibold">One-click audit</h2>
-              </div>
-              <button id="verifyButton" type="button" class="rounded-2xl border border-mint/30 bg-mint/10 px-4 py-3 font-semibold text-mint transition hover:bg-mint/15">
-                Verify + Reward
-              </button>
-            </div>
-            <p id="verifyMessage" class="mt-4 min-h-6 text-sm leading-7 text-slate-300">
-              Successful validation adds 10 CPC from angel to the current account.
-            </p>
-          </section>
-
-          <!-- ── LLM Assistant ── -->
-          <section id="assistantSection" class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.2s;">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <p class="text-sm text-slate-300">LLM command console</p>
-                <h2 class="mt-2 text-2xl font-semibold">Language-driven banking</h2>
-              </div>
-              <div class="flex items-center gap-2">
-                <button id="clearChatBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400 transition hover:bg-white/10" title="清除對話記憶">清除</button>
-                <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Agent Ready</span>
-              </div>
-            </div>
-            <p class="mt-3 text-sm leading-7 text-slate-300">
-              輸入一句話，LLM 自動解析並執行區塊鏈任務。
-            </p>
-
-            <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">幫我轉 15 CPC 給 guest</button>
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">驗證帳本鏈並領取獎勵</button>
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">查詢我的餘額</button>
-              <button type="button" class="prompt-chip rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">顯示最近交易紀錄</button>
-            </div>
-
-            <div id="chatFeed" class="scrollbar-thin mt-5 h-72 space-y-3 overflow-y-auto rounded-[24px] border border-white/10 bg-black/10 p-4">
-              <div class="max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100">
-                我是你的 CampusCoin 助手。你可以用中文自然地告訴我要做什麼，例如轉帳、查餘額、驗證帳本，或任何問題。
-              </div>
-            </div>
-
-            <!-- ACTION PREVIEW + 確認按鈕 -->
-            <div id="assistantPreview" class="mt-4 hidden rounded-[24px] border border-white/10 bg-white/5 p-4">
-              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Action Preview</p>
-              <div id="assistantPreviewBody" class="mt-3 text-sm leading-7 text-slate-200"></div>
-              <button id="confirmActionBtn" class="hidden mt-4 w-full rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 font-semibold text-abyss transition hover:scale-[1.01]">
-                ✓ 確認執行
-              </button>
-            </div>
-
-            <form id="assistantForm" class="mt-4 space-y-3">
-              <textarea id="assistantInput" rows="3" class="w-full resize-none rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400" placeholder="例如：幫我轉 10 CPC 給 guest"></textarea>
-              <div class="flex items-center justify-between gap-3">
-                <p class="text-xs leading-6 text-slate-400">CampusCoin Agent</p>
-                <button type="submit" class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/15">送出</button>
-              </div>
-            </form>
-          </section>
-        </aside>
-      </main>
-
-      <section class="mt-6 grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.24s;">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <p class="text-sm text-slate-300">Recent transactions</p>
-              <h2 class="mt-2 text-2xl font-semibold">Activity feed</h2>
-            </div>
-            <button id="refreshButton" type="button" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200">Refresh</button>
-          </div>
-          <div id="activityList" class="mt-5 space-y-3">
-            {% for item in overview.recent_transactions %}
-            <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
-              <div class="flex items-center justify-between gap-3">
-                <div>
-                  <p class="font-medium">{{ item.sender }} &rarr; {{ item.receiver }}</p>
-                  <p class="mt-1 text-sm text-slate-300">Block #{{ item.block }} &middot; Counterparty {{ item.counterparty }}</p>
-                </div>
-                <div class="rounded-full px-3 py-2 text-sm font-semibold {{ 'bg-mint/15 text-mint' if item.direction == 'in' else 'bg-rose-400/10 text-rose-200' }}">
-                  {{ '+' if item.direction == 'in' else '-' }}{{ item.amount }} CPC
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </section>
-
-        <section class="glass animate-rise rounded-[34px] p-6" style="animation-delay: 0.28s;">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <p class="text-sm text-slate-300">Mobile experience</p>
-              <h2 class="mt-2 text-2xl font-semibold">App-like companion surface</h2>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Commercial preview</div>
-          </div>
-          <div class="mt-6 rounded-[30px] border border-white/10 bg-slate-950/40 p-4">
-            <div class="mx-auto max-w-[300px] rounded-[34px] border border-white/10 bg-gradient-to-b from-tide/95 to-abyss/95 p-4 shadow-glass">
-              <div class="mx-auto mb-4 h-1.5 w-16 rounded-full bg-white/20"></div>
-              <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
-                <p class="text-sm text-slate-300">Available balance</p>
-                <p class="mt-2 text-3xl font-semibold"><span id="mobileBalance">{{ overview.balance }}</span> CPC</p>
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                  <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
-                    <p class="text-xs text-slate-300">Blocks</p>
-                    <p class="mt-1 font-semibold" id="mobileBlocks">{{ overview.block_count }}</p>
-                  </div>
-                  <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
-                    <p class="text-xs text-slate-300">Status</p>
-                    <p class="mt-1 font-semibold" id="mobileStatus">{{ 'Healthy' if overview.chain_ok else 'Attention' }}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="mt-4 grid grid-cols-2 gap-3">
-                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm">App Store</div>
-                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm">Google Play</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <section id="experienceSection" class="mt-6 grid gap-6 lg:grid-cols-3">
-        <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.32s;">
-          <p class="text-sm text-slate-300">Why it feels better</p>
-          <h3 class="mt-2 text-2xl font-semibold">Clear transaction storytelling</h3>
-          <p class="mt-4 text-sm leading-7 text-slate-300">The old landing page had stronger brand storytelling and cleaner product framing. That strength is now merged here through clearer labels, stronger calls to action, and more deliberate empty-space rhythm.</p>
-        </article>
-        <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.36s;">
-          <p class="text-sm text-slate-300">What carries over</p>
-          <h3 class="mt-2 text-2xl font-semibold">Feature-led product positioning</h3>
-          <p class="mt-4 text-sm leading-7 text-slate-300">The original landing page had richer marketing sections, stronger CTA treatment, and a friendlier mobile app preview. This dashboard keeps the operational tools, while reintroducing those commercial cues.</p>
-        </article>
-        <article class="glass animate-rise rounded-[30px] p-6" style="animation-delay: 0.4s;">
-          <p class="text-sm text-slate-300">What is new</p>
-          <h3 class="mt-2 text-2xl font-semibold">LLM-ready interaction layer</h3>
-          <p class="mt-4 text-sm leading-7 text-slate-300">The new chat console is the main structural expansion. It turns the page from a dashboard into a future agent product surface where language can drive balance queries, chain verification, and transfers.</p>
-        </article>
-      </section>
     </div>
-  </div>
+  </header>
 
-  <script id="boot-data" type="application/json">{{ {"account": overview.account} | tojson }}</script>
+  <!-- ── Tab Bar ── -->
+  <nav class="glass mb-6 flex gap-1.5 rounded-[22px] p-2">
+    <button class="tab-btn active flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium" onclick="showTab('dashboard')">Dashboard</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('transfer')">Transfer</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('assistant')">Assistant</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('search')">Search</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('explorer')">Explorer</button>
+  </nav>
 
-  <script>
-    const bootData = JSON.parse(document.getElementById("boot-data").textContent);
-    const state = { account: bootData.account };
+  <!-- ══════════════════════════════════════════════════════
+       TAB: DASHBOARD
+  ══════════════════════════════════════════════════════ -->
+  <div id="tab-dashboard" class="space-y-6">
 
-    const balanceValue     = document.getElementById("balanceValue");
-    const transactionCount = document.getElementById("transactionCount");
-    const latestBlock      = document.getElementById("latestBlock");
-    const incomeValue      = document.getElementById("incomeValue");
-    const expenseValue     = document.getElementById("expenseValue");
-    const chainBadge       = document.getElementById("chainBadge");
-    const mobileBalance    = document.getElementById("mobileBalance");
-    const mobileBlocks     = document.getElementById("mobileBlocks");
-    const mobilePointer    = document.getElementById("mobilePointer");
-    const mobileStatus     = document.getElementById("mobileStatus");
-    const activityList     = document.getElementById("activityList");
-    const transferMessage  = document.getElementById("transferMessage");
-    const verifyMessage    = document.getElementById("verifyMessage");
-    const sealIndicator    = document.getElementById("sealIndicator");
-    const accountLabel     = document.getElementById("accountLabel");
-    const netFlowValue     = document.getElementById("netFlowValue");
-    const confidenceLabel  = document.getElementById("confidenceLabel");
-    const confidenceBar    = document.getElementById("confidenceBar");
-    const headerBlocks     = document.getElementById("headerBlocks");
-    const chatFeed         = document.getElementById("chatFeed");
-    const assistantPreview = document.getElementById("assistantPreview");
-    const assistantPreviewBody = document.getElementById("assistantPreviewBody");
-    const confirmActionBtn = document.getElementById("confirmActionBtn");
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="stat-card">
+        <p class="field-label">Balance</p>
+        <p class="mt-2 text-2xl font-semibold"><span id="balanceValue">{{ overview.balance }}</span> <span class="text-sm text-slate-400">CPC</span></p>
+      </div>
+      <div class="stat-card">
+        <p class="field-label">Transactions</p>
+        <p class="mt-2 text-2xl font-semibold" id="transactionCount">{{ overview.transaction_count }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="field-label">Latest Block</p>
+        <p class="mt-2 text-2xl font-semibold">#<span id="latestBlock">{{ overview.latest_block }}</span></p>
+      </div>
+      <div class="stat-card">
+        <p class="field-label">Net Flow</p>
+        <p class="mt-2 text-2xl font-semibold text-glow" id="netFlowValue">{{ overview.income - overview.expense }}</p>
+      </div>
+    </div>
 
-    if (confidenceBar.dataset.width) {
-      confidenceBar.style.width = `${confidenceBar.dataset.width}%`;
-    }
+    <!-- Income / Expense -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="stat-card">
+        <p class="field-label">Incoming (CPC)</p>
+        <p class="mt-2 text-xl font-semibold text-mint" id="incomeValue">{{ overview.income }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="field-label">Outgoing (CPC)</p>
+        <p class="mt-2 text-xl font-semibold text-rose-300" id="expenseValue">{{ overview.expense }}</p>
+      </div>
+    </div>
 
-    function renderTransactions(items) {
-      if (!items || items.length === 0) {
-        activityList.innerHTML = `<div class="rounded-[26px] border border-dashed border-white/10 bg-white/5 p-6 text-sm text-slate-300">No transactions found for this account yet.</div>`;
-        return;
-      }
-      activityList.innerHTML = items.map((item) => `
-        <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
+    <!-- Chain health -->
+    <div class="glass-dark rounded-[28px] p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="field-label">Chain Health</p>
+          <h2 class="mt-1 text-lg font-semibold">Verification Status</h2>
+        </div>
+        <span id="chainBadge" class="rounded-full px-3 py-1.5 text-xs font-semibold {{ 'border border-mint/30 bg-mint/10 text-mint' if overview.chain_ok else 'border border-rose-400/30 bg-rose-400/10 text-rose-300' }}">
+          {{ 'Stable' if overview.chain_ok else 'Attention required' }}
+        </span>
+      </div>
+      <div class="mt-4">
+        <div class="mb-2 flex items-center justify-between text-xs text-slate-400">
+          <span>Integrity confidence</span>
+          <span id="confidenceLabel">{{ 'Stable' if overview.chain_ok else 'Attention required' }}</span>
+        </div>
+        <div class="h-2 overflow-hidden rounded-full bg-white/10">
+          <div id="confidenceBar" class="h-full rounded-full bg-gradient-to-r from-mint to-trust" style="width: {{ 96 if overview.chain_ok else 38 }}%"></div>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">Latest pointer: <span id="latestPointer">{{ overview.latest_pointer }}</span></p>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="glass rounded-[28px] p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="field-label">Activity</p>
+          <h2 class="mt-1 text-lg font-semibold">Recent Transactions</h2>
+        </div>
+        <button id="refreshButton" type="button" class="btn-ghost">Refresh</button>
+      </div>
+      <div id="activityList" class="mt-5 space-y-3">
+        {% for item in overview.recent_transactions %}
+        <div class="tx-card">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="font-medium">${item.sender} &rarr; ${item.receiver}</p>
-              <p class="mt-1 text-sm text-slate-300">Block #${item.block} &middot; Counterparty ${item.counterparty}</p>
+              <p class="text-sm font-medium">{{ item.sender }} → {{ item.receiver }}</p>
+              <p class="mt-0.5 text-xs text-slate-400">Block #{{ item.block }} · Counterparty: {{ item.counterparty }}</p>
             </div>
-            <div class="rounded-full px-3 py-2 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-200"}">
+            <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold {{ 'bg-mint/15 text-mint' if item.direction == 'in' else 'bg-rose-400/10 text-rose-300' }}">
+              {{ '+' if item.direction == 'in' else '-' }}{{ item.amount }} CPC
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div><!-- /tab-dashboard -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB: TRANSFER
+  ══════════════════════════════════════════════════════ -->
+  <div id="tab-transfer" class="hidden space-y-6">
+
+    <!-- Transfer form -->
+    <div class="glass rounded-[28px] p-8">
+      <p class="field-label">Instant movement</p>
+      <h2 class="mt-1 text-2xl font-semibold">Send CPC</h2>
+      <form id="transferForm" class="mt-6 max-w-md space-y-4">
+        <div>
+          <label class="field-label">Sender Account</label>
+          <input id="senderInput" class="input-field" value="{{ overview.account }}" placeholder="Sender account">
+        </div>
+        <div>
+          <label class="field-label">Password</label>
+          <input id="passwordInput" type="password" class="input-field" placeholder="Account password"
+            oninput="state.password = this.value">
+        </div>
+        <div>
+          <label class="field-label">Receiver Account</label>
+          <input id="receiverInput" class="input-field" placeholder="Receiver account">
+        </div>
+        <div>
+          <label class="field-label">Amount (CPC)</label>
+          <input id="amountInput" type="number" min="1" class="input-field" placeholder="Amount">
+        </div>
+        <div class="flex items-center gap-4">
+          <button type="submit" class="btn-primary">Send Transfer</button>
+          <div id="sealIndicator" class="hidden relative h-12 w-12 items-center justify-center">
+            <span class="absolute inset-0 rounded-full border border-mint/60 animate-pulseRing"></span>
+            <span class="relative flex h-10 w-10 items-center justify-center rounded-full bg-mint/20 text-xs font-bold text-mint">Seal</span>
+          </div>
+        </div>
+      </form>
+      <p id="transferMessage" class="mt-4 min-h-5 text-sm text-slate-300"></p>
+    </div>
+
+    <!-- Verify chain -->
+    <div class="glass rounded-[28px] p-8">
+      <p class="field-label">One-click audit</p>
+      <h2 class="mt-1 text-2xl font-semibold">Verify Chain</h2>
+      <p class="mt-3 text-sm text-slate-400 max-w-md">
+        Audits the entire SHA256 block chain. A successful verification rewards the current account with <strong class="text-mint">10 CPC</strong> from angel.
+      </p>
+      <button id="verifyButton" type="button" class="btn-mint mt-5">Run Verification &amp; Claim Reward</button>
+      <p id="verifyMessage" class="mt-4 min-h-5 text-sm text-slate-300"></p>
+    </div>
+  </div><!-- /tab-transfer -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB: ASSISTANT
+  ══════════════════════════════════════════════════════ -->
+  <div id="tab-assistant" class="hidden">
+    <div class="glass rounded-[28px] p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="field-label">LLM command console</p>
+          <h2 class="mt-1 text-2xl font-semibold">Language-Driven Banking</h2>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="clearChatBtn" type="button" class="btn-ghost text-xs">Clear history</button>
+          <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-trust">Agent Ready</span>
+        </div>
+      </div>
+      <p class="mt-2 text-sm text-slate-400">Type in natural language — English or Chinese. The LLM detects intent and calls the right tool.</p>
+
+      <!-- Quick-pick chips -->
+      <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
+        <button type="button" class="prompt-chip btn-ghost text-sm">Transfer 15 CPC to guest</button>
+        <button type="button" class="prompt-chip btn-ghost text-sm">Verify the ledger chain</button>
+        <button type="button" class="prompt-chip btn-ghost text-sm">Check my balance</button>
+        <button type="button" class="prompt-chip btn-ghost text-sm">Show recent transactions</button>
+        <button type="button" class="prompt-chip btn-ghost text-sm">I want to transfer money</button>
+        <button type="button" class="prompt-chip btn-ghost text-sm">查詢我的餘額</button>
+      </div>
+
+      <!-- Chat feed -->
+      <div id="chatFeed" class="scrollbar-thin mt-5 h-80 space-y-3 overflow-y-auto rounded-[22px] border border-white/10 bg-black/15 p-4">
+        <div class="max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7">
+          Hi! I'm your CampusCoin assistant. Tell me what you'd like to do — transfer CPC, check your balance, verify the chain, or anything else.
+        </div>
+      </div>
+
+      <!-- Action preview -->
+      <div id="assistantPreview" class="mt-4 hidden rounded-[22px] border border-white/10 bg-white/5 p-4">
+        <p class="field-label">Action Preview</p>
+        <div id="assistantPreviewBody" class="mt-3 text-sm leading-7"></div>
+        <button id="confirmActionBtn" class="hidden mt-4 btn-primary w-full">✓ Confirm &amp; Execute</button>
+      </div>
+
+      <!-- Input -->
+      <form id="assistantForm" class="mt-4 space-y-3">
+        <textarea id="assistantInput" rows="3"
+          class="w-full resize-none rounded-[20px] border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-slate-400 text-sm focus:border-trust/40"
+          placeholder='e.g. "Transfer 10 CPC to guest" or "I want to check my balance"'></textarea>
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-xs text-slate-500">Powered by Qwen2.5-3B via LM Studio</p>
+          <button type="submit" class="btn-ghost font-semibold">Send</button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /tab-assistant -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB: SEARCH
+  ══════════════════════════════════════════════════════ -->
+  <div id="tab-search" class="hidden">
+    <div class="glass rounded-[28px] p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="field-label">Filter & export</p>
+          <h2 class="mt-1 text-2xl font-semibold">Transaction Search</h2>
+        </div>
+        <button id="exportCsvBtn" type="button" class="btn-mint shrink-0">↓ Export CSV</button>
+      </div>
+      <div class="mt-5 grid max-w-lg grid-cols-2 gap-3">
+        <input id="searchCounterparty" class="input-field col-span-2" placeholder="Counterparty account (leave blank = all)">
+        <input id="searchMinAmount" type="number" min="0" class="input-field" placeholder="Min amount">
+        <input id="searchMaxAmount" type="number" min="0" class="input-field" placeholder="Max amount">
+        <input id="searchBlock"     type="number" min="1" class="input-field" placeholder="Block number">
+        <button id="searchBtn" type="button" class="btn-primary">Search</button>
+      </div>
+      <div id="searchResults" class="scrollbar-thin mt-6 max-h-[28rem] space-y-3 overflow-y-auto"></div>
+    </div>
+  </div><!-- /tab-search -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB: EXPLORER
+  ══════════════════════════════════════════════════════ -->
+  <div id="tab-explorer" class="hidden space-y-6">
+
+    <!-- Leaderboard -->
+    <div class="glass rounded-[28px] p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="field-label">Balance ranking</p>
+          <h2 class="mt-1 text-2xl font-semibold">Leaderboard</h2>
+        </div>
+        <button id="refreshLeaderboardBtn" type="button" class="btn-ghost">Refresh</button>
+      </div>
+      <div id="leaderboardList" class="scrollbar-thin mt-5 max-h-72 space-y-3 overflow-y-auto">
+        <p class="text-sm text-slate-400">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Block explorer -->
+    <div class="glass rounded-[28px] p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="field-label">On-chain data</p>
+          <h2 class="mt-1 text-2xl font-semibold">Block Explorer</h2>
+        </div>
+        <button id="refreshBlocksBtn" type="button" class="btn-ghost">Refresh</button>
+      </div>
+      <div id="blockList" class="scrollbar-thin mt-5 grid max-h-[520px] gap-3 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+        <p class="text-sm text-slate-400">Loading...</p>
+      </div>
+    </div>
+  </div><!-- /tab-explorer -->
+
+</div><!-- /container -->
+
+<script id="boot-data" type="application/json">{{ {"account": overview.account} | tojson }}</script>
+<script>
+  const bootData = JSON.parse(document.getElementById("boot-data").textContent);
+  const state    = { account: bootData.account, password: "" };
+
+  // ── $ shorthand (must be declared first) ─────────────────────────────────
+  const $ = id => document.getElementById(id);
+
+  // ── Auth helpers ──────────────────────────────────────────────────────────
+  const SESSION_KEY = "cc_session";
+
+  function getInitials(name) {
+    return (name || "?").slice(0, 2).toUpperCase();
+  }
+
+  function updateUserMenu(account, balance) {
+    const initials = getInitials(account);
+    $("avatarCircle").textContent      = initials;
+    $("dropdownAvatar").textContent    = initials;
+    $("headerAccountName").textContent = account;
+    $("dropdownAccount").textContent   = account;
+    $("dropdownBalance").textContent   = balance !== undefined ? balance : "—";
+  }
+
+  function showLoginOverlay() {
+    $("loginOverlay").classList.remove("hidden");
+  }
+
+  function hideLoginOverlay() {
+    $("loginOverlay").classList.add("hidden");
+  }
+
+  function toggleAuthPanel(panel) {
+    const isLogin = panel === "login";
+    $("loginPanel").classList.toggle("hidden", !isLogin);
+    $("registerPanel").classList.toggle("hidden", isLogin);
+    $("authTitle").textContent = isLogin ? "Sign in" : "Create account";
+    $("loginError").textContent  = "";
+    $("registerMsg").textContent = "";
+  }
+
+  function toggleUserDropdown() {
+    $("userDropdown").classList.toggle("hidden");
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", e => {
+    const menu = $("userDropdown");
+    const btn  = $("userMenuBtn");
+    if (!menu.classList.contains("hidden") && !menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.classList.add("hidden");
+    }
+  });
+
+  async function doLogin(account, password) {
+    const res    = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account, password }) });
+    const data   = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed.");
+    return data;
+  }
+
+  function applySession(account, password, overview) {
+    state.account  = account;
+    state.password = password;
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ account, password }));
+    $("senderInput").value = account;
+    $("passwordInput").value = password;
+    updateUserMenu(account, overview.balance);
+    applyOverview(overview);
+    hideLoginOverlay();
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    state.account  = "";
+    state.password = "";
+    $("userDropdown").classList.add("hidden");
+    toggleAuthPanel("login");
+    $("loginAccount").value  = "";
+    $("loginPassword").value = "";
+    showLoginOverlay();
+  }
+
+  // ── Login form ────────────────────────────────────────────────────────────
+  $("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const account  = $("loginAccount").value.trim();
+    const password = $("loginPassword").value.trim();
+    $("loginError").textContent = "";
+    const btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "Signing in...";
+    try {
+      const data = await doLogin(account, password);
+      applySession(account, password, data.overview);
+    } catch (err) {
+      $("loginError").textContent = err.message;
+    } finally {
+      btn.disabled = false; btn.textContent = "Sign in";
+    }
+  });
+
+  // ── Register form ─────────────────────────────────────────────────────────
+  $("registerForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const account  = $("regAccount").value.trim();
+    const password = $("regPassword").value.trim();
+    const confirm  = $("regPassword2").value.trim();
+    const msg      = $("registerMsg");
+    if (password !== confirm) { msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300"; msg.textContent = "Passwords do not match."; return; }
+    const btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "Creating...";
+    try {
+      const res  = await fetch("/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account, password }) });
+      const data = await res.json();
+      if (!res.ok) { msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300"; msg.textContent = data.error; return; }
+      msg.className = "mt-3 min-h-5 text-center text-sm text-mint";
+      msg.textContent = "Account created! Signing you in...";
+      setTimeout(async () => {
+        try {
+          const loginData = await doLogin(account, password);
+          applySession(account, password, loginData.overview);
+        } catch (_) { toggleAuthPanel("login"); }
+      }, 800);
+    } catch (err) {
+      msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300"; msg.textContent = "Network error.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Create account";
+    }
+  });
+
+  // ── Auto-login from session ───────────────────────────────────────────────
+  (async function loadSession() {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      try {
+        const { account, password } = JSON.parse(saved);
+        const data = await doLogin(account, password);
+        applySession(account, password, data.overview);
+        return;
+      } catch (_) {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    }
+    showLoginOverlay();
+  })();
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  const balanceValue     = $("balanceValue");
+  const transactionCount = $("transactionCount");
+  const latestBlock      = $("latestBlock");
+  const incomeValue      = $("incomeValue");
+  const expenseValue     = $("expenseValue");
+  const netFlowValue     = $("netFlowValue");
+  const confidenceLabel  = $("confidenceLabel");
+  const confidenceBar    = $("confidenceBar");
+  const latestPointer    = $("latestPointer");
+  const activityList     = $("activityList");
+  const transferMessage  = $("transferMessage");
+  const verifyMessage    = $("verifyMessage");
+  const sealIndicator    = $("sealIndicator");
+  const chatFeed         = $("chatFeed");
+  const assistantPreview = $("assistantPreview");
+  const assistantPreviewBody = $("assistantPreviewBody");
+  const confirmActionBtn = $("confirmActionBtn");
+  const headerChain      = $("headerChain");
+  const chainBadge       = $("chainBadge");
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  const TAB_IDS = ["dashboard", "transfer", "assistant", "search", "explorer"];
+  function showTab(name) {
+    TAB_IDS.forEach(t => $(`tab-${t}`).classList.toggle("hidden", t !== name));
+    document.querySelectorAll(".tab-btn").forEach((btn, i) => {
+      const isActive = TAB_IDS[i] === name;
+      btn.classList.toggle("active", isActive);
+      btn.classList.toggle("text-slate-400", !isActive);
+    });
+    if (name === "explorer") { loadLeaderboard(); loadBlocks(); }
+  }
+
+  // ── Render helpers ────────────────────────────────────────────────────────
+  function renderTransactions(items) {
+    if (!items || items.length === 0) {
+      activityList.innerHTML = `<div class="tx-card text-sm text-slate-400">No transactions found for this account.</div>`;
+      return;
+    }
+    activityList.innerHTML = items.map(item => `
+      <div class="tx-card">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-medium">${item.sender} → ${item.receiver}</p>
+            <p class="mt-0.5 text-xs text-slate-400">Block #${item.block} · Counterparty: ${item.counterparty}</p>
+          </div>
+          <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
+            ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function applyOverview(data) {
+    state.account = data.account;
+    balanceValue.textContent     = data.balance;
+    transactionCount.textContent = data.transaction_count;
+    latestBlock.textContent      = data.latest_block;
+    incomeValue.textContent      = data.income;
+    expenseValue.textContent     = data.expense;
+    netFlowValue.textContent     = data.income - data.expense;
+    if (latestPointer) latestPointer.textContent = data.latest_pointer;
+    confidenceLabel.textContent  = data.chain_ok ? "Stable" : "Attention required";
+    confidenceBar.style.width    = `${data.chain_ok ? 96 : 38}%`;
+    updateUserMenu(data.account, data.balance);
+    const chainText  = `Chain ${data.chain_ok ? "Healthy ✓" : "Issue ✗"}`;
+    const chainClass = data.chain_ok
+      ? "rounded-full px-3 py-1.5 text-xs border border-mint/30 bg-mint/10 text-mint"
+      : "rounded-full px-3 py-1.5 text-xs border border-rose-400/30 bg-rose-400/10 text-rose-300";
+    headerChain.textContent = chainText;
+    headerChain.className   = chainClass;
+    if (chainBadge) { chainBadge.textContent = data.chain_ok ? "Stable" : "Attention required"; chainBadge.className = chainClass; }
+    renderTransactions(data.recent_transactions);
+    $("senderInput").value = data.account;
+  }
+
+  function addChatBubble(text, role = "assistant") {
+    const el = document.createElement("div");
+    el.className = role === "user"
+      ? "ml-auto max-w-[92%] rounded-[20px] border border-white/10 bg-white/10 px-4 py-3 text-sm leading-7"
+      : "max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7";
+    el.textContent = text;
+    chatFeed.appendChild(el);
+    chatFeed.scrollTop = chatFeed.scrollHeight;
+  }
+
+  function resetConfirmBtn() {
+    confirmActionBtn.classList.add("hidden");
+    confirmActionBtn.disabled = false;
+    confirmActionBtn.textContent = "✓ Confirm & Execute";
+    confirmActionBtn.onclick = null;
+  }
+
+  function renderAssistantPreview(actionPreview) {
+    resetConfirmBtn();
+    if (!actionPreview) { assistantPreview.classList.add("hidden"); assistantPreviewBody.innerHTML = ""; return; }
+    assistantPreview.classList.remove("hidden");
+
+    if (actionPreview.type === "transfer") {
+      assistantPreviewBody.innerHTML = `
+        <div class="rounded-xl border border-mint/20 bg-mint/10 px-4 py-3 text-sm">
+          Transfer: <strong>${actionPreview.sender}</strong> → <strong>${actionPreview.receiver}</strong> · <strong>${actionPreview.amount} CPC</strong>
+        </div>
+        <input id="previewPassword" type="password" class="input-field mt-3 text-sm" placeholder="Enter your password to confirm"
+          value="${state.password.replace(/"/g, '&quot;')}">`;
+      confirmActionBtn.classList.remove("hidden");
+      confirmActionBtn.onclick = async () => {
+        const pwd = ($("previewPassword")?.value || "").trim();
+        confirmActionBtn.disabled = true;
+        confirmActionBtn.textContent = "Processing...";
+        try {
+          const res    = await fetch("/api/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: actionPreview.sender, password: pwd, receiver: actionPreview.receiver, amount: actionPreview.amount }) });
+          const result = await res.json();
+          if (!res.ok) addChatBubble(`❌ Transfer failed: ${result.error}`, "assistant");
+          else { addChatBubble(`✅ ${result.message} Block #${result.block_index}.`, "assistant"); applyOverview(result.overview); }
+        } catch (e) { addChatBubble("❌ Network error. Please try again.", "assistant"); }
+        resetConfirmBtn(); assistantPreview.classList.add("hidden");
+      };
+
+    } else if (actionPreview.type === "verify") {
+      assistantPreviewBody.innerHTML = `
+        <div class="rounded-xl border border-trust/20 bg-trust/10 px-4 py-3 text-sm">
+          Verify ledger for <strong>${actionPreview.account}</strong> — earns 10 CPC from angel on success.
+        </div>`;
+      confirmActionBtn.classList.remove("hidden");
+      confirmActionBtn.onclick = async () => {
+        confirmActionBtn.disabled = true; confirmActionBtn.textContent = "Verifying...";
+        try {
+          const res    = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account: actionPreview.account }) });
+          const result = await res.json();
+          if (!res.ok) { addChatBubble(`❌ Verification failed: ${(result.issues || []).join(" | ")}`, "assistant"); if (result.overview) applyOverview(result.overview); }
+          else { addChatBubble(`✅ ${result.message} Reward in Block #${result.reward_block}.`, "assistant"); applyOverview(result.overview); }
+        } catch (e) { addChatBubble("❌ Network error. Please try again.", "assistant"); }
+        resetConfirmBtn(); assistantPreview.classList.add("hidden");
+      };
+
+    } else if (actionPreview.type === "balance_lookup") {
+      assistantPreviewBody.innerHTML = `<div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">Balance: <strong>${actionPreview.account}</strong> has <strong>${actionPreview.balance} CPC</strong>.</div>`;
+
+    } else if (actionPreview.type === "history_lookup") {
+      assistantPreviewBody.innerHTML = `<div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">Transaction log for <strong>${actionPreview.account}</strong> retrieved above.</div>`;
+    }
+  }
+
+  // ── Refresh overview ──────────────────────────────────────────────────────
+  async function refreshOverview() {
+    try {
+      const res = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
+      applyOverview(await res.json());
+    } catch (e) { transferMessage.textContent = "Unable to refresh overview."; }
+  }
+  $("refreshButton").addEventListener("click", refreshOverview);
+
+  // ── Transfer form ─────────────────────────────────────────────────────────
+  $("transferForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const sender   = $("senderInput").value.trim();
+    const password = $("passwordInput").value.trim();
+    const receiver = $("receiverInput").value.trim();
+    const amount   = $("amountInput").value.trim();
+    transferMessage.textContent = "Submitting transfer...";
+    try {
+      const response = await fetch("/api/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender, password, receiver, amount }) });
+      const data = await response.json();
+      if (!response.ok) { transferMessage.textContent = data.error || "Transfer failed."; return; }
+      if (data.sealed_block) {
+        sealIndicator.classList.remove("hidden"); sealIndicator.classList.add("flex");
+        transferMessage.textContent = `${data.message} Block #${data.block_index} sealed.`;
+        setTimeout(() => { sealIndicator.classList.add("hidden"); sealIndicator.classList.remove("flex"); }, 2600);
+      } else {
+        transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
+      }
+      state.account = sender;
+      applyOverview(data.overview);
+      $("receiverInput").value = "";
+      $("amountInput").value   = "";
+    } catch (e) { transferMessage.textContent = "Network error."; }
+  });
+
+  // ── Verify button ─────────────────────────────────────────────────────────
+  $("verifyButton").addEventListener("click", async () => {
+    verifyMessage.textContent = "Running chain verification...";
+    try {
+      const response = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account: state.account }) });
+      const data = await response.json();
+      if (!response.ok) { verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`; if (data.overview) applyOverview(data.overview); return; }
+      verifyMessage.textContent = `${data.message} Reward in Block #${data.reward_block}.`;
+      applyOverview(data.overview);
+    } catch (e) { verifyMessage.textContent = "Network error."; }
+  });
+
+  // ── Prompt chips ──────────────────────────────────────────────────────────
+  document.querySelectorAll(".prompt-chip").forEach(chip => {
+    chip.addEventListener("click", () => { $("assistantInput").value = chip.textContent.trim(); });
+  });
+
+  // ── Clear chat ────────────────────────────────────────────────────────────
+  $("clearChatBtn").addEventListener("click", async () => {
+    try { await fetch("/api/assistant/clear", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account: state.account }) }); } catch (_) {}
+    chatFeed.innerHTML = `<div class="max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7">History cleared. How can I help you?</div>`;
+    resetConfirmBtn(); assistantPreview.classList.add("hidden");
+  });
+
+  // ── Assistant form ────────────────────────────────────────────────────────
+  $("assistantForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const input   = $("assistantInput");
+    const message = input.value.trim();
+    if (!message) return;
+    addChatBubble(message, "user");
+    input.value = "";
+    resetConfirmBtn(); assistantPreview.classList.add("hidden");
+
+    const thinking = document.createElement("div");
+    thinking.className = "max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-400 italic";
+    thinking.textContent = "Thinking...";
+    chatFeed.appendChild(thinking); chatFeed.scrollTop = chatFeed.scrollHeight;
+
+    try {
+      const res  = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account: state.account, message }) });
+      const data = await res.json();
+      thinking.remove();
+      addChatBubble(data.reply, "assistant");
+      renderAssistantPreview(data.action_preview);
+    } catch (err) {
+      thinking.remove();
+      addChatBubble("Assistant unavailable. Please ensure LM Studio is running.", "assistant");
+    }
+  });
+
+  // ── CSV export ────────────────────────────────────────────────────────────
+  $("exportCsvBtn").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = `/api/export/csv?account=${encodeURIComponent(state.account)}`;
+    a.download = `${state.account}_transactions.csv`;
+    a.click();
+  });
+
+  // ── Transaction search ────────────────────────────────────────────────────
+  async function runSearch() {
+    const counterparty = $("searchCounterparty").value.trim();
+    const minAmount    = $("searchMinAmount").value.trim();
+    const maxAmount    = $("searchMaxAmount").value.trim();
+    const block        = $("searchBlock").value.trim();
+    const results      = $("searchResults");
+    results.innerHTML  = `<p class="text-sm text-slate-400">Searching...</p>`;
+    const params = new URLSearchParams({ account: state.account });
+    if (counterparty) params.set("counterparty", counterparty);
+    if (minAmount)    params.set("min_amount", minAmount);
+    if (maxAmount)    params.set("max_amount", maxAmount);
+    if (block)        params.set("block", block);
+    try {
+      const data = await (await fetch(`/api/search?${params}`)).json();
+      if (!data.transactions.length) { results.innerHTML = `<p class="text-sm text-slate-400">No transactions match the filters.</p>`; return; }
+      results.innerHTML = data.transactions.map(item => `
+        <div class="tx-card">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium">${item.sender} → ${item.receiver}</p>
+              <p class="mt-0.5 text-xs text-slate-400">Block #${item.block}</p>
+            </div>
+            <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
               ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
             </div>
           </div>
         </div>
       `).join("");
-    }
+    } catch (e) { results.innerHTML = `<p class="text-sm text-rose-300">Search failed.</p>`; }
+  }
+  $("searchBtn").addEventListener("click", runSearch);
 
-    function addChatBubble(text, role = "assistant") {
-      const wrapper = document.createElement("div");
-      wrapper.className = role === "user"
-        ? "ml-auto max-w-[92%] rounded-[22px] border border-white/10 bg-white/10 px-4 py-3 text-sm leading-7 text-slate-100"
-        : "max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100";
-      wrapper.textContent = text;
-      chatFeed.appendChild(wrapper);
-      chatFeed.scrollTop = chatFeed.scrollHeight;
-    }
+  // ── Leaderboard ───────────────────────────────────────────────────────────
+  async function loadLeaderboard() {
+    const list = $("leaderboardList");
+    try {
+      const data   = await (await fetch("/api/leaderboard")).json();
+      const medals = ["🥇", "🥈", "🥉"];
+      list.innerHTML = data.leaderboard.map((item, i) => `
+        <div class="flex items-center justify-between gap-3 rounded-[20px] border border-white/10 bg-white/5 p-3">
+          <div class="flex items-center gap-3">
+            <span class="w-6 text-center font-bold text-sm">${medals[i] ?? i + 1}</span>
+            <span class="text-sm font-medium">${item.account}</span>
+          </div>
+          <span class="rounded-full px-3 py-1 text-sm font-semibold ${item.balance >= 0 ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">${item.balance} CPC</span>
+        </div>
+      `).join("");
+    } catch (e) { list.innerHTML = `<p class="text-sm text-rose-300">Failed to load leaderboard.</p>`; }
+  }
+  $("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
 
-    function applyOverview(data) {
-      state.account = data.account;
-      balanceValue.textContent      = data.balance;
-      transactionCount.textContent  = data.transaction_count;
-      latestBlock.textContent       = data.latest_block;
-      incomeValue.textContent       = data.income;
-      expenseValue.textContent      = data.expense;
-      mobileBalance.textContent     = data.balance;
-      mobileBlocks.textContent      = data.block_count;
-      mobilePointer.textContent     = data.latest_pointer;
-      mobileStatus.textContent      = data.chain_ok ? "Healthy" : "Attention";
-      accountLabel.textContent      = data.account;
-      accountLabel.title            = data.account;
-      netFlowValue.textContent      = data.income - data.expense;
-      headerBlocks.textContent      = data.block_count;
-      chainBadge.textContent        = data.chain_ok ? "healthy" : "issue detected";
-      chainBadge.className          = data.chain_ok ? "text-mint" : "text-rose-300";
-      confidenceLabel.textContent   = data.chain_ok ? "Stable" : "Attention required";
-      confidenceBar.dataset.width   = data.chain_ok ? 96 : 38;
-      confidenceBar.style.width     = `${confidenceBar.dataset.width}%`;
-      renderTransactions(data.recent_transactions);
-      document.getElementById("senderInput").value = data.account;
-    }
-
-    function resetConfirmBtn() {
-      confirmActionBtn.classList.add("hidden");
-      confirmActionBtn.disabled = false;
-      confirmActionBtn.textContent = "✓ 確認執行";
-      confirmActionBtn.onclick = null;
-    }
-
-    function renderAssistantPreview(actionPreview) {
-      resetConfirmBtn();
-
-      if (!actionPreview) {
-        assistantPreview.classList.add("hidden");
-        assistantPreviewBody.innerHTML = "";
-        return;
-      }
-
-      assistantPreview.classList.remove("hidden");
-
-      if (actionPreview.type === "transfer") {
-        assistantPreviewBody.innerHTML = `
-          <div class="rounded-2xl border border-mint/20 bg-mint/10 px-4 py-3">
-            Transfer preview: <strong>${actionPreview.sender}</strong> &rarr; <strong>${actionPreview.receiver}</strong> for <strong>${actionPreview.amount} CPC</strong>
-          </div>`;
-        confirmActionBtn.classList.remove("hidden");
-        confirmActionBtn.onclick = async () => {
-          confirmActionBtn.disabled = true;
-          confirmActionBtn.textContent = "執行中...";
-          try {
-            const res = await fetch("/api/transfer", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ sender: actionPreview.sender, receiver: actionPreview.receiver, amount: actionPreview.amount })
-            });
-            const result = await res.json();
-            if (!res.ok) {
-              addChatBubble(`❌ 轉帳失敗：${result.error}`, "assistant");
-            } else {
-              addChatBubble(`✅ 轉帳成功！${result.message} 存入 Block #${result.block_index}`, "assistant");
-              applyOverview(result.overview);
-            }
-          } catch (e) {
-            addChatBubble("❌ 網路錯誤，請重試。", "assistant");
-          }
-          resetConfirmBtn();
-          assistantPreview.classList.add("hidden");
-        };
-
-      } else if (actionPreview.type === "verify") {
-        assistantPreviewBody.innerHTML = `
-          <div class="rounded-2xl border border-trust/20 bg-trust/10 px-4 py-3">
-            Verification preview: 對 <strong>${actionPreview.account}</strong> 執行帳本驗證，通過後從 angel 領取 10 CPC 獎勵。
-          </div>`;
-        confirmActionBtn.classList.remove("hidden");
-        confirmActionBtn.onclick = async () => {
-          confirmActionBtn.disabled = true;
-          confirmActionBtn.textContent = "驗證中...";
-          try {
-            const res = await fetch("/api/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ account: actionPreview.account })
-            });
-            const result = await res.json();
-            if (!res.ok) {
-              addChatBubble(`❌ 驗證失敗：${(result.issues || []).join(" | ")}`, "assistant");
-              if (result.overview) applyOverview(result.overview);
-            } else {
-              addChatBubble(`✅ ${result.message} 獎勵存入 Block #${result.reward_block}`, "assistant");
-              applyOverview(result.overview);
-            }
-          } catch (e) {
-            addChatBubble("❌ 網路錯誤，請重試。", "assistant");
-          }
-          resetConfirmBtn();
-          assistantPreview.classList.add("hidden");
-        };
-
-      } else if (actionPreview.type === "balance_lookup") {
-        assistantPreviewBody.innerHTML = `
-          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            餘額查詢：<strong>${actionPreview.account}</strong> 目前有 <strong>${actionPreview.balance} CPC</strong>。
-          </div>`;
-
-      } else if (actionPreview.type === "history_lookup") {
-        assistantPreviewBody.innerHTML = `
-          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            交易紀錄查詢：已取得 <strong>${actionPreview.account}</strong> 的最近交易。
-          </div>`;
-
-      } else {
-        assistantPreviewBody.innerHTML = `
-          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            Assistant preview is ready for future tool execution.
-          </div>`;
-      }
-    }
-
-    async function refreshOverview() {
-      try {
-        const response = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
-        const data = await response.json();
-        applyOverview(data);
-      } catch (error) {
-        transferMessage.textContent = "Unable to refresh overview right now.";
-      }
-    }
-
-    document.getElementById("refreshButton").addEventListener("click", refreshOverview);
-
-    document.getElementById("transferForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const sender   = document.getElementById("senderInput").value.trim();
-      const receiver = document.getElementById("receiverInput").value.trim();
-      const amount   = document.getElementById("amountInput").value.trim();
-      transferMessage.textContent = "Submitting transfer...";
-      try {
-        const response = await fetch("/api/transfer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sender, receiver, amount })
-        });
-        const data = await response.json();
-        if (!response.ok) { transferMessage.textContent = data.error || "Transfer failed."; return; }
-        if (data.sealed_block) {
-          sealIndicator.classList.remove("hidden");
-          sealIndicator.classList.add("flex");
-          transferMessage.textContent = `${data.message} Block #${data.block_index} sealed.`;
-          setTimeout(() => { sealIndicator.classList.add("hidden"); sealIndicator.classList.remove("flex"); }, 2600);
-        } else {
-          transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
-        }
-        state.account = sender;
-        applyOverview(data.overview);
-        document.getElementById("receiverInput").value = "";
-        document.getElementById("amountInput").value = "";
-      } catch (error) {
-        transferMessage.textContent = "Network error while submitting transfer.";
-      }
-    });
-
-    document.getElementById("verifyButton").addEventListener("click", async () => {
-      verifyMessage.textContent = "Running chain verification...";
-      try {
-        const response = await fetch("/api/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ account: state.account })
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`;
-          if (data.overview) applyOverview(data.overview);
-          return;
-        }
-        verifyMessage.textContent = `${data.message} Reward stored in Block #${data.reward_block}.`;
-        applyOverview(data.overview);
-      } catch (error) {
-        verifyMessage.textContent = "Network error while verifying chain.";
-      }
-    });
-
-    document.querySelectorAll(".prompt-chip").forEach((chip) => {
-      chip.addEventListener("click", () => {
-        document.getElementById("assistantInput").value = chip.textContent.trim();
-      });
-    });
-
-    document.getElementById("clearChatBtn").addEventListener("click", async () => {
-      try {
-        await fetch("/api/assistant/clear", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ account: state.account })
-        });
-      } catch (_) {}
-      chatFeed.innerHTML = `<div class="max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-100">對話已清除。有什麼我可以幫你的嗎？</div>`;
-      resetConfirmBtn();
-      assistantPreview.classList.add("hidden");
-    });
-
-    document.getElementById("assistantForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const input   = document.getElementById("assistantInput");
-      const message = input.value.trim();
-      if (!message) return;
-
-      addChatBubble(message, "user");
-      input.value = "";
-      resetConfirmBtn();
-      assistantPreview.classList.add("hidden");
-
-      // 顯示思考中
-      const thinkingEl = document.createElement("div");
-      thinkingEl.className = "max-w-[92%] rounded-[22px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7 text-slate-400 italic";
-      thinkingEl.textContent = "思考中...";
-      chatFeed.appendChild(thinkingEl);
-      chatFeed.scrollTop = chatFeed.scrollHeight;
-
-      try {
-        const response = await fetch("/api/assistant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ account: state.account, message })
-        });
-        const data = await response.json();
-        thinkingEl.remove();
-        addChatBubble(data.reply, "assistant");
-        renderAssistantPreview(data.action_preview);
-      } catch (error) {
-        thinkingEl.remove();
-        addChatBubble("助手暫時無法回應，請確認 LM Studio 已啟動。", "assistant");
-      }
-    });
-  </script>
+  // ── Block explorer ────────────────────────────────────────────────────────
+  async function loadBlocks() {
+    const list = $("blockList");
+    try {
+      const data = await (await fetch("/api/blocks")).json();
+      list.innerHTML = [...data.blocks].reverse().map(b => `
+        <div class="rounded-[20px] border border-white/10 bg-white/5 p-4">
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <span class="text-sm font-semibold">Block #${b.index}</span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-400">${b.tx_count} txn</span>
+          </div>
+          <p class="mb-3 truncate text-xs text-slate-500">prev: ${b.prev_hash}</p>
+          <div class="space-y-1.5">
+            ${b.transactions.map(t => `
+              <div class="flex justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs">
+                <span class="truncate mr-2">${t.sender} → ${t.receiver}</span>
+                <span class="shrink-0 font-medium text-mint">${t.amount} CPC</span>
+              </div>
+            `).join("") || `<p class="text-xs text-slate-500">Empty block</p>`}
+          </div>
+        </div>
+      `).join("");
+    } catch (e) { list.innerHTML = `<p class="text-sm text-rose-300">Failed to load blocks.</p>`; }
+  }
+  $("refreshBlocksBtn").addEventListener("click", loadBlocks);
+</script>
 </body>
 </html>

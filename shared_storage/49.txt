@@ -1,7 +1,0 @@
-Sha256 of previous block: 36a85e5f528c4f28ddb12002e73d3e54a252c3bab6a00f714410fcb90e7543d6
-Next block: 50.txt
-A, guest, 5
-C, B, 5
-C, b1128015, 6
-b1128015, A, 3
-B, C, 5
