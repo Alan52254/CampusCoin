@@ -194,9 +194,19 @@ def build_assistant_reply(message: str, account: str) -> dict:
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get("/")
-def index():
+def landing():
+    return render_template("landing.html")
+
+
+@app.get("/login")
+def login_page():
+    return render_template("login.html")
+
+
+@app.get("/dashboard")
+def dashboard():
     account = request.args.get("account", "b1128015")
-    return render_template("index.html", initial_account=account, overview=build_dashboard_payload(account))
+    return render_template("dashboard.html", initial_account=account, overview=build_dashboard_payload(account))
 
 
 @app.get("/api/overview")

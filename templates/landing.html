@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin Agent Banking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            abyss: "#06111b",
+            midnight: "#0b1f31",
+            tide: "#12314b",
+            trust: "#7dd3fc",
+            mint: "#5eead4",
+            glow: "#f6c86b"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: "Segoe UI Variable Display", "Aptos", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(94,234,212,0.12) 0%, transparent 30%),
+        radial-gradient(circle at 85% 5%, rgba(125,211,252,0.12) 0%, transparent 30%),
+        linear-gradient(160deg, #041019 0%, #0a1f31 45%, #112d46 100%);
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-dark {
+      background: linear-gradient(180deg, rgba(18,49,75,0.90), rgba(8,22,36,0.90));
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+    .mesh::before,
+    .mesh::after {
+      content: "";
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(80px);
+      opacity: 0.42;
+      pointer-events: none;
+    }
+    .mesh::before {
+      width: 15rem;
+      height: 15rem;
+      top: -4rem;
+      right: -2rem;
+      background: rgba(94,234,212,0.18);
+    }
+    .mesh::after {
+      width: 18rem;
+      height: 18rem;
+      bottom: -5rem;
+      left: -4rem;
+      background: rgba(125,211,252,0.16);
+    }
+    .grid-noise::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 82%);
+      pointer-events: none;
+    }
+    .btn-primary {
+      border-radius: 1rem;
+      background: linear-gradient(to right, #5eead4, #7dd3fc);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      color: #06111b;
+      transition: transform 0.15s;
+    }
+    .btn-primary:hover { transform: scale(1.015); }
+    .btn-ghost {
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      color: #cbd5e1;
+      transition: background 0.15s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.10); }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <div class="relative overflow-hidden">
+    <div class="grid-noise absolute inset-0"></div>
+    <div class="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <header class="glass mb-8 flex flex-col gap-5 rounded-[30px] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss">CC</div>
+          <div>
+            <p class="text-lg font-semibold tracking-wide">CampusCoin Agent Banking</p>
+            <p class="text-sm text-slate-300">Commercial interface for a shared campus ledger</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-5">
+          <a href="/login" class="text-sm font-medium text-slate-300 transition hover:text-white">Sign In</a>
+          <a href="/login?action=register" class="btn-primary text-sm">Get Started</a>
+        </div>
+      </header>
+
+      <section class="mb-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div class="glass rounded-[30px] p-5">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p class="text-sm uppercase tracking-[0.2em] text-mint/90">Digital banking layer</p>
+              <h2 class="mt-2 text-2xl font-semibold">Operational ledger infrastructure, packaged like a product.</h2>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <a href="#platformSection" class="btn-ghost">Explore Platform</a>
+              <a href="#experienceSection" class="btn-ghost">See product story</a>
+            </div>
+          </div>
+        </div>
+        <div class="glass rounded-[30px] p-5">
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Availability</p>
+              <p class="mt-2 text-xl font-semibold">24/7</p>
+            </div>
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Transfer mode</p>
+              <p class="mt-2 text-xl font-semibold">Instant</p>
+            </div>
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Security</p>
+              <p class="mt-2 text-xl font-semibold">SHA256</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <section class="glass mesh relative overflow-hidden rounded-[34px] p-8 sm:p-12 xl:p-16">
+          <div class="relative z-10">
+            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
+              Premium ledger operations
+            </div>
+            <div class="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+              <div class="max-w-3xl pl-6 lg:pl-10">
+                <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
+                  A campus ledger experience that feels commercial before sign-in.
+                </h1>
+                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+                  CampusCoin introduces a polished product layer first, then unlocks balances, transfers, search,
+                  explorer tools, and LLM-driven account actions only after authentication. The product story stays
+                  public. Protected financial operations stay behind login.
+                </p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Account-linked controls</div>
+                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Chain verification rewards</div>
+                  <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">LLM-ready transaction flow</div>
+                </div>
+              </div>
+              <div class="glass-dark rounded-[30px] p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-300">Security posture</p>
+                    <h2 class="mt-2 text-2xl font-semibold">Built to reassure</h2>
+                  </div>
+                  <div class="rounded-2xl bg-mint/15 px-3 py-2 text-sm font-semibold text-mint">24/7 Watch</div>
+                </div>
+                <div class="mt-6 space-y-4">
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">SHA256-linked blocks preserve audit continuity.</div>
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">Angel reward issuance remains gated behind successful verification.</div>
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">Search, transfer, and LLM-assisted account actions stay locked until sign-in.</div>
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">Shared storage with file locking reduces concurrent write collisions.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 grid gap-4 sm:grid-cols-3">
+              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+                <p class="text-sm text-slate-300">Core one</p>
+                <p class="mt-3 text-3xl font-semibold">Trusted ledger</p>
+                <p class="mt-3 text-sm leading-7 text-slate-300">A campus-scale blockchain substrate stable enough for demos, reviews, and system handoff.</p>
+              </div>
+              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+                <p class="text-sm text-slate-300">Core two</p>
+                <p class="mt-3 text-3xl font-semibold">Instant movement</p>
+                <p class="mt-3 text-sm leading-7 text-slate-300">Fast CPC transfers, verification rewards, and searchable transaction history behind protected sign-in.</p>
+              </div>
+              <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+                <p class="text-sm text-slate-300">Core three</p>
+                <p class="mt-3 text-3xl font-semibold">LLM operations</p>
+                <p class="mt-3 text-sm leading-7 text-slate-300">A language layer ready for balance lookup, transfer intent parsing, and guided on-chain execution.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="space-y-6">
+          <section class="glass rounded-[34px] p-6">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-sm text-slate-300">Access model</p>
+                <h2 class="mt-2 text-2xl font-semibold">Protected after sign-in</h2>
+              </div>
+              <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Browser-only</span>
+            </div>
+            <p class="mt-4 text-sm leading-7 text-slate-300">
+              Public visitors can explore the platform story, security model, and architectural positioning.
+              Account balances, transfers, chain verification rewards, search, explorer, and LLM-powered actions appear
+              only after authentication inside the browser-based console.
+            </p>
+          </section>
+
+          <section id="platformSection" class="glass rounded-[34px] p-6">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-sm text-slate-300">Enterprise Web UI</p>
+                <h2 class="mt-2 text-2xl font-semibold">Browser-based console</h2>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Product preview</div>
+            </div>
+            <div class="mt-6 rounded-[30px] border border-white/10 bg-slate-950/40 p-4">
+              <div class="rounded-[28px] border border-white/10 bg-gradient-to-b from-tide/95 to-abyss/95 p-5 shadow-2xl">
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                    <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Mode</p>
+                    <p class="mt-2 text-xl font-semibold">Dashboard</p>
+                  </div>
+                  <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                    <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Surfaces</p>
+                    <p class="mt-2 text-xl font-semibold">5 modules</p>
+                  </div>
+                </div>
+                <div class="mt-4 rounded-[24px] border border-white/10 bg-white/5 p-4">
+                  <p class="text-sm text-slate-300">Preview capabilities</p>
+                  <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">Balances and transaction history</div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">Transfer and verification workflows</div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">LLM assistant actions</div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">Search and explorer tooling</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <section id="experienceSection" class="mt-6 grid gap-6 lg:grid-cols-3">
+        <article class="glass rounded-[30px] p-6">
+          <p class="text-sm text-slate-300">Why it feels better</p>
+          <h3 class="mt-2 text-2xl font-semibold">Clear transaction storytelling</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">
+            The platform can introduce trust, safety, and use cases before asking anyone to authenticate. That keeps
+            demos polished while reserving personal ledger detail for the signed-in state.
+          </p>
+        </article>
+        <article class="glass rounded-[30px] p-6">
+          <p class="text-sm text-slate-300">What carries over</p>
+          <h3 class="mt-2 text-2xl font-semibold">Feature-led product positioning</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">
+            The underlying platform still includes dashboard, transfer, assistant, search, and explorer capabilities.
+            The difference is that they now feel like premium authenticated product features instead of public first-load clutter.
+          </p>
+        </article>
+        <article class="glass rounded-[30px] p-6">
+          <p class="text-sm text-slate-300">What is new</p>
+          <h3 class="mt-2 text-2xl font-semibold">Pre-login commercial framing</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">
+            The landing layer becomes a business-facing homepage: it sells the architecture, highlights the three core
+            capabilities, and makes sign-in the moment where protected account actions begin.
+          </p>
+        </article>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

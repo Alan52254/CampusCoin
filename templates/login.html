@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin Agent Banking | Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            abyss: "#06111b",
+            midnight: "#0b1f31",
+            tide: "#12314b",
+            trust: "#7dd3fc",
+            mint: "#5eead4"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: "Segoe UI Variable Display", "Aptos", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(94,234,212,0.12) 0%, transparent 30%),
+        radial-gradient(circle at 85% 5%, rgba(125,211,252,0.12) 0%, transparent 30%),
+        linear-gradient(160deg, #041019 0%, #0a1f31 45%, #112d46 100%);
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .input-field {
+      width: 100%;
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 0.75rem 1rem;
+      outline: none;
+      color: #f1f5f9;
+    }
+    .input-field::placeholder { color: #94a3b8; }
+    .input-field:focus { border-color: rgba(94,234,212,0.35); }
+    .btn-primary {
+      border-radius: 1rem;
+      background: linear-gradient(to right, #5eead4, #7dd3fc);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      color: #06111b;
+      transition: transform 0.15s;
+    }
+    .btn-primary:hover { transform: scale(1.015); }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <div class="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-8 sm:px-6">
+    <div class="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <section class="hidden lg:flex lg:flex-col lg:justify-center">
+        <div class="max-w-xl">
+          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
+            Protected access
+          </div>
+          <h1 class="text-5xl font-semibold leading-tight">Sign in to unlock the CampusCoin console.</h1>
+          <p class="mt-5 text-lg leading-8 text-slate-300">
+            Public visitors can explore the product story on the landing page. Account balances, transfers, verification,
+            search, explorer tooling, and LLM-assisted actions begin here after authentication.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3 text-sm text-slate-300">
+            <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Dashboard</span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Transfer</span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Assistant</span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Search</span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Explorer</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass w-full rounded-[32px] p-8 shadow-2xl">
+        <div class="mb-8 flex flex-col items-center gap-3">
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust text-xl font-black text-abyss">CC</div>
+          <div class="text-center">
+            <p class="text-lg font-semibold" id="authTitle">Sign in</p>
+            <p class="mt-0.5 text-xs text-slate-400">CampusCoin Agent Banking</p>
+          </div>
+        </div>
+
+        <div id="loginPanel">
+          <form id="loginForm" class="space-y-3">
+            <input id="loginAccount" class="input-field" placeholder="Account ID" autocomplete="username">
+            <input id="loginPassword" type="password" class="input-field" placeholder="Password" autocomplete="current-password">
+            <button type="submit" class="btn-primary w-full">Sign in</button>
+          </form>
+          <p id="loginError" class="mt-3 min-h-5 text-center text-sm text-rose-300"></p>
+          <p class="mt-5 text-center text-sm text-slate-400">
+            No account? <button type="button" id="showRegisterBtn" class="text-mint hover:underline">Create one</button>
+          </p>
+        </div>
+
+        <div id="registerPanel" class="hidden">
+          <form id="registerForm" class="space-y-3">
+            <input id="regAccount" class="input-field" placeholder="Choose account ID" autocomplete="username">
+            <input id="regPassword" type="password" class="input-field" placeholder="Choose password" autocomplete="new-password">
+            <input id="regPassword2" type="password" class="input-field" placeholder="Confirm password" autocomplete="new-password">
+            <button type="submit" class="btn-primary w-full">Create account</button>
+          </form>
+          <p id="registerMsg" class="mt-3 min-h-5 text-center text-sm"></p>
+          <p class="mt-5 text-center text-sm text-slate-400">
+            Already have one? <button type="button" id="showLoginBtn" class="text-mint hover:underline">Sign in</button>
+          </p>
+        </div>
+
+        <p class="mt-8 text-center text-sm text-slate-500">
+          <a href="/" class="hover:text-slate-300">Back to platform overview</a>
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const SESSION_KEY = "cc_session";
+    const $ = (id) => document.getElementById(id);
+
+    function toggleAuthPanel(panel) {
+      const isLogin = panel === "login";
+      $("loginPanel").classList.toggle("hidden", !isLogin);
+      $("registerPanel").classList.toggle("hidden", isLogin);
+      $("authTitle").textContent = isLogin ? "Sign in" : "Create account";
+      $("loginError").textContent = "";
+      $("registerMsg").textContent = "";
+    }
+
+    async function doLogin(account, password) {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account, password })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Login failed.");
+      return data;
+    }
+
+    function applySession(account, password) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ account, password }));
+      window.location.href = "/dashboard";
+    }
+
+    $("showRegisterBtn").addEventListener("click", () => toggleAuthPanel("register"));
+    $("showLoginBtn").addEventListener("click", () => toggleAuthPanel("login"));
+
+    $("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const account = $("loginAccount").value.trim();
+      const password = $("loginPassword").value.trim();
+      const button = event.target.querySelector("button[type=submit]");
+      $("loginError").textContent = "";
+      button.disabled = true;
+      button.textContent = "Signing in...";
+      try {
+        await doLogin(account, password);
+        applySession(account, password);
+      } catch (error) {
+        $("loginError").textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Sign in";
+      }
+    });
+
+    $("registerForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const account = $("regAccount").value.trim();
+      const password = $("regPassword").value.trim();
+      const confirm = $("regPassword2").value.trim();
+      const button = event.target.querySelector("button[type=submit]");
+      const msg = $("registerMsg");
+
+      if (password !== confirm) {
+        msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300";
+        msg.textContent = "Passwords do not match.";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Creating...";
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account, password })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300";
+          msg.textContent = data.error || "Registration failed.";
+          return;
+        }
+
+        msg.className = "mt-3 min-h-5 text-center text-sm text-mint";
+        msg.textContent = "Account created! Signing you in...";
+        setTimeout(async () => {
+          try {
+            await doLogin(account, password);
+            applySession(account, password);
+          } catch (error) {
+            msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300";
+            msg.textContent = error.message;
+          }
+        }, 500);
+      } catch (error) {
+        msg.className = "mt-3 min-h-5 text-center text-sm text-rose-300";
+        msg.textContent = "Network error.";
+      } finally {
+        button.disabled = false;
+        button.textContent = "Create account";
+      }
+    });
+
+    const action = new URLSearchParams(window.location.search).get("action");
+    if (action === "register") {
+      toggleAuthPanel("register");
+    }
+  </script>
+</body>
+</html>

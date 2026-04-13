@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin Agent Banking | Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            abyss: "#06111b",
+            midnight: "#0b1f31",
+            tide: "#12314b",
+            trust: "#7dd3fc",
+            mint: "#5eead4",
+            glow: "#f6c86b"
+          },
+          keyframes: {
+            rise: {
+              "0%": { opacity: "0", transform: "translateY(14px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" }
+            },
+            pulseRing: {
+              "0%": { transform: "scale(0.92)", opacity: "0.18" },
+              "70%": { transform: "scale(1.08)", opacity: "0.55" },
+              "100%": { transform: "scale(1.16)", opacity: "0" }
+            }
+          },
+          animation: {
+            rise: "rise 0.5s ease-out both",
+            pulseRing: "pulseRing 1.8s ease-out infinite"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: "Segoe UI Variable Display", "Aptos", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(94,234,212,0.10) 0%, transparent 30%),
+        radial-gradient(circle at 85% 5%, rgba(125,211,252,0.10) 0%, transparent 30%),
+        linear-gradient(160deg, #041019 0%, #0a1f31 45%, #112d46 100%);
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-dark {
+      background: linear-gradient(180deg, rgba(18,49,75,0.90), rgba(8,22,36,0.90));
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+    .tab-btn { transition: all 0.18s; }
+    .tab-btn.active {
+      background: rgba(94,234,212,0.14);
+      color: #5eead4;
+      border-color: rgba(94,234,212,0.28);
+    }
+    .input-field {
+      width: 100%;
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 0.75rem 1rem;
+      outline: none;
+      color: #f1f5f9;
+    }
+    .input-field::placeholder { color: #94a3b8; }
+    .input-field:focus { border-color: rgba(94,234,212,0.35); }
+    .btn-primary {
+      border-radius: 1rem;
+      background: linear-gradient(to right, #5eead4, #7dd3fc);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      color: #06111b;
+      transition: transform 0.15s;
+    }
+    .btn-primary:hover { transform: scale(1.015); }
+    .btn-ghost {
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.875rem;
+      color: #cbd5e1;
+      transition: background 0.15s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.10); }
+    .btn-mint {
+      border-radius: 1rem;
+      border: 1px solid rgba(94,234,212,0.30);
+      background: rgba(94,234,212,0.10);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #5eead4;
+      transition: background 0.15s;
+    }
+    .btn-mint:hover { background: rgba(94,234,212,0.18); }
+    .stat-card, .tx-card {
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+    }
+    .stat-card { padding: 1.25rem; }
+    .tx-card { padding: 1rem; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.13); border-radius: 999px; }
+    label.field-label, .field-label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <div id="appShell" class="mx-auto hidden max-w-5xl px-4 py-6 sm:px-6 animate-rise">
+    <header class="glass mb-6 flex flex-col gap-4 rounded-[28px] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust text-sm font-black text-abyss">CC</div>
+        <div>
+          <p class="font-semibold tracking-wide">CampusCoin Agent Banking</p>
+          <p class="text-xs text-slate-400">SHA256-secured campus blockchain ledger</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="headerChain" class="hidden rounded-full px-3 py-1.5 text-xs sm:inline-flex {{ 'border border-mint/30 bg-mint/10 text-mint' if overview.chain_ok else 'border border-rose-400/30 bg-rose-400/10 text-rose-300' }}">
+          Chain {{ 'Healthy' if overview.chain_ok else 'Issue' }}
+        </span>
+        <div class="relative">
+          <button id="userMenuBtn" type="button" class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 pr-3 transition hover:bg-white/10">
+            <div id="avatarCircle" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-xs font-bold text-abyss">?</div>
+            <span id="headerAccountName" class="hidden max-w-[120px] truncate text-sm font-medium sm:block">Guest</span>
+            <svg class="h-3 w-3 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="userDropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-64 overflow-hidden rounded-[22px] glass shadow-2xl">
+            <div class="flex items-center gap-3 border-b border-white/10 px-4 py-4">
+              <div id="dropdownAvatar" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-base font-bold text-abyss">?</div>
+              <div class="min-w-0">
+                <p id="dropdownAccount" class="truncate text-sm font-semibold">Guest</p>
+                <p class="mt-0.5 text-xs text-slate-400"><span id="dropdownBalance">--</span> CPC</p>
+              </div>
+            </div>
+            <div class="p-2">
+              <button id="logoutBtn" type="button" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-300 transition hover:bg-white/10">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="glass mb-6 flex gap-1.5 rounded-[22px] p-2">
+      <button class="tab-btn active flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" data-tab="transfer">Transfer</button>
+      <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" data-tab="assistant">Assistant</button>
+      <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" data-tab="search">Search</button>
+      <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" data-tab="explorer">Explorer</button>
+    </nav>
+
+    <div id="tab-dashboard" class="space-y-6">
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="stat-card">
+          <p class="field-label">Balance</p>
+          <p class="mt-2 text-2xl font-semibold"><span id="balanceValue">{{ overview.balance }}</span> <span class="text-sm text-slate-400">CPC</span></p>
+        </div>
+        <div class="stat-card">
+          <p class="field-label">Transactions</p>
+          <p class="mt-2 text-2xl font-semibold" id="transactionCount">{{ overview.transaction_count }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="field-label">Latest Block</p>
+          <p class="mt-2 text-2xl font-semibold">#<span id="latestBlock">{{ overview.latest_block }}</span></p>
+        </div>
+        <div class="stat-card">
+          <p class="field-label">Net Flow</p>
+          <p class="mt-2 text-2xl font-semibold text-glow" id="netFlowValue">{{ overview.income - overview.expense }}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="stat-card">
+          <p class="field-label">Incoming (CPC)</p>
+          <p class="mt-2 text-xl font-semibold text-mint" id="incomeValue">{{ overview.income }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="field-label">Outgoing (CPC)</p>
+          <p class="mt-2 text-xl font-semibold text-rose-300" id="expenseValue">{{ overview.expense }}</p>
+        </div>
+      </div>
+
+      <div class="glass-dark rounded-[28px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="field-label">Chain Health</p>
+            <h2 class="mt-1 text-lg font-semibold">Verification Status</h2>
+          </div>
+          <span id="chainBadge" class="rounded-full px-3 py-1.5 text-xs font-semibold {{ 'border border-mint/30 bg-mint/10 text-mint' if overview.chain_ok else 'border border-rose-400/30 bg-rose-400/10 text-rose-300' }}">
+            {{ 'Stable' if overview.chain_ok else 'Attention required' }}
+          </span>
+        </div>
+        <div class="mt-4">
+          <div class="mb-2 flex items-center justify-between text-xs text-slate-400">
+            <span>Integrity confidence</span>
+            <span id="confidenceLabel">{{ 'Stable' if overview.chain_ok else 'Attention required' }}</span>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-white/10">
+            <div id="confidenceBar" class="h-full rounded-full bg-gradient-to-r from-mint to-trust" style="width: {{ 96 if overview.chain_ok else 38 }}%"></div>
+          </div>
+        </div>
+        <p class="mt-3 text-xs text-slate-500">Latest pointer: <span id="latestPointer">{{ overview.latest_pointer }}</span></p>
+      </div>
+
+      <div class="glass rounded-[28px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="field-label">Activity</p>
+            <h2 class="mt-1 text-lg font-semibold">Recent Transactions</h2>
+          </div>
+          <button id="refreshButton" type="button" class="btn-ghost">Refresh</button>
+        </div>
+        <div id="activityList" class="mt-5 space-y-3">
+          {% for item in overview.recent_transactions %}
+          <div class="tx-card">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-medium">{{ item.sender }} -> {{ item.receiver }}</p>
+                <p class="mt-0.5 text-xs text-slate-400">Block #{{ item.block }} · Counterparty: {{ item.counterparty }}</p>
+              </div>
+              <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold {{ 'bg-mint/15 text-mint' if item.direction == 'in' else 'bg-rose-400/10 text-rose-300' }}">
+                {{ '+' if item.direction == 'in' else '-' }}{{ item.amount }} CPC
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-transfer" class="hidden space-y-6">
+      <div class="glass rounded-[28px] p-8">
+        <p class="field-label">Instant movement</p>
+        <h2 class="mt-1 text-2xl font-semibold">Send CPC</h2>
+        <form id="transferForm" class="mt-6 max-w-md space-y-4">
+          <div>
+            <label class="field-label">Sender Account</label>
+            <input id="senderInput" class="input-field" value="{{ overview.account }}" placeholder="Sender account">
+          </div>
+          <div>
+            <label class="field-label">Password</label>
+            <input id="passwordInput" type="password" class="input-field" placeholder="Account password">
+          </div>
+          <div>
+            <label class="field-label">Receiver Account</label>
+            <input id="receiverInput" class="input-field" placeholder="Receiver account">
+          </div>
+          <div>
+            <label class="field-label">Amount (CPC)</label>
+            <input id="amountInput" type="number" min="1" class="input-field" placeholder="Amount">
+          </div>
+          <div class="flex items-center gap-4">
+            <button type="submit" class="btn-primary">Send Transfer</button>
+            <div id="sealIndicator" class="hidden relative h-12 w-12 items-center justify-center">
+              <span class="absolute inset-0 rounded-full border border-mint/60 animate-pulseRing"></span>
+              <span class="relative flex h-10 w-10 items-center justify-center rounded-full bg-mint/20 text-xs font-bold text-mint">Seal</span>
+            </div>
+          </div>
+        </form>
+        <p id="transferMessage" class="mt-4 min-h-5 text-sm text-slate-300"></p>
+      </div>
+
+      <div class="glass rounded-[28px] p-8">
+        <p class="field-label">One-click audit</p>
+        <h2 class="mt-1 text-2xl font-semibold">Verify Chain</h2>
+        <p class="mt-3 max-w-md text-sm text-slate-400">
+          Audit the entire SHA256 block chain. A successful verification rewards the current account with
+          <strong class="text-mint">10 CPC</strong> from angel.
+        </p>
+        <button id="verifyButton" type="button" class="btn-mint mt-5">Run Verification &amp; Claim Reward</button>
+        <p id="verifyMessage" class="mt-4 min-h-5 text-sm text-slate-300"></p>
+      </div>
+    </div>
+
+    <div id="tab-assistant" class="hidden">
+      <div class="glass rounded-[28px] p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="field-label">LLM command console</p>
+            <h2 class="mt-1 text-2xl font-semibold">Language-Driven Banking</h2>
+          </div>
+          <div class="flex shrink-0 items-center gap-2">
+            <button id="clearChatBtn" type="button" class="btn-ghost text-xs">Clear history</button>
+            <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-trust">Agent Ready</span>
+          </div>
+        </div>
+        <p class="mt-2 text-sm text-slate-400">Type in natural language. The LLM detects intent and prepares the right action.</p>
+        <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
+          <button type="button" class="prompt-chip btn-ghost text-sm">Transfer 15 CPC to guest</button>
+          <button type="button" class="prompt-chip btn-ghost text-sm">Verify the ledger chain</button>
+          <button type="button" class="prompt-chip btn-ghost text-sm">Check my balance</button>
+          <button type="button" class="prompt-chip btn-ghost text-sm">Show recent transactions</button>
+          <button type="button" class="prompt-chip btn-ghost text-sm">I want to transfer money</button>
+        </div>
+        <div id="chatFeed" class="scrollbar-thin mt-5 h-80 space-y-3 overflow-y-auto rounded-[22px] border border-white/10 bg-black/15 p-4">
+          <div class="max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7">
+            Hi! I'm your CampusCoin assistant. Tell me if you want to transfer CPC, check your balance, verify the chain, or review recent transactions.
+          </div>
+        </div>
+        <div id="assistantPreview" class="mt-4 hidden rounded-[22px] border border-white/10 bg-white/5 p-4">
+          <p class="field-label">Action Preview</p>
+          <div id="assistantPreviewBody" class="mt-3 text-sm leading-7"></div>
+          <button id="confirmActionBtn" class="mt-4 hidden w-full btn-primary">Confirm &amp; Execute</button>
+        </div>
+        <form id="assistantForm" class="mt-4 space-y-3">
+          <textarea id="assistantInput" rows="3" class="w-full resize-none rounded-[20px] border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-trust/40" placeholder='e.g. "Transfer 10 CPC to guest" or "I want to check my balance"'></textarea>
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-xs text-slate-500">Powered by Qwen2.5-3B via LM Studio</p>
+            <button type="submit" class="btn-ghost font-semibold">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-search" class="hidden">
+      <div class="glass rounded-[28px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="field-label">Filter & export</p>
+            <h2 class="mt-1 text-2xl font-semibold">Transaction Search</h2>
+          </div>
+          <button id="exportCsvBtn" type="button" class="btn-mint shrink-0">Export CSV</button>
+        </div>
+        <div class="mt-5 grid max-w-lg grid-cols-2 gap-3">
+          <input id="searchCounterparty" class="input-field col-span-2" placeholder="Counterparty account (leave blank = all)">
+          <input id="searchMinAmount" type="number" min="0" class="input-field" placeholder="Min amount">
+          <input id="searchMaxAmount" type="number" min="0" class="input-field" placeholder="Max amount">
+          <input id="searchBlock" type="number" min="1" class="input-field" placeholder="Block number">
+          <button id="searchBtn" type="button" class="btn-primary">Search</button>
+        </div>
+        <div id="searchResults" class="scrollbar-thin mt-6 max-h-[28rem] space-y-3 overflow-y-auto"></div>
+      </div>
+    </div>
+
+    <div id="tab-explorer" class="hidden space-y-6">
+      <div class="glass rounded-[28px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="field-label">Balance ranking</p>
+            <h2 class="mt-1 text-2xl font-semibold">Leaderboard</h2>
+          </div>
+          <button id="refreshLeaderboardBtn" type="button" class="btn-ghost">Refresh</button>
+        </div>
+        <div id="leaderboardList" class="scrollbar-thin mt-5 max-h-72 space-y-3 overflow-y-auto">
+          <p class="text-sm text-slate-400">Loading...</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-[28px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="field-label">On-chain data</p>
+            <h2 class="mt-1 text-2xl font-semibold">Block Explorer</h2>
+          </div>
+          <button id="refreshBlocksBtn" type="button" class="btn-ghost">Refresh</button>
+        </div>
+        <div id="blockList" class="scrollbar-thin mt-5 grid max-h-[520px] gap-3 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+          <p class="text-sm text-slate-400">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="boot-data" type="application/json">{{ {"account": overview.account} | tojson }}</script>
+  <script>
+    const SESSION_KEY = "cc_session";
+    const bootData = JSON.parse(document.getElementById("boot-data").textContent);
+    const state = { account: bootData.account, password: "" };
+    const $ = (id) => document.getElementById(id);
+
+    const balanceValue = $("balanceValue");
+    const transactionCount = $("transactionCount");
+    const latestBlock = $("latestBlock");
+    const incomeValue = $("incomeValue");
+    const expenseValue = $("expenseValue");
+    const netFlowValue = $("netFlowValue");
+    const confidenceLabel = $("confidenceLabel");
+    const confidenceBar = $("confidenceBar");
+    const latestPointer = $("latestPointer");
+    const activityList = $("activityList");
+    const transferMessage = $("transferMessage");
+    const verifyMessage = $("verifyMessage");
+    const sealIndicator = $("sealIndicator");
+    const chatFeed = $("chatFeed");
+    const assistantPreview = $("assistantPreview");
+    const assistantPreviewBody = $("assistantPreviewBody");
+    const confirmActionBtn = $("confirmActionBtn");
+    const headerChain = $("headerChain");
+    const chainBadge = $("chainBadge");
+
+    function getInitials(name) {
+      return (name || "?").slice(0, 2).toUpperCase();
+    }
+
+    function updateUserMenu(account, balance) {
+      const initials = getInitials(account);
+      $("avatarCircle").textContent = initials;
+      $("dropdownAvatar").textContent = initials;
+      $("headerAccountName").textContent = account;
+      $("dropdownAccount").textContent = account;
+      $("dropdownBalance").textContent = balance !== undefined ? balance : "--";
+    }
+
+    async function doLogin(account, password) {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account, password })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Login failed.");
+      return data;
+    }
+
+    function logout() {
+      sessionStorage.removeItem(SESSION_KEY);
+      window.location.href = "/login";
+    }
+
+    function showTab(name) {
+      const tabIds = ["dashboard", "transfer", "assistant", "search", "explorer"];
+      tabIds.forEach((tab) => $("tab-" + tab).classList.toggle("hidden", tab !== name));
+      document.querySelectorAll(".tab-btn").forEach((button) => {
+        const isActive = button.dataset.tab === name;
+        button.classList.toggle("active", isActive);
+        button.classList.toggle("text-slate-400", !isActive);
+      });
+      if (name === "explorer") {
+        loadLeaderboard();
+        loadBlocks();
+      }
+    }
+
+    function renderTransactions(items) {
+      if (!items || items.length === 0) {
+        activityList.innerHTML = '<div class="tx-card text-sm text-slate-400">No transactions found for this account.</div>';
+        return;
+      }
+      activityList.innerHTML = items.map((item) => `
+        <div class="tx-card">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium">${item.sender} -> ${item.receiver}</p>
+              <p class="mt-0.5 text-xs text-slate-400">Block #${item.block} · Counterparty: ${item.counterparty}</p>
+            </div>
+            <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
+              ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function applyOverview(data) {
+      state.account = data.account;
+      balanceValue.textContent = data.balance;
+      transactionCount.textContent = data.transaction_count;
+      latestBlock.textContent = data.latest_block;
+      incomeValue.textContent = data.income;
+      expenseValue.textContent = data.expense;
+      netFlowValue.textContent = data.income - data.expense;
+      latestPointer.textContent = data.latest_pointer;
+      confidenceLabel.textContent = data.chain_ok ? "Stable" : "Attention required";
+      confidenceBar.style.width = `${data.chain_ok ? 96 : 38}%`;
+      updateUserMenu(data.account, data.balance);
+      const chainText = `Chain ${data.chain_ok ? "Healthy" : "Issue"}`;
+      const chainClass = data.chain_ok
+        ? "rounded-full px-3 py-1.5 text-xs border border-mint/30 bg-mint/10 text-mint"
+        : "rounded-full px-3 py-1.5 text-xs border border-rose-400/30 bg-rose-400/10 text-rose-300";
+      headerChain.textContent = chainText;
+      headerChain.className = `${chainClass} hidden sm:inline-flex`;
+      chainBadge.textContent = data.chain_ok ? "Stable" : "Attention required";
+      chainBadge.className = `${chainClass} font-semibold`;
+      renderTransactions(data.recent_transactions);
+      $("senderInput").value = data.account;
+    }
+
+    function addChatBubble(text, role = "assistant") {
+      const bubble = document.createElement("div");
+      bubble.className = role === "user"
+        ? "ml-auto max-w-[92%] rounded-[20px] border border-white/10 bg-white/10 px-4 py-3 text-sm leading-7"
+        : "max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7";
+      bubble.textContent = text;
+      chatFeed.appendChild(bubble);
+      chatFeed.scrollTop = chatFeed.scrollHeight;
+    }
+
+    function resetConfirmBtn() {
+      confirmActionBtn.classList.add("hidden");
+      confirmActionBtn.disabled = false;
+      confirmActionBtn.textContent = "Confirm & Execute";
+      confirmActionBtn.onclick = null;
+    }
+
+    function renderAssistantPreview(actionPreview) {
+      resetConfirmBtn();
+      if (!actionPreview) {
+        assistantPreview.classList.add("hidden");
+        assistantPreviewBody.innerHTML = "";
+        return;
+      }
+      assistantPreview.classList.remove("hidden");
+      if (actionPreview.type === "transfer") {
+        assistantPreviewBody.innerHTML = `
+          <div class="rounded-xl border border-mint/20 bg-mint/10 px-4 py-3 text-sm">
+            Transfer: <strong>${actionPreview.sender}</strong> -> <strong>${actionPreview.receiver}</strong> · <strong>${actionPreview.amount} CPC</strong>
+          </div>
+          <input id="previewPassword" type="password" class="input-field mt-3 text-sm" placeholder="Enter your password to confirm" value="${state.password.replace(/"/g, "&quot;")}">
+        `;
+        confirmActionBtn.classList.remove("hidden");
+        confirmActionBtn.onclick = async () => {
+          const password = ($("previewPassword")?.value || "").trim();
+          confirmActionBtn.disabled = true;
+          confirmActionBtn.textContent = "Processing...";
+          try {
+            const response = await fetch("/api/transfer", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sender: actionPreview.sender, password, receiver: actionPreview.receiver, amount: actionPreview.amount })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              addChatBubble(`Transfer failed: ${result.error}`, "assistant");
+            } else {
+              addChatBubble(`${result.message} Block #${result.block_index}.`, "assistant");
+              applyOverview(result.overview);
+            }
+          } catch (error) {
+            addChatBubble("Network error. Please try again.", "assistant");
+          }
+          resetConfirmBtn();
+          assistantPreview.classList.add("hidden");
+        };
+      } else if (actionPreview.type === "verify") {
+        assistantPreviewBody.innerHTML = '<div class="rounded-xl border border-trust/20 bg-trust/10 px-4 py-3 text-sm">Verify ledger and reward 10 CPC on success.</div>';
+        confirmActionBtn.classList.remove("hidden");
+        confirmActionBtn.onclick = async () => {
+          confirmActionBtn.disabled = true;
+          confirmActionBtn.textContent = "Verifying...";
+          try {
+            const response = await fetch("/api/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ account: actionPreview.account })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              addChatBubble(`Verification failed: ${(result.issues || []).join(" | ")}`, "assistant");
+              if (result.overview) applyOverview(result.overview);
+            } else {
+              addChatBubble(`${result.message} Reward in Block #${result.reward_block}.`, "assistant");
+              applyOverview(result.overview);
+            }
+          } catch (error) {
+            addChatBubble("Network error. Please try again.", "assistant");
+          }
+          resetConfirmBtn();
+          assistantPreview.classList.add("hidden");
+        };
+      } else if (actionPreview.type === "balance_lookup") {
+        assistantPreviewBody.innerHTML = `<div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">Balance: <strong>${actionPreview.account}</strong> has <strong>${actionPreview.balance} CPC</strong>.</div>`;
+      } else if (actionPreview.type === "history_lookup") {
+        assistantPreviewBody.innerHTML = `<div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">Transaction log for <strong>${actionPreview.account}</strong> retrieved above.</div>`;
+      }
+    }
+
+    async function refreshOverview() {
+      try {
+        const response = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
+        applyOverview(await response.json());
+      } catch (error) {
+        transferMessage.textContent = "Unable to refresh overview.";
+      }
+    }
+
+    async function runSearch() {
+      const counterparty = $("searchCounterparty").value.trim();
+      const minAmount = $("searchMinAmount").value.trim();
+      const maxAmount = $("searchMaxAmount").value.trim();
+      const block = $("searchBlock").value.trim();
+      const results = $("searchResults");
+      results.innerHTML = '<p class="text-sm text-slate-400">Searching...</p>';
+      const params = new URLSearchParams({ account: state.account });
+      if (counterparty) params.set("counterparty", counterparty);
+      if (minAmount) params.set("min_amount", minAmount);
+      if (maxAmount) params.set("max_amount", maxAmount);
+      if (block) params.set("block", block);
+      try {
+        const response = await fetch(`/api/search?${params.toString()}`);
+        const data = await response.json();
+        if (!data.transactions.length) {
+          results.innerHTML = '<p class="text-sm text-slate-400">No transactions match the filters.</p>';
+          return;
+        }
+        results.innerHTML = data.transactions.map((item) => `
+          <div class="tx-card">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-medium">${item.sender} -> ${item.receiver}</p>
+                <p class="mt-0.5 text-xs text-slate-400">Block #${item.block}</p>
+              </div>
+              <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
+                ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
+              </div>
+            </div>
+          </div>
+        `).join("");
+      } catch (error) {
+        results.innerHTML = '<p class="text-sm text-rose-300">Search failed.</p>';
+      }
+    }
+
+    async function loadLeaderboard() {
+      const list = $("leaderboardList");
+      try {
+        const response = await fetch("/api/leaderboard");
+        const data = await response.json();
+        list.innerHTML = data.leaderboard.map((item, index) => `
+          <div class="flex items-center justify-between gap-3 rounded-[20px] border border-white/10 bg-white/5 p-3">
+            <div class="flex items-center gap-3">
+              <span class="w-6 text-center text-sm font-bold">${index + 1}</span>
+              <span class="text-sm font-medium">${item.account}</span>
+            </div>
+            <span class="rounded-full px-3 py-1 text-sm font-semibold ${item.balance >= 0 ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">${item.balance} CPC</span>
+          </div>
+        `).join("");
+      } catch (error) {
+        list.innerHTML = '<p class="text-sm text-rose-300">Failed to load leaderboard.</p>';
+      }
+    }
+
+    async function loadBlocks() {
+      const list = $("blockList");
+      try {
+        const response = await fetch("/api/blocks");
+        const data = await response.json();
+        list.innerHTML = [...data.blocks].reverse().map((block) => `
+          <div class="rounded-[20px] border border-white/10 bg-white/5 p-4">
+            <div class="mb-2 flex items-center justify-between gap-2">
+              <span class="text-sm font-semibold">Block #${block.index}</span>
+              <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-400">${block.tx_count} txn</span>
+            </div>
+            <p class="mb-3 truncate text-xs text-slate-500">prev: ${block.prev_hash}</p>
+            <div class="space-y-1.5">
+              ${block.transactions.map((tx) => `
+                <div class="flex justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs">
+                  <span class="mr-2 truncate">${tx.sender} -> ${tx.receiver}</span>
+                  <span class="shrink-0 font-medium text-mint">${tx.amount} CPC</span>
+                </div>
+              `).join("") || '<p class="text-xs text-slate-500">Empty block</p>'}
+            </div>
+          </div>
+        `).join("");
+      } catch (error) {
+        list.innerHTML = '<p class="text-sm text-rose-300">Failed to load blocks.</p>';
+      }
+    }
+
+    document.addEventListener("click", (event) => {
+      const menu = $("userDropdown");
+      const button = $("userMenuBtn");
+      if (!menu.classList.contains("hidden") && !menu.contains(event.target) && !button.contains(event.target)) {
+        menu.classList.add("hidden");
+      }
+    });
+
+    $("userMenuBtn").addEventListener("click", () => $("userDropdown").classList.toggle("hidden"));
+    $("logoutBtn").addEventListener("click", logout);
+    $("refreshButton").addEventListener("click", refreshOverview);
+    $("searchBtn").addEventListener("click", runSearch);
+    $("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
+    $("refreshBlocksBtn").addEventListener("click", loadBlocks);
+    document.querySelectorAll(".tab-btn").forEach((button) => button.addEventListener("click", () => showTab(button.dataset.tab)));
+    document.querySelectorAll(".prompt-chip").forEach((chip) => chip.addEventListener("click", () => { $("assistantInput").value = chip.textContent.trim(); }));
+
+    $("transferForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const sender = $("senderInput").value.trim();
+      const password = $("passwordInput").value.trim();
+      const receiver = $("receiverInput").value.trim();
+      const amount = $("amountInput").value.trim();
+      state.password = password;
+      transferMessage.textContent = "Submitting transfer...";
+      try {
+        const response = await fetch("/api/transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sender, password, receiver, amount })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          transferMessage.textContent = data.error || "Transfer failed.";
+          return;
+        }
+        if (data.sealed_block) {
+          sealIndicator.classList.remove("hidden");
+          sealIndicator.classList.add("flex");
+          transferMessage.textContent = `${data.message} Block #${data.block_index} sealed.`;
+          setTimeout(() => {
+            sealIndicator.classList.add("hidden");
+            sealIndicator.classList.remove("flex");
+          }, 2600);
+        } else {
+          transferMessage.textContent = `${data.message} Stored in Block #${data.block_index}.`;
+        }
+        applyOverview(data.overview);
+        $("receiverInput").value = "";
+        $("amountInput").value = "";
+      } catch (error) {
+        transferMessage.textContent = "Network error.";
+      }
+    });
+
+    $("verifyButton").addEventListener("click", async () => {
+      verifyMessage.textContent = "Running chain verification...";
+      try {
+        const response = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account: state.account })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          verifyMessage.textContent = `Verification failed: ${(data.issues || []).join(" | ")}`;
+          if (data.overview) applyOverview(data.overview);
+          return;
+        }
+        verifyMessage.textContent = `${data.message} Reward in Block #${data.reward_block}.`;
+        applyOverview(data.overview);
+      } catch (error) {
+        verifyMessage.textContent = "Network error.";
+      }
+    });
+
+    $("clearChatBtn").addEventListener("click", async () => {
+      try {
+        await fetch("/api/assistant/clear", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account: state.account })
+        });
+      } catch (error) {
+        // Ignore clear-history network errors.
+      }
+      chatFeed.innerHTML = '<div class="max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7">History cleared. How can I help you?</div>';
+      resetConfirmBtn();
+      assistantPreview.classList.add("hidden");
+    });
+
+    $("assistantForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const input = $("assistantInput");
+      const message = input.value.trim();
+      if (!message) return;
+      addChatBubble(message, "user");
+      input.value = "";
+      resetConfirmBtn();
+      assistantPreview.classList.add("hidden");
+      const thinking = document.createElement("div");
+      thinking.className = "max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm italic leading-7 text-slate-400";
+      thinking.textContent = "Thinking...";
+      chatFeed.appendChild(thinking);
+      chatFeed.scrollTop = chatFeed.scrollHeight;
+      try {
+        const response = await fetch("/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ account: state.account, message })
+        });
+        const data = await response.json();
+        thinking.remove();
+        addChatBubble(data.reply, "assistant");
+        renderAssistantPreview(data.action_preview);
+      } catch (error) {
+        thinking.remove();
+        addChatBubble("Assistant unavailable. Please ensure LM Studio is running.", "assistant");
+      }
+    });
+
+    $("exportCsvBtn").addEventListener("click", () => {
+      const anchor = document.createElement("a");
+      anchor.href = `/api/export/csv?account=${encodeURIComponent(state.account)}`;
+      anchor.download = `${state.account}_transactions.csv`;
+      anchor.click();
+    });
+
+    (async function initDashboard() {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (!saved) {
+        window.location.href = "/login";
+        return;
+      }
+      try {
+        const { account, password } = JSON.parse(saved);
+        state.account = account;
+        state.password = password;
+        $("passwordInput").value = password;
+        const data = await doLogin(account, password);
+        applyOverview(data.overview);
+        $("appShell").classList.remove("hidden");
+      } catch (error) {
+        sessionStorage.removeItem(SESSION_KEY);
+        window.location.href = "/login";
+      }
+    })();
+  </script>
+</body>
+</html>

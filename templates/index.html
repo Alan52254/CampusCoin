@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CampusCoin — Agent Banking</title>
+  <title>CampusCoin Agent Banking</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -43,6 +43,40 @@
       background: linear-gradient(180deg, rgba(18,49,75,0.90), rgba(8,22,36,0.90));
       border: 1px solid rgba(255,255,255,0.07);
       backdrop-filter: blur(22px);
+    }
+    .mesh::before,
+    .mesh::after {
+      content: "";
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(80px);
+      opacity: 0.42;
+      pointer-events: none;
+    }
+    .mesh::before {
+      width: 15rem;
+      height: 15rem;
+      top: -4rem;
+      right: -2rem;
+      background: rgba(94,234,212,0.18);
+    }
+    .mesh::after {
+      width: 18rem;
+      height: 18rem;
+      bottom: -5rem;
+      left: -4rem;
+      background: rgba(125,211,252,0.16);
+    }
+    .grid-noise::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 82%);
+      pointer-events: none;
     }
     .tab-btn { transition: all 0.18s; }
     .tab-btn.active {
@@ -109,11 +143,13 @@
   </style>
 </head>
 <body class="min-h-screen text-slate-100">
+<div class="relative overflow-hidden">
+  <div class="grid-noise absolute inset-0"></div>
 
-<!-- ══════════════════════════════════════════════════════
+<!-- ??????????????????????????????????????????????????????
      LOGIN OVERLAY
-══════════════════════════════════════════════════════ -->
-<div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#041019]/90 backdrop-blur-md p-4">
+?????????????????????????????????????????????????????? -->
+<div id="loginOverlay" class="fixed inset-0 z-[100] hidden items-center justify-center overflow-y-auto bg-[#041019]/90 backdrop-blur-md p-4">
   <div class="glass w-full max-w-sm rounded-[32px] p-8 shadow-2xl animate-rise my-auto">
 
     <!-- Logo -->
@@ -155,9 +191,199 @@
   </div>
 </div>
 
-<div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 animate-rise">
+<div id="marketingShell" class="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+  <header class="glass mb-8 flex flex-col gap-5 rounded-[30px] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss">CC</div>
+      <div>
+        <p class="text-lg font-semibold tracking-wide">CampusCoin Agent Banking</p>
+        <p class="text-sm text-slate-300">Commercial interface for a shared campus ledger</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-3 text-sm text-slate-300">
+      <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Enterprise Grade</span>
+      <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Shared Ledger</span>
+      <span class="rounded-full border border-white/10 bg-white/5 px-4 py-2">Agent-Ready UX</span>
+      <button id="marketingLaunchTop" type="button" class="btn-primary">Launch App</button>
+    </div>
+  </header>
 
-  <!-- ── Header ── -->
+  <section class="mb-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+    <div class="glass rounded-[30px] p-5">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-sm uppercase tracking-[0.2em] text-mint/90">Digital banking layer</p>
+          <h2 class="mt-2 text-2xl font-semibold">Operational ledger infrastructure, packaged like a product.</h2>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button id="marketingLaunchHero" type="button" class="rounded-2xl bg-gradient-to-r from-mint to-trust px-4 py-3 text-sm font-semibold text-abyss transition hover:scale-[1.01]">Connect Wallet</button>
+          <a href="#experienceSection" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">See product story</a>
+        </div>
+      </div>
+    </div>
+    <div id="coreSection" class="glass rounded-[30px] p-5">
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Availability</p>
+          <p class="mt-2 text-xl font-semibold">24/7</p>
+        </div>
+        <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Transfer mode</p>
+          <p class="mt-2 text-xl font-semibold">Instant</p>
+        </div>
+        <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-[0.18em] text-slate-400">Security</p>
+          <p class="mt-2 text-xl font-semibold">SHA256</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+    <section class="glass mesh relative overflow-hidden rounded-[34px] p-8 sm:p-12 xl:p-16">
+      <div class="relative z-10">
+        <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-4 py-2 text-sm text-mint">
+          Premium ledger operations
+        </div>
+        <div class="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+          <div class="max-w-3xl pl-6 lg:pl-10">
+            <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
+              CCAB that feels product-ready before the wallet ever connects.
+            </h1>
+            <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+              Introduce CampusCoin as a commercial-grade campus ledger experience first, then unlock balances, transfers,
+              search, explorer tools, and LLM actions only after sign-in. The product story stays public; personal finance
+              operations stay protected.
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Account-linked controls</div>
+              <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">Chain verification rewards</div>
+              <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">LLM-ready transaction flow</div>
+            </div>
+          </div>
+          <div class="glass-dark rounded-[30px] p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-300">Security posture</p>
+                <h2 class="mt-2 text-2xl font-semibold">Built to reassure</h2>
+              </div>
+              <div class="rounded-2xl bg-mint/15 px-3 py-2 text-sm font-semibold text-mint">24/7 Watch</div>
+            </div>
+            <div class="mt-6 space-y-4">
+              <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">SHA256-linked blocks preserve audit continuity.</div>
+              <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">Angel reward issuance stays gated behind successful verification.</div>
+              <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">Transfer, search, and LLM-assisted account actions stay locked until sign-in.</div>
+              <div class="rounded-[22px] border border-white/10 bg-white/5 p-4">Shared storage with file locking reduces concurrent write collisions.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+            <p class="text-sm text-slate-300">Core one</p>
+            <p class="mt-3 text-3xl font-semibold">Trusted ledger</p>
+            <p class="mt-3 text-sm leading-7 text-slate-300">A campus-scale blockchain substrate that feels stable enough for demos, reviews, and system handoff.</p>
+          </div>
+          <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+            <p class="text-sm text-slate-300">Core two</p>
+            <p class="mt-3 text-3xl font-semibold">Instant movement</p>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Fast CPC transfers, verification rewards, and searchable transaction history behind a protected sign-in flow.</p>
+          </div>
+          <div class="rounded-[28px] border border-white/10 bg-white/5 p-5">
+            <p class="text-sm text-slate-300">Core three</p>
+            <p class="mt-3 text-3xl font-semibold">LLM operations</p>
+            <p class="mt-3 text-sm leading-7 text-slate-300">A language layer ready for balance lookup, transfer intent parsing, and guided on-chain execution after login.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="space-y-6">
+      <section class="glass rounded-[34px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm text-slate-300">Product access</p>
+            <h2 class="mt-2 text-2xl font-semibold">Sign in to unlock the app</h2>
+          </div>
+          <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-trust">Protected</span>
+        </div>
+        <p class="mt-4 text-sm leading-7 text-slate-300">
+          Public visitors can explore the product story, security model, mobile preview, and platform positioning.
+          Account data, transfers, chain verification rewards, explorer tools, and LLM-powered account actions only
+          appear after authentication.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <button id="marketingSignInCard" type="button" class="btn-primary">Launch App</button>
+          <button id="marketingRegisterCard" type="button" class="btn-ghost">Create Account</button>
+        </div>
+      </section>
+
+      <section id="appPreviewSection" class="glass rounded-[34px] p-6">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm text-slate-300">Mobile experience</p>
+            <h2 class="mt-2 text-2xl font-semibold">App-like companion surface</h2>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">Commercial preview</div>
+        </div>
+        <div class="mt-6 rounded-[30px] border border-white/10 bg-slate-950/40 p-4">
+          <div class="mx-auto max-w-[300px] rounded-[34px] border border-white/10 bg-gradient-to-b from-tide/95 to-abyss/95 p-4 shadow-2xl">
+            <div class="mx-auto mb-4 h-1.5 w-16 rounded-full bg-white/20"></div>
+            <div class="rounded-[26px] border border-white/10 bg-white/5 p-4">
+              <p class="text-sm text-slate-300">Available balance</p>
+              <p class="mt-2 text-3xl font-semibold">12,345 CPC</p>
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <p class="text-xs text-slate-300">Blocks</p>
+                  <p class="mt-1 font-semibold">128</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <p class="text-xs text-slate-300">Status</p>
+                  <p class="mt-1 font-semibold">Healthy</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm">App Store</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm">Google Play</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <section id="experienceSection" class="mt-6 grid gap-6 lg:grid-cols-3">
+    <article class="glass rounded-[30px] p-6">
+      <p class="text-sm text-slate-300">Why it feels better</p>
+      <h3 class="mt-2 text-2xl font-semibold">Clear transaction storytelling</h3>
+      <p class="mt-4 text-sm leading-7 text-slate-300">
+        The product can introduce trust, safety, and use cases before asking anyone to authenticate. That keeps demos
+        polished while reserving personal ledger detail for the signed-in state.
+      </p>
+    </article>
+    <article class="glass rounded-[30px] p-6">
+      <p class="text-sm text-slate-300">What carries over</p>
+      <h3 class="mt-2 text-2xl font-semibold">Feature-led product positioning</h3>
+      <p class="mt-4 text-sm leading-7 text-slate-300">
+        The underlying platform still includes dashboard, transfer, assistant, search, and explorer capabilities. The
+        difference is that they now feel like premium authenticated product features instead of public first-load clutter.
+      </p>
+    </article>
+    <article class="glass rounded-[30px] p-6">
+      <p class="text-sm text-slate-300">What is new</p>
+      <h3 class="mt-2 text-2xl font-semibold">Pre-login commercial framing</h3>
+      <p class="mt-4 text-sm leading-7 text-slate-300">
+        The landing layer becomes a business-facing homepage: it sells the architecture, highlights the three core
+        capabilities, and makes sign-in the moment where protected account actions begin.
+      </p>
+    </article>
+  </section>
+</div>
+
+<div id="appShell" class="mx-auto hidden max-w-5xl px-4 py-6 sm:px-6 animate-rise">
+
+  <!-- ?? Header ?? -->
   <header class="glass mb-6 flex flex-col gap-4 rounded-[28px] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
     <div class="flex items-center gap-4">
       <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss text-sm">CC</div>
@@ -169,7 +395,7 @@
     <div class="flex items-center gap-3">
       <!-- Chain status badge -->
       <span id="headerChain" class="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs {{ 'border border-mint/30 bg-mint/10 text-mint' if overview.chain_ok else 'border border-rose-400/30 bg-rose-400/10 text-rose-300' }}">
-        Chain {{ 'Healthy ✓' if overview.chain_ok else 'Issue ✗' }}
+        Chain {{ 'Healthy' if overview.chain_ok else 'Issue' }}
       </span>
 
       <!-- Google-style user menu -->
@@ -180,7 +406,7 @@
             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-xs font-bold text-abyss">
             ?
           </div>
-          <span id="headerAccountName" class="hidden sm:block text-sm font-medium max-w-[120px] truncate">—</span>
+          <span id="headerAccountName" class="hidden sm:block text-sm font-medium max-w-[120px] truncate">Guest</span>
           <svg class="h-3 w-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
@@ -196,8 +422,8 @@
               ?
             </div>
             <div class="min-w-0">
-              <p id="dropdownAccount" class="text-sm font-semibold truncate">—</p>
-              <p class="text-xs text-slate-400 mt-0.5"><span id="dropdownBalance">—</span> CPC</p>
+              <p id="dropdownAccount" class="text-sm font-semibold truncate">Guest</p>
+              <p class="text-xs text-slate-400 mt-0.5"><span id="dropdownBalance">--</span> CPC</p>
             </div>
           </div>
           <!-- Menu items -->
@@ -215,7 +441,7 @@
     </div>
   </header>
 
-  <!-- ── Tab Bar ── -->
+  <!-- ?? Tab Bar ?? -->
   <nav class="glass mb-6 flex gap-1.5 rounded-[22px] p-2">
     <button class="tab-btn active flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium" onclick="showTab('dashboard')">Dashboard</button>
     <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('transfer')">Transfer</button>
@@ -224,9 +450,9 @@
     <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('explorer')">Explorer</button>
   </nav>
 
-  <!-- ══════════════════════════════════════════════════════
+  <!-- ??????????????????????????????????????????????????????
        TAB: DASHBOARD
-  ══════════════════════════════════════════════════════ -->
+  ?????????????????????????????????????????????????????? -->
   <div id="tab-dashboard" class="space-y-6">
 
     <!-- Stats row -->
@@ -298,8 +524,8 @@
         <div class="tx-card">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-medium">{{ item.sender }} → {{ item.receiver }}</p>
-              <p class="mt-0.5 text-xs text-slate-400">Block #{{ item.block }} · Counterparty: {{ item.counterparty }}</p>
+              <p class="text-sm font-medium">{{ item.sender }} ??{{ item.receiver }}</p>
+              <p class="mt-0.5 text-xs text-slate-400">Block #{{ item.block }} 繚 Counterparty: {{ item.counterparty }}</p>
             </div>
             <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold {{ 'bg-mint/15 text-mint' if item.direction == 'in' else 'bg-rose-400/10 text-rose-300' }}">
               {{ '+' if item.direction == 'in' else '-' }}{{ item.amount }} CPC
@@ -312,9 +538,9 @@
   </div><!-- /tab-dashboard -->
 
 
-  <!-- ══════════════════════════════════════════════════════
+  <!-- ??????????????????????????????????????????????????????
        TAB: TRANSFER
-  ══════════════════════════════════════════════════════ -->
+  ?????????????????????????????????????????????????????? -->
   <div id="tab-transfer" class="hidden space-y-6">
 
     <!-- Transfer form -->
@@ -363,9 +589,9 @@
   </div><!-- /tab-transfer -->
 
 
-  <!-- ══════════════════════════════════════════════════════
+  <!-- ??????????????????????????????????????????????????????
        TAB: ASSISTANT
-  ══════════════════════════════════════════════════════ -->
+  ?????????????????????????????????????????????????????? -->
   <div id="tab-assistant" class="hidden">
     <div class="glass rounded-[28px] p-6">
       <div class="flex items-start justify-between gap-4">
@@ -378,7 +604,7 @@
           <span class="rounded-full border border-trust/20 bg-trust/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-trust">Agent Ready</span>
         </div>
       </div>
-      <p class="mt-2 text-sm text-slate-400">Type in natural language — English or Chinese. The LLM detects intent and calls the right tool.</p>
+      <p class="mt-2 text-sm text-slate-400">Type in natural language ??English or Chinese. The LLM detects intent and calls the right tool.</p>
 
       <!-- Quick-pick chips -->
       <div class="mt-4 flex flex-wrap gap-2" id="promptChips">
@@ -387,13 +613,13 @@
         <button type="button" class="prompt-chip btn-ghost text-sm">Check my balance</button>
         <button type="button" class="prompt-chip btn-ghost text-sm">Show recent transactions</button>
         <button type="button" class="prompt-chip btn-ghost text-sm">I want to transfer money</button>
-        <button type="button" class="prompt-chip btn-ghost text-sm">查詢我的餘額</button>
+        <button type="button" class="prompt-chip btn-ghost text-sm">?亥岷??擗?</button>
       </div>
 
       <!-- Chat feed -->
       <div id="chatFeed" class="scrollbar-thin mt-5 h-80 space-y-3 overflow-y-auto rounded-[22px] border border-white/10 bg-black/15 p-4">
         <div class="max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7">
-          Hi! I'm your CampusCoin assistant. Tell me what you'd like to do — transfer CPC, check your balance, verify the chain, or anything else.
+          Hi! I'm your CampusCoin assistant. Tell me what you'd like to do ??transfer CPC, check your balance, verify the chain, or anything else.
         </div>
       </div>
 
@@ -401,7 +627,7 @@
       <div id="assistantPreview" class="mt-4 hidden rounded-[22px] border border-white/10 bg-white/5 p-4">
         <p class="field-label">Action Preview</p>
         <div id="assistantPreviewBody" class="mt-3 text-sm leading-7"></div>
-        <button id="confirmActionBtn" class="hidden mt-4 btn-primary w-full">✓ Confirm &amp; Execute</button>
+        <button id="confirmActionBtn" class="hidden mt-4 btn-primary w-full">??Confirm &amp; Execute</button>
       </div>
 
       <!-- Input -->
@@ -418,9 +644,9 @@
   </div><!-- /tab-assistant -->
 
 
-  <!-- ══════════════════════════════════════════════════════
+  <!-- ??????????????????????????????????????????????????????
        TAB: SEARCH
-  ══════════════════════════════════════════════════════ -->
+  ?????????????????????????????????????????????????????? -->
   <div id="tab-search" class="hidden">
     <div class="glass rounded-[28px] p-6">
       <div class="flex items-center justify-between gap-4">
@@ -428,7 +654,7 @@
           <p class="field-label">Filter & export</p>
           <h2 class="mt-1 text-2xl font-semibold">Transaction Search</h2>
         </div>
-        <button id="exportCsvBtn" type="button" class="btn-mint shrink-0">↓ Export CSV</button>
+        <button id="exportCsvBtn" type="button" class="btn-mint shrink-0">??Export CSV</button>
       </div>
       <div class="mt-5 grid max-w-lg grid-cols-2 gap-3">
         <input id="searchCounterparty" class="input-field col-span-2" placeholder="Counterparty account (leave blank = all)">
@@ -442,9 +668,9 @@
   </div><!-- /tab-search -->
 
 
-  <!-- ══════════════════════════════════════════════════════
+  <!-- ??????????????????????????????????????????????????????
        TAB: EXPLORER
-  ══════════════════════════════════════════════════════ -->
+  ?????????????????????????????????????????????????????? -->
   <div id="tab-explorer" class="hidden space-y-6">
 
     <!-- Leaderboard -->
@@ -483,11 +709,27 @@
   const bootData = JSON.parse(document.getElementById("boot-data").textContent);
   const state    = { account: bootData.account, password: "" };
 
-  // ── $ shorthand (must be declared first) ─────────────────────────────────
+  // ?? $ shorthand (must be declared first) ?????????????????????????????????
   const $ = id => document.getElementById(id);
 
-  // ── Auth helpers ──────────────────────────────────────────────────────────
+  // ?? Auth helpers ??????????????????????????????????????????????????????????
   const SESSION_KEY = "cc_session";
+
+  function showMarketingShell() {
+    $("marketingShell").classList.remove("hidden");
+  }
+
+  function hideMarketingShell() {
+    $("marketingShell").classList.add("hidden");
+  }
+
+  function showAppShell() {
+    $("appShell").classList.remove("hidden");
+  }
+
+  function hideAppShell() {
+    $("appShell").classList.add("hidden");
+  }
 
   function getInitials(name) {
     return (name || "?").slice(0, 2).toUpperCase();
@@ -499,15 +741,17 @@
     $("dropdownAvatar").textContent    = initials;
     $("headerAccountName").textContent = account;
     $("dropdownAccount").textContent   = account;
-    $("dropdownBalance").textContent   = balance !== undefined ? balance : "—";
+    $("dropdownBalance").textContent   = balance !== undefined ? balance : "--";
   }
 
   function showLoginOverlay() {
     $("loginOverlay").classList.remove("hidden");
+    $("loginOverlay").classList.add("flex");
   }
 
   function hideLoginOverlay() {
     $("loginOverlay").classList.add("hidden");
+    $("loginOverlay").classList.remove("flex");
   }
 
   function toggleAuthPanel(panel) {
@@ -547,6 +791,8 @@
     $("passwordInput").value = password;
     updateUserMenu(account, overview.balance);
     applyOverview(overview);
+    hideMarketingShell();
+    showAppShell();
     hideLoginOverlay();
   }
 
@@ -558,10 +804,12 @@
     toggleAuthPanel("login");
     $("loginAccount").value  = "";
     $("loginPassword").value = "";
-    showLoginOverlay();
+    hideLoginOverlay();
+    hideAppShell();
+    showMarketingShell();
   }
 
-  // ── Login form ────────────────────────────────────────────────────────────
+  // ?? Login form ????????????????????????????????????????????????????????????
   $("loginForm").addEventListener("submit", async e => {
     e.preventDefault();
     const account  = $("loginAccount").value.trim();
@@ -579,7 +827,7 @@
     }
   });
 
-  // ── Register form ─────────────────────────────────────────────────────────
+  // ?? Register form ?????????????????????????????????????????????????????????
   $("registerForm").addEventListener("submit", async e => {
     e.preventDefault();
     const account  = $("regAccount").value.trim();
@@ -608,7 +856,7 @@
     }
   });
 
-  // ── Auto-login from session ───────────────────────────────────────────────
+  // ?? Auto-login from session ???????????????????????????????????????????????
   (async function loadSession() {
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (saved) {
@@ -621,10 +869,21 @@
         sessionStorage.removeItem(SESSION_KEY);
       }
     }
-    showLoginOverlay();
+    hideAppShell();
+    showMarketingShell();
   })();
 
-  // ── DOM refs ──────────────────────────────────────────────────────────────
+  [["marketingLaunchTop", "login"], ["marketingLaunchHero", "login"], ["marketingSignInCard", "login"], ["marketingRegisterCard", "register"]]
+    .forEach(([id, panel]) => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("click", () => {
+        toggleAuthPanel(panel);
+        showLoginOverlay();
+      });
+    });
+
+  // ?? DOM refs ??????????????????????????????????????????????????????????????
   const balanceValue     = $("balanceValue");
   const transactionCount = $("transactionCount");
   const latestBlock      = $("latestBlock");
@@ -645,7 +904,7 @@
   const headerChain      = $("headerChain");
   const chainBadge       = $("chainBadge");
 
-  // ── Tab switching ─────────────────────────────────────────────────────────
+  // ?? Tab switching ?????????????????????????????????????????????????????????
   const TAB_IDS = ["dashboard", "transfer", "assistant", "search", "explorer"];
   function showTab(name) {
     TAB_IDS.forEach(t => $(`tab-${t}`).classList.toggle("hidden", t !== name));
@@ -657,7 +916,7 @@
     if (name === "explorer") { loadLeaderboard(); loadBlocks(); }
   }
 
-  // ── Render helpers ────────────────────────────────────────────────────────
+  // ?? Render helpers ????????????????????????????????????????????????????????
   function renderTransactions(items) {
     if (!items || items.length === 0) {
       activityList.innerHTML = `<div class="tx-card text-sm text-slate-400">No transactions found for this account.</div>`;
@@ -667,8 +926,8 @@
       <div class="tx-card">
         <div class="flex items-center justify-between gap-3">
           <div>
-            <p class="text-sm font-medium">${item.sender} → ${item.receiver}</p>
-            <p class="mt-0.5 text-xs text-slate-400">Block #${item.block} · Counterparty: ${item.counterparty}</p>
+            <p class="text-sm font-medium">${item.sender} ??${item.receiver}</p>
+            <p class="mt-0.5 text-xs text-slate-400">Block #${item.block} 繚 Counterparty: ${item.counterparty}</p>
           </div>
           <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
             ${item.direction === "in" ? "+" : "-"}${item.amount} CPC
@@ -690,7 +949,7 @@
     confidenceLabel.textContent  = data.chain_ok ? "Stable" : "Attention required";
     confidenceBar.style.width    = `${data.chain_ok ? 96 : 38}%`;
     updateUserMenu(data.account, data.balance);
-    const chainText  = `Chain ${data.chain_ok ? "Healthy ✓" : "Issue ✗"}`;
+    const chainText  = `Chain ${data.chain_ok ? "Healthy" : "Issue"}`;
     const chainClass = data.chain_ok
       ? "rounded-full px-3 py-1.5 text-xs border border-mint/30 bg-mint/10 text-mint"
       : "rounded-full px-3 py-1.5 text-xs border border-rose-400/30 bg-rose-400/10 text-rose-300";
@@ -714,7 +973,7 @@
   function resetConfirmBtn() {
     confirmActionBtn.classList.add("hidden");
     confirmActionBtn.disabled = false;
-    confirmActionBtn.textContent = "✓ Confirm & Execute";
+    confirmActionBtn.textContent = "??Confirm & Execute";
     confirmActionBtn.onclick = null;
   }
 
@@ -726,7 +985,7 @@
     if (actionPreview.type === "transfer") {
       assistantPreviewBody.innerHTML = `
         <div class="rounded-xl border border-mint/20 bg-mint/10 px-4 py-3 text-sm">
-          Transfer: <strong>${actionPreview.sender}</strong> → <strong>${actionPreview.receiver}</strong> · <strong>${actionPreview.amount} CPC</strong>
+          Transfer: <strong>${actionPreview.sender}</strong> ??<strong>${actionPreview.receiver}</strong> 繚 <strong>${actionPreview.amount} CPC</strong>
         </div>
         <input id="previewPassword" type="password" class="input-field mt-3 text-sm" placeholder="Enter your password to confirm"
           value="${state.password.replace(/"/g, '&quot;')}">`;
@@ -738,16 +997,16 @@
         try {
           const res    = await fetch("/api/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sender: actionPreview.sender, password: pwd, receiver: actionPreview.receiver, amount: actionPreview.amount }) });
           const result = await res.json();
-          if (!res.ok) addChatBubble(`❌ Transfer failed: ${result.error}`, "assistant");
-          else { addChatBubble(`✅ ${result.message} Block #${result.block_index}.`, "assistant"); applyOverview(result.overview); }
-        } catch (e) { addChatBubble("❌ Network error. Please try again.", "assistant"); }
+          if (!res.ok) addChatBubble(`??Transfer failed: ${result.error}`, "assistant");
+          else { addChatBubble(`??${result.message} Block #${result.block_index}.`, "assistant"); applyOverview(result.overview); }
+        } catch (e) { addChatBubble("??Network error. Please try again.", "assistant"); }
         resetConfirmBtn(); assistantPreview.classList.add("hidden");
       };
 
     } else if (actionPreview.type === "verify") {
       assistantPreviewBody.innerHTML = `
         <div class="rounded-xl border border-trust/20 bg-trust/10 px-4 py-3 text-sm">
-          Verify ledger for <strong>${actionPreview.account}</strong> — earns 10 CPC from angel on success.
+          Verify ledger for <strong>${actionPreview.account}</strong> ??earns 10 CPC from angel on success.
         </div>`;
       confirmActionBtn.classList.remove("hidden");
       confirmActionBtn.onclick = async () => {
@@ -755,9 +1014,9 @@
         try {
           const res    = await fetch("/api/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account: actionPreview.account }) });
           const result = await res.json();
-          if (!res.ok) { addChatBubble(`❌ Verification failed: ${(result.issues || []).join(" | ")}`, "assistant"); if (result.overview) applyOverview(result.overview); }
-          else { addChatBubble(`✅ ${result.message} Reward in Block #${result.reward_block}.`, "assistant"); applyOverview(result.overview); }
-        } catch (e) { addChatBubble("❌ Network error. Please try again.", "assistant"); }
+          if (!res.ok) { addChatBubble(`??Verification failed: ${(result.issues || []).join(" | ")}`, "assistant"); if (result.overview) applyOverview(result.overview); }
+          else { addChatBubble(`??${result.message} Reward in Block #${result.reward_block}.`, "assistant"); applyOverview(result.overview); }
+        } catch (e) { addChatBubble("??Network error. Please try again.", "assistant"); }
         resetConfirmBtn(); assistantPreview.classList.add("hidden");
       };
 
@@ -769,7 +1028,7 @@
     }
   }
 
-  // ── Refresh overview ──────────────────────────────────────────────────────
+  // ?? Refresh overview ??????????????????????????????????????????????????????
   async function refreshOverview() {
     try {
       const res = await fetch(`/api/overview?account=${encodeURIComponent(state.account)}`);
@@ -778,7 +1037,7 @@
   }
   $("refreshButton").addEventListener("click", refreshOverview);
 
-  // ── Transfer form ─────────────────────────────────────────────────────────
+  // ?? Transfer form ?????????????????????????????????????????????????????????
   $("transferForm").addEventListener("submit", async e => {
     e.preventDefault();
     const sender   = $("senderInput").value.trim();
@@ -804,7 +1063,7 @@
     } catch (e) { transferMessage.textContent = "Network error."; }
   });
 
-  // ── Verify button ─────────────────────────────────────────────────────────
+  // ?? Verify button ?????????????????????????????????????????????????????????
   $("verifyButton").addEventListener("click", async () => {
     verifyMessage.textContent = "Running chain verification...";
     try {
@@ -816,19 +1075,19 @@
     } catch (e) { verifyMessage.textContent = "Network error."; }
   });
 
-  // ── Prompt chips ──────────────────────────────────────────────────────────
+  // ?? Prompt chips ??????????????????????????????????????????????????????????
   document.querySelectorAll(".prompt-chip").forEach(chip => {
     chip.addEventListener("click", () => { $("assistantInput").value = chip.textContent.trim(); });
   });
 
-  // ── Clear chat ────────────────────────────────────────────────────────────
+  // ?? Clear chat ????????????????????????????????????????????????????????????
   $("clearChatBtn").addEventListener("click", async () => {
     try { await fetch("/api/assistant/clear", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ account: state.account }) }); } catch (_) {}
     chatFeed.innerHTML = `<div class="max-w-[92%] rounded-[20px] border border-trust/20 bg-trust/10 px-4 py-3 text-sm leading-7">History cleared. How can I help you?</div>`;
     resetConfirmBtn(); assistantPreview.classList.add("hidden");
   });
 
-  // ── Assistant form ────────────────────────────────────────────────────────
+  // ?? Assistant form ????????????????????????????????????????????????????????
   $("assistantForm").addEventListener("submit", async e => {
     e.preventDefault();
     const input   = $("assistantInput");
@@ -855,7 +1114,7 @@
     }
   });
 
-  // ── CSV export ────────────────────────────────────────────────────────────
+  // ?? CSV export ????????????????????????????????????????????????????????????
   $("exportCsvBtn").addEventListener("click", () => {
     const a = document.createElement("a");
     a.href = `/api/export/csv?account=${encodeURIComponent(state.account)}`;
@@ -863,7 +1122,7 @@
     a.click();
   });
 
-  // ── Transaction search ────────────────────────────────────────────────────
+  // ?? Transaction search ????????????????????????????????????????????????????
   async function runSearch() {
     const counterparty = $("searchCounterparty").value.trim();
     const minAmount    = $("searchMinAmount").value.trim();
@@ -883,7 +1142,7 @@
         <div class="tx-card">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-medium">${item.sender} → ${item.receiver}</p>
+              <p class="text-sm font-medium">${item.sender} ??${item.receiver}</p>
               <p class="mt-0.5 text-xs text-slate-400">Block #${item.block}</p>
             </div>
             <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
@@ -896,12 +1155,12 @@
   }
   $("searchBtn").addEventListener("click", runSearch);
 
-  // ── Leaderboard ───────────────────────────────────────────────────────────
+  // ?? Leaderboard ???????????????????????????????????????????????????????????
   async function loadLeaderboard() {
     const list = $("leaderboardList");
     try {
       const data   = await (await fetch("/api/leaderboard")).json();
-      const medals = ["🥇", "🥈", "🥉"];
+      const medals = ["??", "??", "??"];
       list.innerHTML = data.leaderboard.map((item, i) => `
         <div class="flex items-center justify-between gap-3 rounded-[20px] border border-white/10 bg-white/5 p-3">
           <div class="flex items-center gap-3">
@@ -915,7 +1174,7 @@
   }
   $("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
 
-  // ── Block explorer ────────────────────────────────────────────────────────
+  // ?? Block explorer ????????????????????????????????????????????????????????
   async function loadBlocks() {
     const list = $("blockList");
     try {
@@ -930,7 +1189,7 @@
           <div class="space-y-1.5">
             ${b.transactions.map(t => `
               <div class="flex justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs">
-                <span class="truncate mr-2">${t.sender} → ${t.receiver}</span>
+                <span class="truncate mr-2">${t.sender} ??${t.receiver}</span>
                 <span class="shrink-0 font-medium text-mint">${t.amount} CPC</span>
               </div>
             `).join("") || `<p class="text-xs text-slate-500">Empty block</p>`}
@@ -941,5 +1200,6 @@
   }
   $("refreshBlocksBtn").addEventListener("click", loadBlocks);
 </script>
+</div>
 </body>
 </html>
