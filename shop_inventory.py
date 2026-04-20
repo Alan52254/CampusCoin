@@ -4,90 +4,21 @@ shop_inventory.py
 使用者背包與主動效果管理
 """
 
-import json
 import random
 import time
-from pathlib import Path
 
-STORAGE = Path(__file__).resolve().parent / "shared_storage"
-INVENTORY_PATH = STORAGE / "inventory.json"
-EFFECTS_PATH   = STORAGE / "effects.json"
+from state_db import (
+    get_inventory,
+    add_inventory_item as add_item,
+    consume_inventory_item as consume_item,
+    get_all_effects as get_effects,
+    set_effect,
+    clear_effect,
+    has_effect,
+)
 
 RAINBOW_GOAL = 7       # 集滿幾片換大獎
 RAINBOW_PRIZE = 5000
-
-
-# ── 讀寫工具 ──────────────────────────────────────────────────────────────────
-def _load(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def _save(path: Path, data: dict) -> None:
-    STORAGE.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-# ── 背包 ──────────────────────────────────────────────────────────────────────
-def get_inventory(account: str) -> dict:
-    """回傳帳號的道具清單 {item_id: count}"""
-    return _load(INVENTORY_PATH).get(account, {})
-
-
-def add_item(account: str, item_id: str, count: int = 1) -> dict:
-    all_inv = _load(INVENTORY_PATH)
-    inv = all_inv.setdefault(account, {})
-    inv[item_id] = inv.get(item_id, 0) + count
-    _save(INVENTORY_PATH, all_inv)
-    return inv
-
-
-def consume_item(account: str, item_id: str) -> bool:
-    """消耗 1 個道具，成功回傳 True，不足回傳 False。"""
-    all_inv = _load(INVENTORY_PATH)
-    inv = all_inv.get(account, {})
-    if inv.get(item_id, 0) <= 0:
-        return False
-    inv[item_id] -= 1
-    if inv[item_id] == 0:
-        del inv[item_id]
-    all_inv[account] = inv
-    _save(INVENTORY_PATH, all_inv)
-    return True
-
-
-# ── 主動效果 ──────────────────────────────────────────────────────────────────
-def get_effects(account: str) -> dict:
-    return _load(EFFECTS_PATH).get(account, {})
-
-
-def set_effect(account: str, effect: str, value) -> None:
-    all_fx = _load(EFFECTS_PATH)
-    all_fx.setdefault(account, {})[effect] = value
-    _save(EFFECTS_PATH, all_fx)
-
-
-def clear_effect(account: str, effect: str) -> None:
-    all_fx = _load(EFFECTS_PATH)
-    all_fx.get(account, {}).pop(effect, None)
-    _save(EFFECTS_PATH, all_fx)
-
-
-def has_effect(account: str, effect: str) -> bool:
-    fx = get_effects(account)
-    val = fx.get(effect)
-    if val is None:
-        return False
-    # 計時效果：檢查是否過期
-    if isinstance(val, dict) and "expires" in val:
-        if time.time() > val["expires"]:
-            clear_effect(account, effect)
-            return False
-    return True
 
 
 # ── 道具使用邏輯 ──────────────────────────────────────────────────────────────
@@ -152,17 +83,22 @@ def use_item(account: str, item_id: str, target: str = "") -> dict:
             message = f"寶箱裡有 {delta} CPC 現金！"
 
     elif effect == "rainbow_fragment":
-        all_inv = _load(INVENTORY_PATH)
-        inv = all_inv.get(account, {})
-        frags = inv.get("rainbow_frag", 0)
-        if frags >= RAINBOW_GOAL:
-            inv["rainbow_frag"] = frags - RAINBOW_GOAL
-            all_inv[account] = inv
-            _save(INVENTORY_PATH, all_inv)
-            delta   = RAINBOW_PRIZE
-            message = f"🌈 集齊 {RAINBOW_GOAL} 片！兌換 {RAINBOW_PRIZE} CPC 大獎！"
+        inv = get_inventory(account)
+        frags_remaining = inv.get("rainbow_frag", 0)
+        total_frags = frags_remaining + 1  # 1 was just consumed
+        if total_frags >= RAINBOW_GOAL:
+            # We need to consume RAINBOW_GOAL - 1 more
+            if consume_item(account, item_id, RAINBOW_GOAL - 1):
+                delta   = RAINBOW_PRIZE
+                message = f"🌈 集齊 {RAINBOW_GOAL} 片！兌換 {RAINBOW_PRIZE} CPC 大獎！"
+            else:
+                # Fallback if something went wrong
+                add_item(account, item_id, 1)
+                message = "彩虹碎片數量異常。"
         else:
-            message = f"已擁有 {frags} 片彩虹碎片，再收集 {RAINBOW_GOAL - frags} 片可兌換 {RAINBOW_PRIZE} CPC。"
+            # Refund the consumed fragment, since it hasn't reached the goal
+            add_item(account, item_id, 1)
+            message = f"已擁有 {total_frags} 片彩虹碎片，再收集 {RAINBOW_GOAL - total_frags} 片可兌換 {RAINBOW_PRIZE} CPC。"
 
     # ── 社交效果 ─────────────────────────────────────────────────────────────
     elif effect == "send_gift":

@@ -4,7 +4,9 @@ puzzle_data.py
 50 道謎題資料庫（敘事推理、邏輯算術、語言諧音）
 """
 
-PUZZLES: list[dict] = [
+# PUZZLES variables will be captured by __getattr__
+
+_RAW_PUZZLES: list[dict] = [
     # ── 第一部分：敘事推理（海龜湯）1-20 ─────────────────────────────────────
     {
         "id": "01", "category": "narrative", "category_label": "敘事推理",
@@ -362,13 +364,20 @@ PUZZLES: list[dict] = [
     },
 ]
 
-# ── 查詢工具 ──────────────────────────────────────────────────────────────────
-_id_map: dict = {p["id"]: p for p in PUZZLES}
+# ── RAG / SQLite 初始化 ──────────────────────────────────────────────────────────
+from shared_storage.state_db import init_puzzle_db, get_puzzle_from_db, get_all_puzzles_from_db
 
+# 自動把寫死的 Array 寫入資料庫
+init_puzzle_db(_RAW_PUZZLES)
+
+# 提供給外部（如 app.py 或 puzzle_agent.py）的動態抓取介面
+def __getattr__(name):
+    if name == 'PUZZLES':
+        return get_all_puzzles_from_db()
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 def get_puzzle_by_id(puzzle_id: str):
-    return _id_map.get(puzzle_id)
-
+    return get_puzzle_from_db(puzzle_id)
 
 def get_all_ids() -> list:
-    return [p["id"] for p in PUZZLES]
+    return [p["id"] for p in get_all_puzzles_from_db()]

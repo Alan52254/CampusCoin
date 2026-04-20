@@ -1,0 +1,3 @@
+Sha256 of previous block: 6dcc6b72d8eaf17b3e6ac7f80630cbdf421dfb7bbbe381f1b7b3f7873276b3a2
+Next block: None
+b1128015, angel, 350

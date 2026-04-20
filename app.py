@@ -41,13 +41,11 @@ try:
 except ImportError:
     PUZZLE_AVAILABLE = False
 
-# ── Shop (falls back gracefully if import fails) ──────────────────────────────
+# ── Shop (Using state_db now) ────────────────────────────────────────────────
 try:
     from shop_data import ITEMS as SHOP_ITEMS, get_item_by_id, CATEGORIES as SHOP_CATEGORIES
-    from shop_inventory import (
-        get_inventory, add_item, consume_item, use_item,
-        get_effects, has_effect, clear_effect, set_effect,
-    )
+    from state_db import get_inventory, get_all_effects as get_effects
+    from shop_inventory import consume_item, use_item, has_effect, clear_effect, set_effect, add_item
     SHOP_AVAILABLE = True
 except ImportError:
     SHOP_AVAILABLE = False
@@ -337,7 +335,26 @@ def api_assistant():
     payload = request.get_json(silent=True) or {}
     account = (payload.get("account") or "b1128015").strip()
     message = payload.get("message") or ""
-    return jsonify(build_assistant_reply(message, account))
+    
+    reply_data = build_assistant_reply(message, account)
+    action = reply_data.get("action_preview")
+    
+    if action:
+        if action["type"] == "puzzle_reward":
+            from state_db import mark_reward_granted
+            if mark_reward_granted(account, action["reward_key"], action["amount"]):
+                with ledger_lock():
+                    append_transaction("angel", account, action["amount"])
+        elif action["type"] == "puzzle_failed":
+            from state_db import mark_reward_granted
+            if mark_reward_granted(account, action["reward_key"], -action["amount"]):
+                balance = get_balance(account)
+                deduct = min(action["amount"], balance)
+                if deduct > 0:
+                    with ledger_lock():
+                        append_transaction(account, "angel", deduct)
+
+    return jsonify(reply_data)
 
 
 @app.post("/api/assistant/clear")
@@ -502,6 +519,8 @@ def api_puzzle_answer():
     # RAG 評分
     result = _evaluate_answer(puzzle_id, user_ans)
     correct = result["correct"]
+    
+    from state_db import mark_reward_granted
 
     BASE_REWARD  = 1000
     BASE_PENALTY = 10
@@ -525,13 +544,26 @@ def api_puzzle_answer():
             active_effects.append("shield")
         # 詛咒（別人對你施的）
         if not correct and has_effect(account, "cursed_penalty"):
-            BASE_PENALTY = get_effects(account).get("cursed_penalty", BASE_PENALTY)
+            fx_data = get_effects(account)
+            BASE_PENALTY = fx_data.get("cursed_penalty", BASE_PENALTY)
             clear_effect(account, "cursed_penalty")
             active_effects.append("cursed_penalty")
 
+    block_index = None
+
+    import uuid
     if correct:
-        with ledger_lock():
-            block_index, _ = append_transaction("angel", account, BASE_REWARD)
+        # Legacy GUI has no session, so we tie the reward to the puzzle_id uniquely.
+        # This prevents farming the same puzzle infinitely.
+        reward_key = f"legacy_puzzle:{account}:{puzzle_id}"
+        
+        if mark_reward_granted(account, reward_key, BASE_REWARD):
+            with ledger_lock():
+                block_index, _ = append_transaction("angel", account, BASE_REWARD)
+        else:
+            # Already claimed
+            BASE_REWARD = 0
+            
         overview = build_dashboard_payload(account)
         return jsonify({
             "ok": True,
@@ -546,10 +578,12 @@ def api_puzzle_answer():
     else:
         balance = get_balance(account)
         deduct  = min(BASE_PENALTY, balance) if BASE_PENALTY > 0 and balance > 0 else 0
-        block_index = None
-        if deduct > 0:
+        
+        reward_key = f"legacy_puzzle_fail:{account}:{puzzle_id}:{uuid.uuid4()}"
+        if deduct > 0 and mark_reward_granted(account, reward_key, -deduct):
             with ledger_lock():
                 block_index, _ = append_transaction(account, "angel", deduct)
+                
         overview = build_dashboard_payload(account)
         return jsonify({
             "ok": True,
