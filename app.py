@@ -33,6 +33,25 @@ try:
 except ImportError:
     LLM_AVAILABLE = False
 
+# ── Puzzle RAG (falls back gracefully if import fails) ────────────────────────
+try:
+    from puzzle_rag import evaluate_answer as _evaluate_answer
+    from puzzle_data import PUZZLES, get_puzzle_by_id, get_all_ids
+    PUZZLE_AVAILABLE = True
+except ImportError:
+    PUZZLE_AVAILABLE = False
+
+# ── Shop (falls back gracefully if import fails) ──────────────────────────────
+try:
+    from shop_data import ITEMS as SHOP_ITEMS, get_item_by_id, CATEGORIES as SHOP_CATEGORIES
+    from shop_inventory import (
+        get_inventory, add_item, consume_item, use_item,
+        get_effects, has_effect, clear_effect, set_effect,
+    )
+    SHOP_AVAILABLE = True
+except ImportError:
+    SHOP_AVAILABLE = False
+
 
 app = Flask(__name__)
 
@@ -418,6 +437,252 @@ def api_leaderboard():
         reverse=True,
     )
     return jsonify({"leaderboard": leaderboard})
+
+
+# ── Puzzle endpoints ──────────────────────────────────────────────────────────
+
+def _safe_puzzle_dict(puzzle: dict) -> dict:
+    return {
+        "id":             puzzle["id"],
+        "category":       puzzle["category"],
+        "category_label": puzzle["category_label"],
+        "question":       puzzle["question"],
+        "hint":           puzzle.get("hint", ""),
+    }
+
+
+@app.get("/api/puzzle/three")
+def api_puzzle_three():
+    """傳說 RPG 骰專用：回傳 3 道不同的隨機謎題供使用者選擇。"""
+    if not PUZZLE_AVAILABLE:
+        return jsonify({"ok": False, "error": "Puzzle module not available."}), 503
+    import random
+    exclude = request.args.getlist("exclude")
+    candidates = [p for p in PUZZLES if p["id"] not in exclude]
+    if not candidates:
+        candidates = PUZZLES
+    chosen = random.sample(candidates, min(3, len(candidates)))
+    return jsonify({"ok": True, "puzzles": [_safe_puzzle_dict(p) for p in chosen]})
+
+
+@app.get("/api/puzzle/random")
+def api_puzzle_random():
+    """回傳一道隨機謎題（不含答案），可用 exclude 排除已答過的 ID。"""
+    if not PUZZLE_AVAILABLE:
+        return jsonify({"ok": False, "error": "Puzzle module not available."}), 503
+
+    import random
+    exclude = request.args.getlist("exclude")
+    candidates = [p for p in PUZZLES if p["id"] not in exclude]
+    if not candidates:
+        candidates = PUZZLES  # 全部答完就重新循環
+
+    puzzle = random.choice(candidates)
+    return jsonify({"ok": True, "puzzle": _safe_puzzle_dict(puzzle)})
+
+
+@app.post("/api/puzzle/answer")
+def api_puzzle_answer():
+    """評分並依結果轉帳獎勵或罰款。"""
+    if not PUZZLE_AVAILABLE:
+        return jsonify({"ok": False, "error": "Puzzle module not available."}), 503
+
+    payload   = request.get_json(silent=True) or {}
+    account   = (payload.get("account") or "").strip()
+    puzzle_id = (payload.get("puzzle_id") or "").strip()
+    user_ans  = (payload.get("answer") or "").strip()
+
+    if not account or not puzzle_id:
+        return jsonify({"ok": False, "error": "account and puzzle_id required."}), 400
+
+    puzzle = get_puzzle_by_id(puzzle_id)
+    if not puzzle:
+        return jsonify({"ok": False, "error": "Puzzle not found."}), 404
+
+    # RAG 評分
+    result = _evaluate_answer(puzzle_id, user_ans)
+    correct = result["correct"]
+
+    BASE_REWARD  = 1000
+    BASE_PENALTY = 10
+
+    # ── 計算實際獎懲（道具效果） ─────────────────────────────────────────────
+    active_effects = []
+    if SHOP_AVAILABLE:
+        # 雙倍獎勵（自己或別人祝福）
+        if has_effect(account, "double_reward"):
+            BASE_REWARD = 2000
+            clear_effect(account, "double_reward")
+            active_effects.append("double_reward")
+        # 月光精華 ×1.5
+        if has_effect(account, "moonlight"):
+            BASE_REWARD = int(BASE_REWARD * 1.5)
+            active_effects.append("moonlight")
+        # 護盾
+        if not correct and has_effect(account, "shield"):
+            BASE_PENALTY = 0
+            clear_effect(account, "shield")
+            active_effects.append("shield")
+        # 詛咒（別人對你施的）
+        if not correct and has_effect(account, "cursed_penalty"):
+            BASE_PENALTY = get_effects(account).get("cursed_penalty", BASE_PENALTY)
+            clear_effect(account, "cursed_penalty")
+            active_effects.append("cursed_penalty")
+
+    if correct:
+        with ledger_lock():
+            block_index, _ = append_transaction("angel", account, BASE_REWARD)
+        overview = build_dashboard_payload(account)
+        return jsonify({
+            "ok": True,
+            "correct": True,
+            "delta": BASE_REWARD,
+            "feedback": result["feedback"],
+            "official_answer": "",
+            "block_index": block_index,
+            "overview": overview,
+            "active_effects": active_effects,
+        })
+    else:
+        balance = get_balance(account)
+        deduct  = min(BASE_PENALTY, balance) if BASE_PENALTY > 0 and balance > 0 else 0
+        block_index = None
+        if deduct > 0:
+            with ledger_lock():
+                block_index, _ = append_transaction(account, "angel", deduct)
+        overview = build_dashboard_payload(account)
+        return jsonify({
+            "ok": True,
+            "correct": False,
+            "delta": -deduct,
+            "feedback": result["feedback"],
+            "official_answer": result.get("official_answer", ""),
+            "block_index": block_index,
+            "overview": overview,
+            "active_effects": active_effects,
+        })
+
+
+@app.get("/puzzle")
+def puzzle_page():
+    account = request.args.get("account", "b1128015")
+    return render_template("puzzle.html", account=account)
+
+
+# ── Shop endpoints ────────────────────────────────────────────────────────────
+
+@app.get("/shop")
+def shop_page():
+    account = request.args.get("account", "b1128015")
+    return render_template("shop.html", account=account)
+
+
+@app.get("/api/shop/items")
+def api_shop_items():
+    if not SHOP_AVAILABLE:
+        return jsonify({"ok": False, "error": "Shop unavailable."}), 503
+    return jsonify({
+        "ok": True,
+        "items": SHOP_ITEMS,
+        "categories": SHOP_CATEGORIES,
+    })
+
+
+@app.get("/api/shop/inventory")
+def api_shop_inventory():
+    if not SHOP_AVAILABLE:
+        return jsonify({"ok": False, "error": "Shop unavailable."}), 503
+    account = request.args.get("account", "").strip()
+    if not account:
+        return jsonify({"ok": False, "error": "account required."}), 400
+    inv = get_inventory(account)
+    fx  = get_effects(account)
+    return jsonify({"ok": True, "inventory": inv, "effects": fx})
+
+
+@app.post("/api/shop/buy")
+def api_shop_buy():
+    if not SHOP_AVAILABLE:
+        return jsonify({"ok": False, "error": "Shop unavailable."}), 503
+    payload  = request.get_json(silent=True) or {}
+    account  = (payload.get("account")  or "").strip()
+    password = (payload.get("password") or "").strip()
+    item_id  = (payload.get("item_id")  or "").strip()
+
+    if not verify_account(account, password):
+        return jsonify({"ok": False, "error": "帳號或密碼錯誤。"}), 403
+
+    item = get_item_by_id(item_id)
+    if not item:
+        return jsonify({"ok": False, "error": "商品不存在。"}), 404
+
+    price   = item["price"]
+    balance = get_balance(account)
+    if balance < price:
+        return jsonify({"ok": False, "error": f"餘額不足（需要 {price} CPC，目前 {balance} CPC）。"}), 400
+
+    # 扣款
+    with ledger_lock():
+        append_transaction(account, "angel", price)
+
+    # 加入背包
+    add_item(account, item_id)
+    inv      = get_inventory(account)
+    overview = build_dashboard_payload(account)
+
+    return jsonify({
+        "ok": True,
+        "message": f"成功購買「{item['emoji']} {item['name']}」！",
+        "inventory": inv,
+        "overview": overview,
+    })
+
+
+@app.post("/api/shop/use")
+def api_shop_use():
+    if not SHOP_AVAILABLE:
+        return jsonify({"ok": False, "error": "Shop unavailable."}), 503
+    payload  = request.get_json(silent=True) or {}
+    account  = (payload.get("account")  or "").strip()
+    item_id  = (payload.get("item_id")  or "").strip()
+    target   = (payload.get("target")   or "").strip()
+
+    if not account or not item_id:
+        return jsonify({"ok": False, "error": "account and item_id required."}), 400
+
+    result = use_item(account, item_id, target=target)
+    if not result["ok"]:
+        return jsonify(result), 400
+
+    # 若有 CPC 獎勵（骰子、寶箱等）
+    if result["cpc_delta"] > 0:
+        with ledger_lock():
+            append_transaction("angel", account, result["cpc_delta"])
+
+    # 若有社交轉帳（禮盒送 500 CPC）
+    extra = result.get("extra", {})
+    if extra.get("gift_to"):
+        with ledger_lock():
+            append_transaction(account, extra["gift_to"], 500)
+
+    # 若觸發驗證（礦工頭盔）
+    if extra.get("trigger_verify"):
+        with ledger_lock():
+            issues = verify_chain()
+            if not issues:
+                append_transaction("angel", account, 10)
+                result["message"] += " 驗證通過，額外獲得 10 CPC！"
+
+    inv      = get_inventory(account)
+    overview = build_dashboard_payload(account)
+    return jsonify({
+        "ok":       True,
+        "message":  result["message"],
+        "cpc_delta": result["cpc_delta"],
+        "inventory": inv,
+        "effects":   get_effects(account),
+        "overview":  overview,
+    })
 
 
 if __name__ == "__main__":

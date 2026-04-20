@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin — 道具商店</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { abyss:"#06111b", midnight:"#0b1f31", tide:"#12314b", trust:"#7dd3fc", mint:"#5eead4", glow:"#f6c86b" },
+          keyframes: {
+            rise: { "0%":{ opacity:"0", transform:"translateY(14px)" }, "100%":{ opacity:"1", transform:"translateY(0)" } },
+            pop:  { "0%":{ opacity:"0", transform:"scale(0.6)" }, "60%":{ transform:"scale(1.12)" }, "100%":{ opacity:"1", transform:"scale(1)" } },
+          },
+          animation: { rise:"rise 0.45s ease-out both", pop:"pop 0.35s ease-out both" }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: "Segoe UI Variable Display", "Aptos", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(94,234,212,0.10) 0%, transparent 30%),
+        radial-gradient(circle at 85% 5%,  rgba(125,211,252,0.10) 0%, transparent 30%),
+        linear-gradient(160deg, #041019 0%, #0a1f31 45%, #112d46 100%);
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .field-label { display:block; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:#94a3b8; margin-bottom:0.4rem; }
+    .input-field { width:100%; border-radius:1rem; border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.05); padding:0.65rem 1rem; outline:none; color:#f1f5f9; font-size:0.875rem; }
+    .input-field::placeholder { color:#94a3b8; }
+    .input-field:focus { border-color:rgba(94,234,212,0.35); }
+    .btn-primary { border-radius:0.875rem; background:linear-gradient(to right,#5eead4,#7dd3fc); padding:0.6rem 1.2rem; font-weight:600; color:#06111b; transition:transform 0.15s,opacity 0.15s; font-size:0.875rem; }
+    .btn-primary:hover:not(:disabled) { transform:scale(1.02); }
+    .btn-primary:disabled { opacity:0.4; cursor:not-allowed; }
+    .btn-ghost { border-radius:0.875rem; border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.05); padding:0.55rem 1rem; color:#cbd5e1; transition:background 0.15s; font-size:0.875rem; }
+    .btn-ghost:hover { background:rgba(255,255,255,0.10); }
+    .cat-pill { border-radius:999px; padding:0.3rem 0.9rem; font-size:0.75rem; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all 0.15s; }
+    .cat-pill.active { background:rgba(94,234,212,0.15); border-color:rgba(94,234,212,0.35); color:#5eead4; }
+    .cat-pill:not(.active) { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.10); color:#94a3b8; }
+    .item-card { border-radius:1.5rem; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.04); padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem; transition:border-color 0.2s, background 0.2s; }
+    .item-card:hover { border-color:rgba(94,234,212,0.22); background:rgba(255,255,255,0.07); }
+    .item-card.owned { border-color:rgba(246,200,107,0.25); background:rgba(246,200,107,0.05); }
+    .price-tag { display:inline-flex; align-items:center; gap:0.3rem; border-radius:999px; padding:0.2rem 0.65rem; font-size:0.75rem; font-weight:700; background:rgba(94,234,212,0.12); border:1px solid rgba(94,234,212,0.25); color:#5eead4; }
+    .type-badge { display:inline-flex; border-radius:999px; padding:0.15rem 0.55rem; font-size:0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; }
+    .type-consumable { background:rgba(125,211,252,0.12); color:#7dd3fc; }
+    .type-cosmetic   { background:rgba(246,200,107,0.12); color:#f6c86b; }
+    .type-collectible{ background:rgba(167,139,250,0.12); color:#a78bfa; }
+    /* Toast */
+    #toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); border-radius:1rem; padding:0.75rem 1.5rem; font-size:0.875rem; font-weight:600; z-index:999; pointer-events:none; max-width:90vw; text-align:center; }
+    /* Modal */
+    #modal { position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:rgba(4,16,25,0.85); backdrop-filter:blur(6px); }
+    #modal.hidden { display:none; }
+    /* Active effects strip */
+    .effect-chip { display:inline-flex; align-items:center; gap:0.3rem; border-radius:999px; padding:0.25rem 0.7rem; font-size:0.7rem; font-weight:600; border:1px solid rgba(94,234,212,0.3); background:rgba(94,234,212,0.1); color:#5eead4; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+
+  <!-- Header -->
+  <header class="glass mb-6 flex items-center justify-between rounded-[28px] px-6 py-4 animate-rise">
+    <div class="flex items-center gap-4">
+      <button onclick="window.close()" class="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition text-sm">✕</button>
+      <div>
+        <p class="font-semibold tracking-wide">道具商店</p>
+        <p class="text-xs text-slate-400">用 CPC 購買各種強力道具</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-6">
+      <div class="text-right">
+        <p class="field-label">餘額</p>
+        <p class="text-sm font-bold text-mint" id="balanceDisplay">— CPC</p>
+      </div>
+      <div class="text-right">
+        <p class="field-label">帳戶</p>
+        <p class="text-sm font-semibold" id="accountLabel">—</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Password strip (needed for purchase) -->
+  <div class="glass mb-6 flex items-center gap-4 rounded-[22px] px-5 py-3 animate-rise">
+    <span class="text-xs text-slate-400 shrink-0">購買密碼</span>
+    <input id="pwdInput" type="password" class="input-field max-w-xs" placeholder="輸入帳號密碼才能購買">
+    <span class="text-xs text-slate-500">（每次購買都需驗證）</span>
+  </div>
+
+  <!-- Active effects -->
+  <div id="effectsStrip" class="hidden glass mb-6 rounded-[22px] px-5 py-3 animate-rise flex-wrap gap-2">
+    <span class="text-xs text-slate-400 mr-1">當前效果：</span>
+  </div>
+
+  <!-- Category filter -->
+  <div class="mb-5 flex flex-wrap gap-2">
+    <button class="cat-pill active" data-cat="all" onclick="filterCat('all', this)">全部</button>
+    <button class="cat-pill" data-cat="puzzle"   onclick="filterCat('puzzle', this)">🧩 解謎道具</button>
+    <button class="cat-pill" data-cat="gamble"   onclick="filterCat('gamble', this)">🎲 賭運道具</button>
+    <button class="cat-pill" data-cat="social"   onclick="filterCat('social', this)">💌 社交道具</button>
+    <button class="cat-pill" data-cat="special"  onclick="filterCat('special', this)">⭐ 特殊功能</button>
+    <button class="cat-pill" data-cat="cosmetic" onclick="filterCat('cosmetic', this)">🎭 裝飾稱號</button>
+    <button class="cat-pill" data-cat="bag"      onclick="filterCat('bag', this)">🎒 我的背包</button>
+  </div>
+
+  <!-- Item grid -->
+  <div id="shopGrid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+</div>
+
+<!-- Buy / Use modal -->
+<div id="modal" class="hidden">
+  <div class="glass w-full max-w-sm rounded-[28px] p-7 space-y-4 animate-pop">
+    <div class="flex items-center gap-3">
+      <span id="modalEmoji" class="text-4xl"></span>
+      <div>
+        <p id="modalName" class="font-semibold text-lg"></p>
+        <p id="modalPrice" class="text-sm text-slate-400"></p>
+      </div>
+    </div>
+    <p id="modalDesc" class="text-sm text-slate-300 leading-7"></p>
+    <!-- Target input (for social items) -->
+    <div id="modalTargetWrap" class="hidden">
+      <label class="field-label">目標帳號</label>
+      <input id="modalTarget" class="input-field" placeholder="輸入對方帳號 ID">
+    </div>
+    <div class="flex gap-3 pt-1">
+      <button id="modalConfirmBtn" class="btn-primary flex-1">確認購買</button>
+      <button onclick="closeModal()" class="btn-ghost">取消</button>
+    </div>
+    <p id="modalMsg" class="text-xs text-center min-h-4"></p>
+  </div>
+</div>
+
+<!-- Use item modal -->
+<div id="useModal" class="hidden" style="position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(4,16,25,0.85);backdrop-filter:blur(6px);">
+  <div class="glass w-full max-w-sm rounded-[28px] p-7 space-y-4 animate-pop">
+    <div class="flex items-center gap-3">
+      <span id="useModalEmoji" class="text-4xl"></span>
+      <div>
+        <p id="useModalName" class="font-semibold text-lg"></p>
+        <p class="text-xs text-slate-400">使用此道具</p>
+      </div>
+    </div>
+    <p id="useModalDesc" class="text-sm text-slate-300 leading-7"></p>
+    <div id="useModalTargetWrap" class="hidden">
+      <label class="field-label">目標帳號</label>
+      <input id="useModalTarget" class="input-field" placeholder="輸入對方帳號 ID">
+    </div>
+    <div class="flex gap-3 pt-1">
+      <button id="useModalConfirmBtn" class="btn-primary flex-1">使用</button>
+      <button onclick="closeUseModal()" class="btn-ghost">取消</button>
+    </div>
+    <p id="useModalMsg" class="text-xs text-center min-h-4 text-mint"></p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden"></div>
+
+<script>
+  const params  = new URLSearchParams(location.search);
+  const ACCOUNT = params.get("account") || "guest";
+  document.getElementById("accountLabel").textContent = ACCOUNT;
+
+  const SOCIAL_EFFECTS = ["send_gift", "curse_target", "bless_target"];
+  let allItems = [], inventory = {}, effects = {};
+  let currentCat = "all";
+  let pendingItem = null;
+
+  const $ = id => document.getElementById(id);
+
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  function showToast(msg, ok = true) {
+    const t = $("toast");
+    t.textContent  = msg;
+    t.className    = ok
+      ? "animate-pop border border-mint/30 bg-[#041824] text-mint shadow-xl"
+      : "animate-pop border border-rose-400/30 bg-[#1a0608] text-rose-300 shadow-xl";
+    t.style.cssText = "position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);border-radius:1rem;padding:0.75rem 1.5rem;font-size:0.875rem;font-weight:600;z-index:999;pointer-events:none;max-width:90vw;text-align:center;";
+    setTimeout(() => { t.className = "hidden"; }, 3000);
+  }
+
+  // ── Load data ─────────────────────────────────────────────────────────────
+  async function loadAll() {
+    await Promise.all([loadItems(), loadInventory(), loadBalance()]);
+    renderGrid();
+    renderEffects();
+  }
+
+  async function loadItems() {
+    const d = await (await fetch("/api/shop/items")).json();
+    if (d.ok) allItems = d.items;
+  }
+
+  async function loadInventory() {
+    const d = await (await fetch(`/api/shop/inventory?account=${encodeURIComponent(ACCOUNT)}`)).json();
+    if (d.ok) { inventory = d.inventory; effects = d.effects; }
+  }
+
+  async function loadBalance() {
+    const d = await (await fetch(`/api/overview?account=${encodeURIComponent(ACCOUNT)}`)).json();
+    $("balanceDisplay").textContent = d.balance + " CPC";
+  }
+
+  // ── Render effects strip ──────────────────────────────────────────────────
+  function renderEffects() {
+    const strip  = $("effectsStrip");
+    const active = Object.keys(effects).filter(k => effects[k]);
+    if (!active.length) { strip.classList.add("hidden"); return; }
+    strip.classList.remove("hidden");
+    strip.style.display = "flex";
+    const label = '<span class="text-xs text-slate-400 mr-1">當前效果：</span>';
+    const chips = active.map(k => `<span class="effect-chip">✦ ${k.replace(/_/g," ")}</span>`).join("");
+    strip.innerHTML = label + chips;
+  }
+
+  // ── Category filter ───────────────────────────────────────────────────────
+  function filterCat(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    renderGrid();
+  }
+
+  // ── Render grid ───────────────────────────────────────────────────────────
+  function renderGrid() {
+    const grid = $("shopGrid");
+
+    if (currentCat === "bag") {
+      const ownedIds = Object.keys(inventory).filter(id => inventory[id] > 0);
+      if (!ownedIds.length) {
+        grid.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-400">背包是空的，快去購買道具吧！</div>`;
+        return;
+      }
+      const bagItems = ownedIds.map(id => allItems.find(i => i.id === id)).filter(Boolean);
+      grid.innerHTML = bagItems.map(item => renderCard(item, true)).join("");
+      return;
+    }
+
+    const filtered = currentCat === "all" ? allItems : allItems.filter(i => i.category === currentCat);
+    grid.innerHTML  = filtered.map(item => renderCard(item, false)).join("");
+  }
+
+  function renderCard(item, isUseMode) {
+    const count   = inventory[item.id] || 0;
+    const owned   = count > 0 ? `<span class="ml-auto text-xs text-glow font-bold">持有 ×${count}</span>` : "";
+    const typeCls = { consumable:"type-consumable", cosmetic:"type-cosmetic", collectible:"type-collectible" }[item.type] || "type-consumable";
+    const typeLabel = { consumable:"消耗品", cosmetic:"永久裝飾", collectible:"收集品" }[item.type] || item.type;
+
+    const actionBtn = isUseMode
+      ? `<button class="btn-primary w-full" onclick="openUseModal('${item.id}')">使用道具</button>`
+      : `<button class="btn-primary w-full" onclick="openBuyModal('${item.id}')">購買 ${item.price} CPC</button>`;
+
+    return `
+      <div class="item-card ${count > 0 && !isUseMode ? 'owned' : ''}">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl mt-0.5">${item.emoji}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="font-semibold text-sm">${escHtml(item.name)}</p>
+              ${owned}
+            </div>
+            <div class="mt-1 flex items-center gap-2">
+              <span class="type-badge ${typeCls}">${typeLabel}</span>
+              <span class="price-tag">💰 ${item.price}</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-400 leading-6">${escHtml(item.description)}</p>
+        ${actionBtn}
+      </div>`;
+  }
+
+  // ── Escape HTML ───────────────────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // ── Buy modal ─────────────────────────────────────────────────────────────
+  function openBuyModal(itemId) {
+    const item = allItems.find(i => i.id === itemId);
+    if (!item) return;
+    pendingItem = item;
+    $("modalEmoji").textContent = item.emoji;
+    $("modalName").textContent  = item.name;
+    $("modalPrice").textContent = `售價 ${item.price} CPC`;
+    $("modalDesc").textContent  = item.description;
+    $("modalMsg").textContent   = "";
+    const needsTarget = SOCIAL_EFFECTS.includes(item.effect);
+    $("modalTargetWrap").classList.toggle("hidden", !needsTarget);
+    $("modalTarget").value = "";
+    $("modal").classList.remove("hidden");
+  }
+
+  function closeModal() {
+    $("modal").classList.add("hidden");
+    pendingItem = null;
+  }
+
+  $("modal").addEventListener("click", e => { if (e.target === $("modal")) closeModal(); });
+
+  $("modalConfirmBtn").addEventListener("click", async () => {
+    if (!pendingItem) return;
+    const pwd = $("pwdInput").value.trim();
+    if (!pwd) { $("modalMsg").textContent = "請先在上方輸入密碼。"; $("modalMsg").className = "text-xs text-center min-h-4 text-rose-300"; return; }
+    $("modalConfirmBtn").disabled = true;
+    $("modalConfirmBtn").textContent = "購買中...";
+    try {
+      const res  = await fetch("/api/shop/buy", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: ACCOUNT, password: pwd, item_id: pendingItem.id }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        $("modalMsg").textContent = data.error;
+        $("modalMsg").className   = "text-xs text-center min-h-4 text-rose-300";
+      } else {
+        inventory = data.inventory;
+        closeModal();
+        await loadBalance();
+        renderGrid();
+        showToast(data.message);
+      }
+    } catch (_) { $("modalMsg").textContent = "網路錯誤。"; }
+    finally {
+      $("modalConfirmBtn").disabled = false;
+      $("modalConfirmBtn").textContent = "確認購買";
+    }
+  });
+
+  // ── Use modal ─────────────────────────────────────────────────────────────
+  function openUseModal(itemId) {
+    const item = allItems.find(i => i.id === itemId);
+    if (!item) return;
+    pendingItem = item;
+    $("useModalEmoji").textContent = item.emoji;
+    $("useModalName").textContent  = item.name;
+    $("useModalDesc").textContent  = item.description;
+    $("useModalMsg").textContent   = "";
+    const needsTarget = SOCIAL_EFFECTS.includes(item.effect);
+    $("useModalTargetWrap").classList.toggle("hidden", !needsTarget);
+    $("useModalTarget").value = "";
+    const m = $("useModal");
+    m.style.display = "flex";
+  }
+
+  function closeUseModal() {
+    $("useModal").style.display = "none";
+    pendingItem = null;
+  }
+
+  $("useModal").addEventListener("click", e => { if (e.target === $("useModal")) closeUseModal(); });
+
+  $("useModalConfirmBtn").addEventListener("click", async () => {
+    if (!pendingItem) return;
+    $("useModalConfirmBtn").disabled = true;
+    $("useModalConfirmBtn").textContent = "使用中...";
+    const target = $("useModalTarget").value.trim();
+    try {
+      const res  = await fetch("/api/shop/use", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: ACCOUNT, item_id: pendingItem.id, target }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        $("useModalMsg").textContent = data.error;
+        $("useModalMsg").className   = "text-xs text-center min-h-4 text-rose-300";
+      } else {
+        inventory = data.inventory;
+        effects   = data.effects || {};
+        closeUseModal();
+        await loadBalance();
+        renderGrid();
+        renderEffects();
+        showToast(data.message);
+      }
+    } catch (_) { $("useModalMsg").textContent = "網路錯誤。"; }
+    finally {
+      $("useModalConfirmBtn").disabled = false;
+      $("useModalConfirmBtn").textContent = "使用";
+    }
+  });
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  loadAll();
+</script>
+</body>
+</html>

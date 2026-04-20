@@ -253,6 +253,25 @@
       </div>
     </div>
 
+    <!-- Puzzle shortcut banner -->
+    <div class="glass rounded-[28px] px-6 py-5 flex items-center justify-between gap-4">
+      <div>
+        <p class="field-label">解謎賺幣</p>
+        <h2 class="mt-1 text-lg font-semibold">Puzzle Challenge</h2>
+        <p class="mt-1 text-sm text-slate-400">答對 <span class="text-mint font-semibold">+1000 CPC</span>，答錯 <span class="text-rose-300 font-semibold">−10 CPC</span>，共 50 道謎題。</p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <a id="puzzleLink" href="/puzzle" target="_blank" rel="noopener"
+          class="no-underline text-sm font-semibold px-4 py-2.5 rounded-2xl border border-mint/30 bg-mint/10 text-mint hover:bg-mint/20 transition">
+          解謎 ↗
+        </a>
+        <a id="shopLink" href="/shop" target="_blank" rel="noopener"
+          class="no-underline text-sm font-semibold px-4 py-2.5 rounded-2xl border border-yellow-300/30 bg-yellow-300/10 text-yellow-300 hover:bg-yellow-300/20 transition">
+          商店 ↗
+        </a>
+      </div>
+    </div>
+
     <div id="tab-transfer" class="hidden space-y-6">
       <div class="glass rounded-[28px] p-8">
         <p class="field-label">Instant movement</p>
@@ -478,6 +497,8 @@
 
     function applyOverview(data) {
       state.account = data.account;
+      document.getElementById("puzzleLink").href = `/puzzle?account=${encodeURIComponent(data.account)}`;
+      document.getElementById("shopLink").href   = `/shop?account=${encodeURIComponent(data.account)}`;
       balanceValue.textContent = data.balance;
       transactionCount.textContent = data.transaction_count;
       latestBlock.textContent = data.latest_block;

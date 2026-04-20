@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCoin — 謎題挑戰</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { abyss:"#06111b", midnight:"#0b1f31", tide:"#12314b", trust:"#7dd3fc", mint:"#5eead4", glow:"#f6c86b" },
+          keyframes: {
+            rise: { "0%":{ opacity:"0", transform:"translateY(14px)" }, "100%":{ opacity:"1", transform:"translateY(0)" } },
+            pop:  { "0%":{ opacity:"0", transform:"scale(0.6)" }, "60%":{ transform:"scale(1.12)" }, "100%":{ opacity:"1", transform:"scale(1)" } },
+            slideIn: { "0%":{ transform:"translateX(100%)" }, "100%":{ transform:"translateX(0)" } },
+          },
+          animation: { rise:"rise 0.45s ease-out both", pop:"pop 0.35s ease-out both", slideIn:"slideIn 0.25s ease-out both" }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family:"Segoe UI Variable Display","Aptos",sans-serif;
+      background: radial-gradient(circle at 15% 10%,rgba(94,234,212,.10) 0%,transparent 30%),
+                  radial-gradient(circle at 85% 5%, rgba(125,211,252,.10) 0%,transparent 30%),
+                  linear-gradient(160deg,#041019 0%,#0a1f31 45%,#112d46 100%); }
+    .glass { background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05)); border:1px solid rgba(255,255,255,.11); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+    .btn-primary { border-radius:.875rem; background:linear-gradient(to right,#5eead4,#7dd3fc); padding:.65rem 1.2rem; font-weight:600; color:#06111b; transition:transform .15s,opacity .15s; font-size:.875rem; }
+    .btn-primary:hover:not(:disabled){ transform:scale(1.015); }
+    .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-ghost { border-radius:.875rem; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.05); padding:.55rem 1rem; color:#cbd5e1; transition:background .15s; font-size:.875rem; }
+    .btn-ghost:hover { background:rgba(255,255,255,.10); }
+    .field-label { display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; color:#94a3b8; margin-bottom:.4rem; }
+    .input-field { width:100%; border-radius:1rem; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.05); padding:.7rem 1rem; outline:none; color:#f1f5f9; }
+    .input-field::placeholder { color:#94a3b8; }
+    .input-field:focus { border-color:rgba(94,234,212,.35); }
+    .hint-box { border-radius:1rem; border:1px solid rgba(246,200,107,.25); background:rgba(246,200,107,.07); padding:.75rem 1rem; font-size:.875rem; color:#e2c97e; line-height:1.7; }
+    /* Active effect chips */
+    .fx-chip { display:inline-flex; align-items:center; gap:.25rem; border-radius:999px; padding:.2rem .65rem; font-size:.7rem; font-weight:600; }
+    .fx-shield   { background:rgba(125,211,252,.15); border:1px solid rgba(125,211,252,.3); color:#7dd3fc; }
+    .fx-double   { background:rgba(246,200,107,.15); border:1px solid rgba(246,200,107,.3); color:#f6c86b; }
+    .fx-hint     { background:rgba(167,139,250,.15); border:1px solid rgba(167,139,250,.3); color:#a78bfa; }
+    .fx-moon     { background:rgba(94,234,212,.15);  border:1px solid rgba(94,234,212,.3);  color:#5eead4; }
+    .fx-choose3  { background:rgba(248,113,113,.15); border:1px solid rgba(248,113,113,.3); color:#f87171; }
+    /* Bag drawer */
+    #bagDrawer { position:fixed; top:0; right:0; height:100%; width:min(360px,100vw); z-index:300;
+      background:linear-gradient(180deg,rgba(11,31,49,.97),rgba(4,16,25,.98));
+      border-left:1px solid rgba(255,255,255,.10); transform:translateX(100%); transition:transform .25s ease-out;
+      display:flex; flex-direction:column; }
+    #bagDrawer.open { transform:translateX(0); }
+    #bagOverlay { position:fixed; inset:0; z-index:299; background:rgba(0,0,0,.45); display:none; }
+    #bagOverlay.open { display:block; }
+    .inv-item-card { border-radius:1.25rem; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); padding:.85rem 1rem; display:flex; align-items:center; gap:.75rem; }
+    /* Choose-3 cards */
+    .choose-card { border-radius:1.25rem; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.04); padding:1rem; cursor:pointer; transition:border-color .2s,background .2s; }
+    .choose-card:hover { border-color:rgba(94,234,212,.3); background:rgba(94,234,212,.06); }
+    /* Toast */
+    #toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); border-radius:1rem; padding:.7rem 1.4rem; font-size:.875rem; font-weight:600; z-index:999; pointer-events:none; max-width:90vw; text-align:center; display:none; }
+    /* Delta float */
+    #deltaBadge { position:fixed; top:28%; left:50%; transform:translateX(-50%); pointer-events:none; font-size:3rem; font-weight:900; text-shadow:0 0 24px currentColor; z-index:998; display:none; }
+    /* Social input modal */
+    #socialModal { position:fixed; inset:0; z-index:400; background:rgba(4,16,25,.85); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+
+<!-- Bag overlay -->
+<div id="bagOverlay" onclick="closeBag()"></div>
+
+<!-- ── Bag drawer ─────────────────────────────────────────────────────────── -->
+<div id="bagDrawer">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+    <p class="font-semibold">🎒 我的背包</p>
+    <button onclick="closeBag()" class="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+  </div>
+  <!-- Active effects summary -->
+  <div id="drawerEffects" class="px-5 py-3 border-b border-white/10 hidden">
+    <p class="field-label mb-2">當前啟動效果</p>
+    <div id="drawerEffectsList" class="flex flex-wrap gap-2"></div>
+  </div>
+  <!-- Inventory list -->
+  <div id="bagList" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+    <p class="text-sm text-slate-400 text-center py-8">背包是空的</p>
+  </div>
+</div>
+
+<!-- ── Social target modal ────────────────────────────────────────────────── -->
+<div id="socialModal">
+  <div class="glass w-full max-w-sm rounded-[24px] p-6 space-y-4 animate-pop">
+    <p class="font-semibold" id="socialModalTitle">指定目標帳號</p>
+    <input id="socialTarget" class="input-field" placeholder="輸入對方帳號 ID">
+    <div class="flex gap-3">
+      <button id="socialConfirmBtn" class="btn-primary flex-1">確認</button>
+      <button onclick="closeSocialModal()" class="btn-ghost">取消</button>
+    </div>
+    <p id="socialMsg" class="text-xs text-center text-rose-300 min-h-4"></p>
+  </div>
+</div>
+
+<!-- ── Choose-3 modal ─────────────────────────────────────────────────────── -->
+<div id="choose3Modal" style="position:fixed;inset:0;z-index:400;background:rgba(4,16,25,.9);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;">
+  <div class="glass w-full max-w-lg rounded-[28px] p-6 space-y-4 animate-pop">
+    <p class="field-label">傳說 RPG 骰</p>
+    <p class="font-semibold text-lg">選一道你最有把握的謎題</p>
+    <div id="choose3List" class="space-y-3"></div>
+  </div>
+</div>
+
+<!-- ── Main content ───────────────────────────────────────────────────────── -->
+<div class="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+
+  <!-- Header -->
+  <header class="glass mb-5 flex items-center justify-between rounded-[28px] px-5 py-4 animate-rise">
+    <div class="flex items-center gap-3">
+      <button onclick="window.close()" class="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition">✕</button>
+      <div>
+        <p class="font-semibold">謎題挑戰</p>
+        <p class="text-xs text-slate-400">答對 <span class="text-mint font-semibold">+1000 CPC</span> · 答錯 <span class="text-rose-300 font-semibold">−10 CPC</span></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-right">
+        <p class="field-label">餘額</p>
+        <p class="text-sm font-bold text-mint" id="balanceDisplay">— CPC</p>
+      </div>
+      <!-- Bag button -->
+      <button onclick="openBag()" class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-lg">
+        🎒
+        <span id="bagBadge" class="hidden absolute -top-1 -right-1 h-4 w-4 rounded-full bg-glow text-abyss text-[10px] font-bold flex items-center justify-center"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Progress -->
+  <div class="mb-5 px-1">
+    <div class="mb-1 flex justify-between text-xs text-slate-500">
+      <span>本次進度</span><span><span id="doneCount">0</span> / 50</span>
+    </div>
+    <div class="h-1.5 overflow-hidden rounded-full bg-white/10">
+      <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-mint to-trust transition-all duration-500" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Active effects chips (shown above puzzle card) -->
+  <div id="effectsBar" class="hidden mb-4 flex flex-wrap gap-2 px-1"></div>
+
+  <!-- Puzzle card -->
+  <div class="glass rounded-[28px] p-7 space-y-5 animate-rise">
+
+    <div class="flex items-center justify-between gap-3">
+      <span id="categoryBadge" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-yellow-400/10 border border-yellow-400/25 text-yellow-300">載入中</span>
+      <span class="text-xs text-slate-500" id="puzzleId">#—</span>
+    </div>
+
+    <div>
+      <p class="field-label">謎題</p>
+      <p id="questionText" class="mt-2 text-base leading-8">讀取中...</p>
+    </div>
+
+    <div>
+      <p class="field-label">提示</p>
+      <div id="hintBox" class="hint-box">讀取中...</div>
+      <!-- Super hint (from potion) -->
+      <div id="superHintBox" class="hidden mt-2 rounded-xl border border-purple-400/25 bg-purple-400/8 px-4 py-3 text-sm text-purple-300 leading-7"></div>
+    </div>
+
+    <div>
+      <label class="field-label">你的答案</label>
+      <textarea id="answerInput" rows="3" class="input-field resize-none" placeholder="輸入答案... (Enter 送出)"></textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <button id="submitBtn" class="btn-primary flex-1">送出答案</button>
+      <button id="skipBtn" class="btn-ghost">換題</button>
+    </div>
+
+    <!-- Result -->
+    <div id="resultPanel" class="hidden rounded-[20px] border p-5 space-y-3">
+      <div class="flex items-center gap-3">
+        <span id="resultIcon" class="text-2xl"></span>
+        <p id="resultTitle" class="font-semibold text-lg"></p>
+      </div>
+      <!-- Effect triggered notice -->
+      <div id="effectNotice" class="hidden rounded-xl border border-mint/20 bg-mint/8 px-3 py-2 text-xs text-mint"></div>
+      <p id="feedbackText" class="text-sm text-slate-300 leading-7"></p>
+      <div id="officialWrap" class="hidden rounded-xl border border-white/10 bg-white/5 p-4">
+        <p class="field-label mb-1">正確答案</p>
+        <p id="officialText" class="text-sm text-slate-200 leading-7"></p>
+      </div>
+      <button id="nextBtn" class="btn-primary w-full">下一題 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delta badge -->
+<div id="deltaBadge"></div>
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+const params  = new URLSearchParams(location.search);
+const ACCOUNT = params.get("account") || "guest";
+
+const answered = new Set();
+let currentPuzzle = null;
+let submitting    = false;
+let inventory     = {};   // { item_id: count }
+let effects       = {};   // active effects from server
+let allShopItems  = [];
+let pendingSocialItemId = null;
+
+const $ = id => document.getElementById(id);
+const CAT_CLS = { narrative:"bg-yellow-400/10 border border-yellow-400/25 text-yellow-300", logic:"bg-sky-400/10 border border-sky-400/25 text-sky-300", wordplay:"bg-mint/10 border border-mint/25 text-mint" };
+
+// ── Shop items (for name/emoji lookup) ───────────────────────────────────────
+async function loadShopItems() {
+  try {
+    const d = await (await fetch("/api/shop/items")).json();
+    if (d.ok) allShopItems = d.items;
+  } catch(_) {}
+}
+
+function itemInfo(id) {
+  return allShopItems.find(i => i.id === id) || { name: id, emoji: "📦", description: "", effect: "" };
+}
+
+// ── Balance & inventory ───────────────────────────────────────────────────────
+async function refreshBalance() {
+  try {
+    const d = await (await fetch(`/api/overview?account=${encodeURIComponent(ACCOUNT)}`)).json();
+    $("balanceDisplay").textContent = d.balance + " CPC";
+  } catch(_) {}
+}
+
+async function loadInventory() {
+  try {
+    const d = await (await fetch(`/api/shop/inventory?account=${encodeURIComponent(ACCOUNT)}`)).json();
+    if (d.ok) { inventory = d.inventory; effects = d.effects || {}; }
+  } catch(_) {}
+}
+
+function totalItems() {
+  return Object.values(inventory).reduce((a,b) => a + b, 0);
+}
+
+// ── Effects bar (above puzzle card) ──────────────────────────────────────────
+const EFFECT_LABELS = {
+  shield:        { cls:"fx-shield",  label:"🛡️ 護盾啟動", desc:"下一題答錯不扣錢" },
+  double_reward: { cls:"fx-double",  label:"💎 雙倍獎勵", desc:"下一題答對得 2000 CPC" },
+  super_hint:    { cls:"fx-hint",    label:"🧪 超級提示",  desc:"剩餘加強提示次數" },
+  moonlight:     { cls:"fx-moon",    label:"🌙 月光精華", desc:"獎勵 ×1.5" },
+  choose_3:      { cls:"fx-choose3", label:"🎭 選題骰",   desc:"本題可從 3 題中選" },
+  free_skip:     { cls:"fx-hint",    label:"📜 免費換題", desc:"下次換題不罰款" },
+};
+
+function renderEffectsBar() {
+  const bar = $("effectsBar");
+  const active = Object.entries(effects).filter(([k,v]) => v && EFFECT_LABELS[k]);
+  if (!active.length) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  bar.classList.remove("hidden");
+  bar.style.display = "flex";
+  bar.innerHTML = active.map(([k]) => {
+    const info = EFFECT_LABELS[k];
+    const extra = k === "super_hint" ? ` ×${effects[k]}` : "";
+    return `<span class="fx-chip ${info.cls}" title="${info.desc}">${info.label}${extra}</span>`;
+  }).join("");
+}
+
+// ── Bag drawer ────────────────────────────────────────────────────────────────
+function openBag() {
+  renderBag();
+  $("bagDrawer").classList.add("open");
+  $("bagOverlay").classList.add("open");
+}
+function closeBag() {
+  $("bagDrawer").classList.remove("open");
+  $("bagOverlay").classList.remove("open");
+}
+
+const SOCIAL_EFFECTS = ["send_gift", "curse_target", "bless_target"];
+const NEEDS_TARGET   = new Set(SOCIAL_EFFECTS);
+
+function renderBag() {
+  // Badge count
+  const total = totalItems();
+  const badge = $("bagBadge");
+  if (total > 0) { badge.classList.remove("hidden"); badge.textContent = total > 9 ? "9+" : total; }
+  else badge.classList.add("hidden");
+
+  // Drawer effects
+  const drawerFx = $("drawerEffects");
+  const fxList   = $("drawerEffectsList");
+  const active   = Object.entries(effects).filter(([k,v]) => v && EFFECT_LABELS[k]);
+  if (active.length) {
+    drawerFx.classList.remove("hidden");
+    fxList.innerHTML = active.map(([k]) => {
+      const info = EFFECT_LABELS[k];
+      return `<span class="fx-chip ${info.cls}">${info.label}</span>`;
+    }).join("");
+  } else {
+    drawerFx.classList.add("hidden");
+  }
+
+  // Inventory list
+  const bagList = $("bagList");
+  const ownedIds = Object.keys(inventory).filter(id => inventory[id] > 0);
+  if (!ownedIds.length) {
+    bagList.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">背包是空的<br><span class="text-xs">前往商店購買道具</span></p>`;
+    return;
+  }
+  bagList.innerHTML = ownedIds.map(id => {
+    const info  = itemInfo(id);
+    const count = inventory[id];
+    return `
+      <div class="inv-item-card">
+        <span class="text-2xl shrink-0">${escHtml(info.emoji)}</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold">${escHtml(info.name)} <span class="text-glow text-xs">×${count}</span></p>
+          <p class="text-xs text-slate-400 leading-5 mt-0.5">${escHtml(info.description)}</p>
+        </div>
+        <button onclick="useItemFromBag('${id}')"
+          class="shrink-0 rounded-xl border border-mint/25 bg-mint/10 text-mint px-3 py-1.5 text-xs font-semibold hover:bg-mint/20 transition">
+          使用
+        </button>
+      </div>`;
+  }).join("");
+}
+
+// ── Use item ──────────────────────────────────────────────────────────────────
+async function useItemFromBag(itemId) {
+  const info = itemInfo(itemId);
+  // Social items need a target
+  if (NEEDS_TARGET.has(info.effect)) {
+    pendingSocialItemId = itemId;
+    $("socialModalTitle").textContent = `「${info.emoji} ${info.name}」— 指定目標帳號`;
+    $("socialTarget").value = "";
+    $("socialMsg").textContent = "";
+    $("socialModal").style.display = "flex";
+    return;
+  }
+  await doUseItem(itemId, "");
+}
+
+async function doUseItem(itemId, target) {
+  try {
+    const res  = await fetch("/api/shop/use", {
+      method: "POST", headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ account: ACCOUNT, item_id: itemId, target }),
+    });
+    const data = await res.json();
+    if (!data.ok) { showToast(data.error, false); return; }
+
+    inventory = data.inventory || inventory;
+    effects   = data.effects   || effects;
+    await refreshBalance();
+    renderBag();
+    renderEffectsBar();
+    showToast(data.message);
+
+    // 傳說骰：自動觸發選題
+    if (itemId === "legend_die") {
+      closeBag();
+      await loadChoose3();
+      return;
+    }
+  } catch(_) { showToast("使用失敗，請重試。", false); }
+}
+
+// ── Social modal ──────────────────────────────────────────────────────────────
+function closeSocialModal() { $("socialModal").style.display = "none"; pendingSocialItemId = null; }
+
+$("socialConfirmBtn").addEventListener("click", async () => {
+  const target = $("socialTarget").value.trim();
+  if (!target) { $("socialMsg").textContent = "請輸入目標帳號。"; return; }
+  closeSocialModal();
+  closeBag();
+  await doUseItem(pendingSocialItemId, target);
+});
+
+// ── Choose-3 (Legend Die) ─────────────────────────────────────────────────────
+async function loadChoose3() {
+  const excl = [...answered].map(id => `exclude=${encodeURIComponent(id)}`).join("&");
+  const d    = await (await fetch(`/api/puzzle/three?${excl}`)).json();
+  if (!d.ok) return;
+  const modal = $("choose3Modal");
+  $("choose3List").innerHTML = d.puzzles.map((p, i) => `
+    <div class="choose-card" onclick="pickPuzzle(${i})">
+      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${CAT_CLS[p.category] || ''} mb-2">${escHtml(p.category_label)}</span>
+      <p class="text-sm leading-7">${escHtml(p.question)}</p>
+    </div>`).join("");
+  modal._puzzles = d.puzzles;
+  modal.style.display = "flex";
+}
+
+function pickPuzzle(idx) {
+  const modal  = $("choose3Modal");
+  const puzzle = modal._puzzles[idx];
+  modal.style.display = "none";
+  applyPuzzle(puzzle);
+}
+
+// ── Load puzzle ───────────────────────────────────────────────────────────────
+async function loadPuzzle() {
+  // If choose_3 effect is active, use legend die flow
+  if (effects["choose_3"]) {
+    delete effects["choose_3"];          // will be cleared server-side on use
+    await loadChoose3();
+    return;
+  }
+  $("resultPanel").classList.add("hidden");
+  $("answerInput").value = "";
+  $("submitBtn").disabled = false;
+  $("submitBtn").textContent = "送出答案";
+  $("superHintBox").classList.add("hidden");
+  $("questionText").textContent = "讀取中...";
+
+  const excl = [...answered].map(id => `exclude=${encodeURIComponent(id)}`).join("&");
+  try {
+    const d = await (await fetch(`/api/puzzle/random?${excl}`)).json();
+    if (!d.ok) { $("questionText").textContent = "無法載入謎題。"; return; }
+    applyPuzzle(d.puzzle);
+  } catch(_) { $("questionText").textContent = "網路錯誤，請重整。"; }
+}
+
+function applyPuzzle(puzzle) {
+  $("resultPanel").classList.add("hidden");
+  $("answerInput").value = "";
+  $("submitBtn").disabled = false;
+  $("submitBtn").textContent = "送出答案";
+  $("superHintBox").classList.add("hidden");
+
+  currentPuzzle = puzzle;
+  $("puzzleId").textContent   = "#" + puzzle.id;
+  $("questionText").textContent = puzzle.question;
+  $("hintBox").textContent    = puzzle.hint || "無提示";
+
+  const badge = $("categoryBadge");
+  badge.className = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide " + (CAT_CLS[puzzle.category] || CAT_CLS.logic);
+  badge.textContent = puzzle.category_label || puzzle.category;
+
+  // Show super hint if active
+  if (effects["super_hint"] > 0) {
+    $("superHintBox").textContent = `🧪 超級提示：「${puzzle.hint || puzzle.question}」— 嘗試從關鍵字出發。`;
+    $("superHintBox").classList.remove("hidden");
+  }
+  $("answerInput").focus();
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+async function submitAnswer() {
+  if (submitting || !currentPuzzle) return;
+  const answer = $("answerInput").value.trim();
+  if (!answer) { $("answerInput").focus(); return; }
+
+  submitting = true;
+  $("submitBtn").disabled = true;
+  $("submitBtn").textContent = "AI 評分中...";
+
+  try {
+    const res  = await fetch("/api/puzzle/answer", {
+      method: "POST", headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ account: ACCOUNT, puzzle_id: currentPuzzle.id, answer }),
+    });
+    const data = await res.json();
+
+    // Update local effects (server clears used effects)
+    await loadInventory();
+    renderEffectsBar();
+    renderBag();
+
+    answered.add(currentPuzzle.id);
+    $("doneCount").textContent = answered.size;
+    $("progressBar").style.width = Math.min(100, answered.size / 50 * 100) + "%";
+
+    const panel = $("resultPanel");
+    panel.classList.remove("hidden");
+
+    // Effect notice
+    const fxNotice = $("effectNotice");
+    if (data.active_effects && data.active_effects.length) {
+      const names = { shield:"🛡️ 護盾吸收了罰款", double_reward:"💎 雙倍水晶觸發！", moonlight:"🌙 月光精華加成！", cursed_penalty:"💀 遭詛咒！罰款加重" };
+      const notices = data.active_effects.map(e => names[e] || e).join("　");
+      fxNotice.textContent = notices;
+      fxNotice.classList.remove("hidden");
+    } else {
+      fxNotice.classList.add("hidden");
+    }
+
+    if (data.correct) {
+      panel.className = "rounded-[20px] border border-mint/30 bg-mint/10 p-5 space-y-3";
+      $("resultIcon").textContent  = "✅";
+      $("resultTitle").textContent = `答對了！ +${data.delta} CPC`;
+      $("resultTitle").className   = "font-semibold text-lg text-mint";
+      $("officialWrap").classList.add("hidden");
+      showDelta("+" + data.delta, "#5eead4");
+    } else {
+      panel.className = "rounded-[20px] border border-rose-400/30 bg-rose-400/10 p-5 space-y-3";
+      $("resultIcon").textContent  = "❌";
+      const pen = Math.abs(data.delta || 0);
+      $("resultTitle").textContent = pen > 0 ? `答錯了。 −${pen} CPC` : `答錯了。（護盾保護）`;
+      $("resultTitle").className   = "font-semibold text-lg text-rose-300";
+      if (data.official_answer) {
+        $("officialWrap").classList.remove("hidden");
+        $("officialText").textContent = data.official_answer;
+      } else { $("officialWrap").classList.add("hidden"); }
+      if (pen > 0) showDelta("−" + pen, "#fca5a5");
+    }
+
+    $("feedbackText").textContent = data.feedback || "";
+    if (data.overview) $("balanceDisplay").textContent = data.overview.balance + " CPC";
+
+    // Decrement super_hint counter locally
+    if (effects["super_hint"] > 0) {
+      effects["super_hint"]--;
+      if (effects["super_hint"] <= 0) delete effects["super_hint"];
+      renderEffectsBar();
+    }
+
+  } catch(_) { showToast("提交失敗，請確認伺服器運作中。", false); }
+  finally {
+    submitting = false;
+    $("submitBtn").textContent = "送出答案";
+  }
+}
+
+// ── Delta float ───────────────────────────────────────────────────────────────
+function showDelta(text, color) {
+  const el = $("deltaBadge");
+  el.textContent = text; el.style.color = color; el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 1800);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, ok = true) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.cssText = `display:block;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);border-radius:1rem;padding:.7rem 1.4rem;font-size:.875rem;font-weight:600;z-index:999;pointer-events:none;max-width:90vw;text-align:center;border:1px solid ${ok?"rgba(94,234,212,.3)":"rgba(248,113,113,.3)"};background:${ok?"#041824":"#1a0608"};color:${ok?"#5eead4":"#fca5a5"};`;
+  setTimeout(() => { t.style.display = "none"; }, 3000);
+}
+
+// ── Escape HTML ───────────────────────────────────────────────────────────────
+function escHtml(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+// ── Events ────────────────────────────────────────────────────────────────────
+$("submitBtn").addEventListener("click", submitAnswer);
+$("skipBtn").addEventListener("click", () => {
+  if (effects["free_skip"]) {
+    delete effects["free_skip"];
+    showToast("傳送捲軸使用！免費換題。");
+  }
+  loadPuzzle();
+});
+$("nextBtn").addEventListener("click", loadPuzzle);
+$("answerInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitAnswer(); }
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async () => {
+  await loadShopItems();
+  await loadInventory();
+  await refreshBalance();
+  renderEffectsBar();
+  renderBag();
+  loadPuzzle();
+})();
+</script>
+</body>
+</html>
