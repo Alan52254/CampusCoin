@@ -1,0 +1,6 @@
+Sha256 of previous block: d68247d095bf5ec66fa14dc5caa3c95b3f0ce8750dca696ff967ff5e346f70db
+Next block: None
+demo, angel, 150
+demo, angel, 500
+angel, demo, 2466
+angel, demo, 100
