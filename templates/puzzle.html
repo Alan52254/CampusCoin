@@ -90,9 +90,11 @@
 <div id="socialModal">
   <div class="glass w-full max-w-sm rounded-[24px] p-6 space-y-4 animate-pop">
     <p class="font-semibold" id="socialModalTitle">指定目標帳號</p>
-    <input id="socialTarget" class="input-field" placeholder="輸入對方帳號 ID">
+    <input id="socialTarget" class="input-field" placeholder="輸入對方帳號（留空則使用在自己）">
+    <p class="text-xs text-slate-400">留空 = 使用在自己身上</p>
     <div class="flex gap-3">
-      <button id="socialConfirmBtn" class="btn-primary flex-1">確認</button>
+      <button id="socialConfirmBtn" class="btn-primary flex-1">送出</button>
+      <button onclick="selfUseItem()" class="btn-ghost flex-1">用在自己</button>
       <button onclick="closeSocialModal()" class="btn-ghost">取消</button>
     </div>
     <p id="socialMsg" class="text-xs text-center text-rose-300 min-h-4"></p>
@@ -136,7 +138,7 @@
   <!-- Progress -->
   <div class="mb-5 px-1">
     <div class="mb-1 flex justify-between text-xs text-slate-500">
-      <span>本次進度</span><span><span id="doneCount">0</span> / 50</span>
+      <span>本次進度</span><span><span id="doneCount">0</span> / 550</span>
     </div>
     <div class="h-1.5 overflow-hidden rounded-full bg-white/10">
       <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-mint to-trust transition-all duration-500" style="width:0%"></div>
@@ -255,15 +257,28 @@ const EFFECT_LABELS = {
   free_skip:     { cls:"fx-hint",    label:"📜 免費換題", desc:"下次換題不罰款" },
 };
 
+function isEffectActive(k, v) {
+  if (!v) return false;
+  if (k === "free_skip" && typeof v === "object") {
+    return v.expires > Date.now() / 1000;
+  }
+  return true;
+}
+
 function renderEffectsBar() {
   const bar = $("effectsBar");
-  const active = Object.entries(effects).filter(([k,v]) => v && EFFECT_LABELS[k]);
+  const active = Object.entries(effects).filter(([k,v]) => isEffectActive(k, v) && EFFECT_LABELS[k]);
   if (!active.length) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   bar.classList.remove("hidden");
   bar.style.display = "flex";
   bar.innerHTML = active.map(([k]) => {
     const info = EFFECT_LABELS[k];
-    const extra = k === "super_hint" ? ` ×${effects[k]}` : "";
+    let extra = "";
+    if (k === "super_hint") extra = ` ×${effects[k]}`;
+    if (k === "free_skip" && typeof effects[k] === "object") {
+      const secs = Math.max(0, Math.ceil(effects[k].expires - Date.now() / 1000));
+      extra = ` ${secs}s`;
+    }
     return `<span class="fx-chip ${info.cls}" title="${info.desc}">${info.label}${extra}</span>`;
   }).join("");
 }
@@ -292,7 +307,7 @@ function renderBag() {
   // Drawer effects
   const drawerFx = $("drawerEffects");
   const fxList   = $("drawerEffectsList");
-  const active   = Object.entries(effects).filter(([k,v]) => v && EFFECT_LABELS[k]);
+  const active   = Object.entries(effects).filter(([k,v]) => isEffectActive(k, v) && EFFECT_LABELS[k]);
   if (active.length) {
     drawerFx.classList.remove("hidden");
     fxList.innerHTML = active.map(([k]) => {
@@ -371,12 +386,19 @@ async function doUseItem(itemId, target) {
 // ── Social modal ──────────────────────────────────────────────────────────────
 function closeSocialModal() { $("socialModal").style.display = "none"; pendingSocialItemId = null; }
 
-$("socialConfirmBtn").addEventListener("click", async () => {
-  const target = $("socialTarget").value.trim();
-  if (!target) { $("socialMsg").textContent = "請輸入目標帳號。"; return; }
+async function selfUseItem() {
+  const id = pendingSocialItemId;
   closeSocialModal();
   closeBag();
-  await doUseItem(pendingSocialItemId, target);
+  await doUseItem(id, "");   // empty target = use on self
+}
+
+$("socialConfirmBtn").addEventListener("click", async () => {
+  const target = $("socialTarget").value.trim();
+  const id = pendingSocialItemId;
+  closeSocialModal();
+  closeBag();
+  await doUseItem(id, target);   // empty or filled target both allowed
 });
 
 // ── Choose-3 (Legend Die) ─────────────────────────────────────────────────────
@@ -472,7 +494,7 @@ async function submitAnswer() {
 
     answered.add(currentPuzzle.id);
     $("doneCount").textContent = answered.size;
-    $("progressBar").style.width = Math.min(100, answered.size / 50 * 100) + "%";
+    $("progressBar").style.width = Math.min(100, answered.size / 550 * 100) + "%";
 
     const panel = $("resultPanel");
     panel.classList.remove("hidden");
@@ -545,11 +567,18 @@ function escHtml(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"
 
 // ── Events ────────────────────────────────────────────────────────────────────
 $("submitBtn").addEventListener("click", submitAnswer);
-$("skipBtn").addEventListener("click", () => {
-  if (effects["free_skip"]) {
-    delete effects["free_skip"];
-    showToast("傳送捲軸使用！免費換題。");
-  }
+$("skipBtn").addEventListener("click", async () => {
+  try {
+    const res  = await fetch("/api/puzzle/skip", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ account: ACCOUNT }),
+    });
+    const data = await res.json();
+    if (data.overview) $("balanceDisplay").textContent = data.overview.balance + " CPC";
+    showToast(data.message, data.free || data.deducted === 0);
+    await loadInventory();
+    renderEffectsBar();
+  } catch(_) {}
   loadPuzzle();
 });
 $("nextBtn").addEventListener("click", loadPuzzle);

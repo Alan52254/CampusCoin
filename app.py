@@ -597,6 +597,45 @@ def api_puzzle_answer():
         })
 
 
+@app.post("/api/puzzle/skip")
+def api_puzzle_skip():
+    """換題端點：有傳送捲軸效果免費，否則扣 10 CPC。"""
+    import time as _time
+    payload = request.get_json(silent=True) or {}
+    account = (payload.get("account") or "").strip()
+    if not account:
+        return jsonify({"ok": False, "error": "account required."}), 400
+
+    free = False
+    if SHOP_AVAILABLE:
+        fx = get_effects(account)
+        fs = fx.get("free_skip")
+        if isinstance(fs, dict) and fs.get("expires", 0) > _time.time():
+            free = True
+        elif fs:
+            clear_effect(account, "free_skip")
+
+    if free:
+        return jsonify({
+            "ok": True, "free": True, "deducted": 0,
+            "message": "📜 傳送捲軸有效！免費換題。",
+            "overview": build_dashboard_payload(account),
+        })
+
+    SKIP_PENALTY = 10
+    balance = get_balance(account)
+    deduct = min(SKIP_PENALTY, balance) if balance > 0 else 0
+    if deduct > 0:
+        with ledger_lock():
+            append_transaction(account, "angel", deduct)
+
+    return jsonify({
+        "ok": True, "free": False, "deducted": deduct,
+        "message": f"換題扣除 {deduct} CPC。" if deduct > 0 else "換題。",
+        "overview": build_dashboard_payload(account),
+    })
+
+
 @app.get("/puzzle")
 def puzzle_page():
     account = request.args.get("account", "b1128015")
@@ -693,11 +732,9 @@ def api_shop_use():
         with ledger_lock():
             append_transaction("angel", account, result["cpc_delta"])
 
-    # 若有社交轉帳（禮盒送 500 CPC）
     extra = result.get("extra", {})
-    if extra.get("gift_to"):
-        with ledger_lock():
-            append_transaction(account, extra["gift_to"], 500)
+    # 若有社交轉帳（禮盒自開給自己，CPC 由 cpc_delta 處理）
+    # gift_to_bag: item已由 shop_inventory 直接寫入對方背包，不需轉帳
 
     # 若觸發驗證（礦工頭盔）
     if extra.get("trigger_verify"):

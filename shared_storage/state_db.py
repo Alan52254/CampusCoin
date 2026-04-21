@@ -263,19 +263,20 @@ def update_puzzle_session(session_id: str, **kwargs):
 
 def init_puzzle_db(puzzles_list: list) -> None:
     with db_transaction() as conn:
-        cur = conn.execute("SELECT COUNT(*) FROM puzzle_knowledge")
-        if cur.fetchone()[0] == 0:
-            for p in puzzles_list:
-                embed_text = f"Question: {p['question']} Answer: {p['answer']}"
-                conn.execute("""
-                    INSERT INTO puzzle_knowledge (id, category, difficulty, question, hint, answer, key_points, aliases, embedding_text)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    p["id"], p["category"], p.get("difficulty", "normal"), p["question"],
-                    p.get("hint", ""), p["answer"], json.dumps(p.get("key_points", []), ensure_ascii=False),
-                    json.dumps(p.get("aliases", []), ensure_ascii=False), embed_text
-                ))
-            print("Migrated PUZZLES array to puzzle_knowledge SQLite table.")
+        added = 0
+        for p in puzzles_list:
+            embed_text = "Question: {} Answer: {}".format(p['question'], p['answer'])
+            cur = conn.execute("""
+                INSERT OR IGNORE INTO puzzle_knowledge (id, category, difficulty, question, hint, answer, key_points, aliases, embedding_text)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                p["id"], p["category"], p.get("difficulty", "normal"), p["question"],
+                p.get("hint", ""), p["answer"], json.dumps(p.get("key_points", []), ensure_ascii=False),
+                json.dumps(p.get("aliases", []), ensure_ascii=False), embed_text
+            ))
+            added += cur.rowcount
+        if added:
+            print("Added {} new puzzle(s) to puzzle_knowledge.".format(added))
 
 def get_puzzle_from_db(puzzle_id: str) -> dict:
     with db_transaction() as conn:
@@ -285,7 +286,8 @@ def get_puzzle_from_db(puzzle_id: str) -> dict:
         res = dict(row)
         res["key_points"] = json.loads(res["key_points"])
         res["aliases"] = json.loads(res["aliases"])
-        res["category_label"] = "敘事推理" if res["category"] == "narrative" else "邏輯算術" if res["category"] == "logic" else "語言諧音"
+        _CAT_LABELS = {"narrative": "敘事推理", "logic": "邏輯算術", "wordplay": "猜謎語"}
+        res["category_label"] = _CAT_LABELS.get(res["category"], res.get("category_label", "謎題"))
         return res
 
 def get_all_puzzles_from_db() -> list:
@@ -296,7 +298,8 @@ def get_all_puzzles_from_db() -> list:
             res = dict(row)
             res["key_points"] = json.loads(res["key_points"])
             res["aliases"] = json.loads(res["aliases"])
-            res["category_label"] = "敘事推理" if res["category"] == "narrative" else "邏輯算術" if res["category"] == "logic" else "語言諧音"
+            _CAT_LABELS = {"narrative": "敘事推理", "logic": "邏輯算術", "wordplay": "猜謎語"}
+            res["category_label"] = _CAT_LABELS.get(res["category"], res.get("category_label", "謎題"))
             puzzles.append(res)
     return puzzles
 

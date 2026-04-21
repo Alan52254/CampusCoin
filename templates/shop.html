@@ -149,12 +149,14 @@
       </div>
     </div>
     <p id="useModalDesc" class="text-sm text-slate-300 leading-7"></p>
-    <div id="useModalTargetWrap" class="hidden">
+    <div id="useModalTargetWrap" class="hidden space-y-2">
       <label class="field-label">目標帳號</label>
-      <input id="useModalTarget" class="input-field" placeholder="輸入對方帳號 ID">
+      <input id="useModalTarget" class="input-field" placeholder="輸入對方帳號（留空 = 用在自己）">
+      <p class="text-xs text-slate-400">留空代表使用在自己身上</p>
     </div>
     <div class="flex gap-3 pt-1">
-      <button id="useModalConfirmBtn" class="btn-primary flex-1">使用</button>
+      <button id="useModalConfirmBtn" class="btn-primary flex-1">送出</button>
+      <button id="useModalSelfBtn" class="btn-ghost hidden" onclick="useOnSelf()">用在自己</button>
       <button onclick="closeUseModal()" class="btn-ghost">取消</button>
     </div>
     <p id="useModalMsg" class="text-xs text-center min-h-4 text-mint"></p>
@@ -346,6 +348,7 @@
     $("useModalMsg").textContent   = "";
     const needsTarget = SOCIAL_EFFECTS.includes(item.effect);
     $("useModalTargetWrap").classList.toggle("hidden", !needsTarget);
+    $("useModalSelfBtn").classList.toggle("hidden", !needsTarget);
     $("useModalTarget").value = "";
     const m = $("useModal");
     m.style.display = "flex";
@@ -356,6 +359,29 @@
     pendingItem = null;
   }
 
+  async function useOnSelf() {
+    const item = pendingItem;
+    closeUseModal();
+    await doUseItem(item, "");
+  }
+
+  async function doUseItem(item, target) {
+    try {
+      const res  = await fetch("/api/shop/use", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: ACCOUNT, item_id: item.id, target }),
+      });
+      const data = await res.json();
+      if (!data.ok) { showToast(data.error, false); return; }
+      inventory = data.inventory;
+      effects   = data.effects || {};
+      await loadBalance();
+      renderGrid();
+      renderEffects();
+      showToast(data.message);
+    } catch (_) { showToast("網路錯誤。", false); }
+  }
+
   $("useModal").addEventListener("click", e => { if (e.target === $("useModal")) closeUseModal(); });
 
   $("useModalConfirmBtn").addEventListener("click", async () => {
@@ -363,28 +389,13 @@
     $("useModalConfirmBtn").disabled = true;
     $("useModalConfirmBtn").textContent = "使用中...";
     const target = $("useModalTarget").value.trim();
+    const item   = pendingItem;
+    closeUseModal();
     try {
-      const res  = await fetch("/api/shop/use", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account: ACCOUNT, item_id: pendingItem.id, target }),
-      });
-      const data = await res.json();
-      if (!data.ok) {
-        $("useModalMsg").textContent = data.error;
-        $("useModalMsg").className   = "text-xs text-center min-h-4 text-rose-300";
-      } else {
-        inventory = data.inventory;
-        effects   = data.effects || {};
-        closeUseModal();
-        await loadBalance();
-        renderGrid();
-        renderEffects();
-        showToast(data.message);
-      }
-    } catch (_) { $("useModalMsg").textContent = "網路錯誤。"; }
-    finally {
+      await doUseItem(item, target);
+    } finally {
       $("useModalConfirmBtn").disabled = false;
-      $("useModalConfirmBtn").textContent = "使用";
+      $("useModalConfirmBtn").textContent = "送出";
     }
   });
 

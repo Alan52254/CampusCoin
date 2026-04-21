@@ -49,8 +49,9 @@ def use_item(account: str, item_id: str, target: str = "") -> dict:
         message = "雙倍水晶已啟動！下一題答對得 2000 CPC。"
 
     elif effect == "free_skip":
-        set_effect(account, "free_skip", True)
-        message = "傳送捲軸已啟動！下次 Skip 不計罰款。"
+        expires = time.time() + 60
+        set_effect(account, "free_skip", {"expires": expires})
+        message = "傳送捲軸已啟動！1 分鐘內換題不扣 CPC。"
 
     elif effect == "super_hint_3":
         fx = get_effects(account)
@@ -102,28 +103,34 @@ def use_item(account: str, item_id: str, target: str = "") -> dict:
 
     # ── 社交效果 ─────────────────────────────────────────────────────────────
     elif effect == "send_gift":
-        if not target:
-            add_item(account, item_id)   # 退還
-            return {"ok": False, "message": "請指定收禮帳號。", "cpc_delta": 0}
-        delta   = 500
-        extra["gift_to"] = target
-        message = f"已向 {target} 送出神秘禮盒（500 CPC）！"
+        recv = target if target else account
+        if recv == account:
+            # Open for self
+            delta = 500
+            message = "你打開了神秘禮盒！獲得 500 CPC！"
+        else:
+            # Send the gift_box item to recipient's bag — they open it themselves
+            add_item(recv, "gift_box")
+            extra["gift_to_bag"] = recv
+            message = f"🎁 禮盒已送入 {recv} 的背包！對方可以自己開啟。"
 
     elif effect == "curse_target":
-        if not target:
-            add_item(account, item_id)
-            return {"ok": False, "message": "請指定詛咒目標。", "cpc_delta": 0}
-        set_effect(target, "cursed_penalty", 50)
-        extra["cursed"] = target
-        message = f"詛咒已施放至 {target}！他下次答錯將罰 50 CPC。"
+        recv = target if target else account
+        set_effect(recv, "cursed_penalty", 50)
+        extra["cursed"] = recv
+        if recv == account:
+            message = "你詛咒了自己……下次答錯將罰 50 CPC。"
+        else:
+            message = f"詛咒已施放至 {recv}！他下次答錯將罰 50 CPC。"
 
     elif effect == "bless_target":
-        if not target:
-            add_item(account, item_id)
-            return {"ok": False, "message": "請指定祝福對象。", "cpc_delta": 0}
-        set_effect(target, "double_reward", True)
-        extra["blessed"] = target
-        message = f"祝福已傳送給 {target}！他下次答對獎勵翻倍。"
+        recv = target if target else account
+        set_effect(recv, "double_reward", True)
+        extra["blessed"] = recv
+        if recv == account:
+            message = "你祝福了自己！下次答對獎勵翻倍。"
+        else:
+            message = f"祝福已傳送給 {recv}！他下次答對獎勵翻倍。"
 
     # ── 特殊效果 ─────────────────────────────────────────────────────────────
     elif effect == "moonlight_10min":
@@ -143,6 +150,10 @@ def use_item(account: str, item_id: str, target: str = "") -> dict:
     elif effect in ("title_crown", "title_master", "hide_leaderboard"):
         set_effect(account, effect, True)
         message = f"「{item['name']}」已永久啟用！"
+
+    elif effect == "credit_plus3":
+        set_effect(account, "credit_plus3", True)
+        message = "🎓 恭喜！雲端系統學分 +3 已生效！（教授：等等，這不在系統裡...）"
 
     return {
         "ok":        True,
