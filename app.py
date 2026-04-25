@@ -50,6 +50,13 @@ try:
 except ImportError:
     SHOP_AVAILABLE = False
 
+# ── Friend system (always available — depends only on state_db) ───────────────
+try:
+    from state_db import send_friend_request, respond_friend_request, get_friends
+    FRIENDS_AVAILABLE = True
+except ImportError:
+    FRIENDS_AVAILABLE = False
+
 
 app = Flask(__name__)
 
@@ -338,7 +345,7 @@ def api_assistant():
     
     reply_data = build_assistant_reply(message, account)
     action = reply_data.get("action_preview")
-    
+
     if action:
         if action["type"] == "puzzle_reward":
             from state_db import mark_reward_granted
@@ -353,6 +360,24 @@ def api_assistant():
                 if deduct > 0:
                     with ledger_lock():
                         append_transaction(account, "angel", deduct)
+
+    # ── Mock active_effects for mining intents (replace with real shop lookup later) ──
+    intent = reply_data.get("intent", "")
+    if intent.startswith("mining"):
+        action_preview = reply_data.get("action_preview") or {}
+        action_preview["active_effects"] = [
+            {
+                "type": "curse",
+                "source": "b1128015",
+                "desc": "Next wrong answer penalty: 50 CPC",
+            },
+            {
+                "type": "blessing",
+                "source": "angel",
+                "desc": "Correct answer reward bonus: +5 CPC",
+            },
+        ]
+        reply_data["action_preview"] = action_preview
 
     return jsonify(reply_data)
 
@@ -754,6 +779,52 @@ def api_shop_use():
         "effects":   get_effects(account),
         "overview":  overview,
     })
+
+
+
+# ── Friend system endpoints ───────────────────────────────────────────────────
+
+@app.get("/api/friends/list")
+def api_friends_list():
+    if not FRIENDS_AVAILABLE:
+        return jsonify({"ok": False, "error": "Friend system unavailable."}), 503
+    account = request.args.get("account", "").strip()
+    if not account:
+        return jsonify({"ok": False, "error": "account required."}), 400
+    data = get_friends(account)
+    return jsonify({"ok": True, **data})
+
+
+@app.post("/api/friends/request")
+def api_friends_request():
+    if not FRIENDS_AVAILABLE:
+        return jsonify({"ok": False, "error": "Friend system unavailable."}), 503
+    payload   = request.get_json(silent=True) or {}
+    requester = (payload.get("account") or "").strip()
+    target    = (payload.get("target")  or "").strip()
+    if not requester or not target:
+        return jsonify({"ok": False, "error": "account and target required."}), 400
+    result = send_friend_request(requester, target)
+    code = 200 if result["ok"] else 400
+    return jsonify(result), code
+
+
+@app.post("/api/friends/respond")
+def api_friends_respond():
+    """
+    Body: { "account": "<me>", "requester": "<them>", "accept": true|false }
+    """
+    if not FRIENDS_AVAILABLE:
+        return jsonify({"ok": False, "error": "Friend system unavailable."}), 503
+    payload   = request.get_json(silent=True) or {}
+    account   = (payload.get("account")   or "").strip()
+    requester = (payload.get("requester") or "").strip()
+    accept    = bool(payload.get("accept", True))
+    if not account or not requester:
+        return jsonify({"ok": False, "error": "account and requester required."}), 400
+    result = respond_friend_request(account, requester, accept)
+    code = 200 if result["ok"] else 400
+    return jsonify(result), code
 
 
 if __name__ == "__main__":

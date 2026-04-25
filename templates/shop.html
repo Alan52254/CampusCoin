@@ -149,9 +149,19 @@
       </div>
     </div>
     <p id="useModalDesc" class="text-sm text-slate-300 leading-7"></p>
-    <div id="useModalTargetWrap" class="hidden space-y-2">
+    <!-- Task 4: Target picker — shows friends list + manual input -->
+    <div id="useModalTargetWrap" class="hidden space-y-3">
       <label class="field-label">目標帳號</label>
-      <input id="useModalTarget" class="input-field" placeholder="輸入對方帳號（留空 = 用在自己）">
+      <!-- Friend quick-picker (populated from /api/friends/list) -->
+      <div id="friendPickerWrap" class="hidden">
+        <p class="text-xs text-slate-400 mb-1">從好友選擇</p>
+        <select id="friendPicker"
+          class="input-field text-sm"
+          onchange="document.getElementById('useModalTarget').value = this.value">
+          <option value="">— 選擇好友 —</option>
+        </select>
+      </div>
+      <input id="useModalTarget" class="input-field" placeholder="或直接輸入對方帳號 ID">
       <p class="text-xs text-slate-400">留空代表使用在自己身上</p>
     </div>
     <div class="flex gap-3 pt-1">
@@ -162,6 +172,7 @@
     <p id="useModalMsg" class="text-xs text-center min-h-4 text-mint"></p>
   </div>
 </div>
+
 
 <!-- Toast -->
 <div id="toast" class="hidden"></div>
@@ -338,7 +349,7 @@
   });
 
   // ── Use modal ─────────────────────────────────────────────────────────────
-  function openUseModal(itemId) {
+  async function openUseModal(itemId) {
     const item = allItems.find(i => i.id === itemId);
     if (!item) return;
     pendingItem = item;
@@ -350,9 +361,32 @@
     $("useModalTargetWrap").classList.toggle("hidden", !needsTarget);
     $("useModalSelfBtn").classList.toggle("hidden", !needsTarget);
     $("useModalTarget").value = "";
+
+    // Task 4: Populate friend picker for targeted items
+    if (needsTarget) {
+      const pickerWrap = $("friendPickerWrap");
+      const picker     = $("friendPicker");
+      try {
+        const res  = await fetch(`/api/friends/list?account=${encodeURIComponent(ACCOUNT)}`);
+        const data = await res.json();
+        if (data.ok && data.friends.length > 0) {
+          picker.innerHTML = `<option value="">— 選擇好友 —</option>` +
+            data.friends.map(f => `<option value="${f}">${f}</option>`).join("");
+          pickerWrap.classList.remove("hidden");
+        } else {
+          pickerWrap.classList.add("hidden");
+        }
+      } catch (_) {
+        pickerWrap.classList.add("hidden");
+      }
+    } else {
+      $("friendPickerWrap").classList.add("hidden");
+    }
+
     const m = $("useModal");
     m.style.display = "flex";
   }
+
 
   function closeUseModal() {
     $("useModal").style.display = "none";

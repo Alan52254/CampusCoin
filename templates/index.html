@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -146,9 +146,9 @@
 <div class="relative overflow-hidden">
   <div class="grid-noise absolute inset-0"></div>
 
-<!-- ??????????????????????????????????????????????????????
+<!-- ──?──?──?──?──?──?──?──?──?──?──?──?──???
      LOGIN OVERLAY
-?????????????????????????????????????????????????????? -->
+──?──?──?──?──?──?──?──?──?──?──?──?──??? -->
 <div id="loginOverlay" class="fixed inset-0 z-[100] hidden items-center justify-center overflow-y-auto bg-[#041019]/90 backdrop-blur-md p-4">
   <div class="glass w-full max-w-sm rounded-[32px] p-8 shadow-2xl animate-rise my-auto">
 
@@ -383,7 +383,7 @@
 
 <div id="appShell" class="mx-auto hidden max-w-5xl px-4 py-6 sm:px-6 animate-rise">
 
-  <!-- ?? Header ?? -->
+  <!-- ── Header ── -->
   <header class="glass mb-6 flex flex-col gap-4 rounded-[28px] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
     <div class="flex items-center gap-4">
       <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-trust font-black text-abyss text-sm">CC</div>
@@ -394,12 +394,18 @@
     </div>
     <div class="flex items-center gap-3">
       <!-- Chain status badge -->
-      <span id="headerChain" class="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs {{ 'border border-mint/30 bg-mint/10 text-mint' if overview.chain_ok else 'border border-rose-400/30 bg-rose-400/10 text-rose-300' }}">
-        Chain {{ 'Healthy' if overview.chain_ok else 'Issue' }}
+      <span id="headerChain" class="hidden sm:inline-flex rounded-full px-3 py-1.5 text-xs {% if overview.chain_ok %}border border-mint/30 bg-mint/10 text-mint{% else %}border border-rose-400/30 bg-rose-400/10 text-rose-300{% endif %}">
+        Chain {% if overview.chain_ok %}Healthy{% else %}Issue{% endif %}
       </span>
 
-      <!-- Google-style user menu -->
-      <div class="relative">
+      <!-- Task 2: Language toggle -->
+      <button id="langToggleBtn" onclick="toggleLang()"
+        class="hidden sm:inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition"
+        title="Switch language / 切換語言">EN / 中</button>
+
+      <!-- Task 1 fix: isolate creates a new stacking context so the dropdown
+           cannot bleed through sibling nav elements. -->
+      <div class="relative isolate">
         <button id="userMenuBtn" onclick="toggleUserDropdown()"
           class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 pr-3 hover:bg-white/10 transition">
           <div id="avatarCircle"
@@ -412,11 +418,11 @@
           </svg>
         </button>
 
-        <!-- Dropdown -->
+        <!-- Dropdown: z-[200] strictly above nav. bg-slate-800/90 = solid dark gray, no blue bleed -->
         <div id="userDropdown"
-          class="hidden absolute right-0 top-full mt-2 w-64 glass rounded-[22px] overflow-hidden shadow-2xl z-50">
+          class="hidden absolute right-0 top-full mt-2 w-64 rounded-[22px] overflow-hidden shadow-2xl z-[200] border border-slate-600/50 bg-slate-800/90 backdrop-blur-2xl">
           <!-- Profile section -->
-          <div class="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+          <div class="flex items-center gap-3 px-4 py-4 border-b border-slate-700/60">
             <div id="dropdownAvatar"
               class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-base font-bold text-abyss">
               ?
@@ -427,13 +433,20 @@
             </div>
           </div>
           <!-- Menu items -->
-          <div class="p-2">
+          <div class="p-2 space-y-0.5">
+            <!-- Friends button -->
+            <button id="openFriendsBtn" onclick="openFriendsModal()"
+              class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/50 transition text-left">
+              <span class="text-base">👥</span>
+              <span data-i18n="friends">Friends</span>
+              <span id="friendBadge" class="ml-auto hidden rounded-full bg-glow text-abyss text-[10px] font-bold px-1.5 py-0.5"></span>
+            </button>
             <button onclick="logout()"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 hover:bg-white/10 transition text-left">
+              class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-300 hover:bg-slate-700/50 transition text-left">
               <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
-              Sign out
+              <span data-i18n="signout">Sign out</span>
             </button>
           </div>
         </div>
@@ -441,18 +454,70 @@
     </div>
   </header>
 
-  <!-- ?? Tab Bar ?? -->
+  <!-- Tab Bar -->
   <nav class="glass mb-6 flex gap-1.5 rounded-[22px] p-2">
-    <button class="tab-btn active flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium" onclick="showTab('dashboard')">Dashboard</button>
-    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('transfer')">Transfer</button>
-    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('assistant')">Assistant</button>
-    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('search')">Search</button>
-    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('explorer')">Explorer</button>
+    <button class="tab-btn active flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium" onclick="showTab('dashboard')" data-i18n="tab_dashboard">Dashboard</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('transfer')" data-i18n="tab_transfer">Transfer</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('assistant')" data-i18n="tab_assistant">Assistant</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('search')" data-i18n="tab_search">Search</button>
+    <button class="tab-btn flex-1 rounded-[17px] border border-transparent px-3 py-2.5 text-sm font-medium text-slate-400" onclick="showTab('explorer')" data-i18n="tab_explorer">Explorer</button>
   </nav>
 
-  <!-- ??????????????????????????????????????????????????????
-       TAB: DASHBOARD
-  ?????????????????????????????????????????????????????? -->
+  <!-- Friends Modal — full 4-section design -->
+  <div id="friendsModal"
+       class="fixed inset-0 z-[300] hidden items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+       onclick="if(event.target===this){friendsModal.classList.add('hidden');friendsModal.classList.remove('flex');}">
+    <div id="friendsModalBody"
+         class="w-full max-w-md rounded-[28px] border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+
+      <!-- Header -->
+      <div class="mb-5 flex items-center justify-between">
+        <h2 class="text-lg font-semibold" data-i18n="friends">👥 Friends</h2>
+        <button onclick="closeFriendsModalFull()" class="rounded-xl p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition">✕</button>
+      </div>
+
+      <!-- Section 1: Current friends -->
+      <div class="mb-5 space-y-2">
+        <p class="field-label">我的好友</p>
+        <div id="friendsList" data-loading class="space-y-2">載入中…</div>
+      </div>
+
+      <!-- Section 2: Add a friend -->
+      <div class="mb-5 space-y-2 rounded-[20px] border border-slate-700 bg-slate-800/50 p-4">
+        <p class="field-label">發送好友邀請</p>
+        <div class="flex gap-2">
+          <input id="friendTargetInput" class="input-field flex-1 text-sm"
+            placeholder="輸入好友帳號 (e.g. b1128015)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();sendFriendReq();}">
+          <button onclick="sendFriendReq()"
+            class="shrink-0 rounded-xl bg-gradient-to-r from-mint to-trust px-4 py-2 text-sm font-semibold text-abyss transition hover:opacity-90">
+            送出
+          </button>
+        </div>
+        <p id="friendReqMsg" class="min-h-4 text-xs text-mint"></p>
+      </div>
+
+      <!-- Section 3: Pending sent -->
+      <div id="idxFriendSentSection" class="hidden mb-4 space-y-2">
+        <p class="field-label">已發出的邀請</p>
+        <div id="idxFriendSentList" class="space-y-2"></div>
+      </div>
+
+      <!-- Section 4: Pending received -->
+      <div id="idxFriendPendingSection" class="hidden mb-2 space-y-2">
+        <p class="field-label">待處理的邀請</p>
+        <div id="idxFriendPendingList" class="space-y-2"></div>
+      </div>
+
+      <!-- Close -->
+      <button onclick="closeFriendsModalFull()"
+        class="mt-4 w-full rounded-2xl border border-slate-700 bg-slate-800 py-2.5 text-sm text-slate-300 hover:bg-slate-700 transition">
+        關閉
+      </button>
+    </div>
+  </div>
+
+
   <div id="tab-dashboard" class="space-y-6">
 
     <!-- Stats row -->
@@ -538,9 +603,9 @@
   </div><!-- /tab-dashboard -->
 
 
-  <!-- ??????????????????????????????????????????????????????
+  <!-- ──?──?──?──?──?──?──?──?──?──?──?──?──???
        TAB: TRANSFER
-  ?????????????????????????????????????????????????????? -->
+  ──?──?──?──?──?──?──?──?──?──?──?──?──??? -->
   <div id="tab-transfer" class="hidden space-y-6">
 
     <!-- Transfer form -->
@@ -589,9 +654,9 @@
   </div><!-- /tab-transfer -->
 
 
-  <!-- ??????????????????????????????????????????????????????
+  <!-- ──?──?──?──?──?──?──?──?──?──?──?──?──???
        TAB: ASSISTANT
-  ?????????????????????????????????????????????????????? -->
+  ──?──?──?──?──?──?──?──?──?──?──?──?──??? -->
   <div id="tab-assistant" class="hidden">
     <div class="glass rounded-[28px] p-6">
       <div class="flex items-start justify-between gap-4">
@@ -644,9 +709,9 @@
   </div><!-- /tab-assistant -->
 
 
-  <!-- ??????????????????????????????????????????????????????
+  <!-- ──?──?──?──?──?──?──?──?──?──?──?──?──???
        TAB: SEARCH
-  ?????????????????????????????????????????????????????? -->
+  ──?──?──?──?──?──?──?──?──?──?──?──?──??? -->
   <div id="tab-search" class="hidden">
     <div class="glass rounded-[28px] p-6">
       <div class="flex items-center justify-between gap-4">
@@ -668,9 +733,9 @@
   </div><!-- /tab-search -->
 
 
-  <!-- ??????????????????????????????????????????????????????
+  <!-- ──?──?──?──?──?──?──?──?──?──?──?──?──???
        TAB: EXPLORER
-  ?????????????????????????????????????????????????????? -->
+  ──?──?──?──?──?──?──?──?──?──?──?──?──??? -->
   <div id="tab-explorer" class="hidden space-y-6">
 
     <!-- Leaderboard -->
@@ -1142,7 +1207,7 @@
         <div class="tx-card">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-medium">${item.sender} ??${item.receiver}</p>
+              <p class="text-sm font-medium">${item.sender} &rarr; ${item.receiver}</p>
               <p class="mt-0.5 text-xs text-slate-400">Block #${item.block}</p>
             </div>
             <div class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${item.direction === "in" ? "bg-mint/15 text-mint" : "bg-rose-400/10 text-rose-300"}">
@@ -1199,6 +1264,248 @@
     } catch (e) { list.innerHTML = `<p class="text-sm text-rose-300">Failed to load blocks.</p>`; }
   }
   $("refreshBlocksBtn").addEventListener("click", loadBlocks);
+
+  // ── Task 2: i18n ─────────────────────────────────────────────────────────
+  const I18N = {
+    en: {
+      friends: "Friends", signout: "Sign out",
+      tab_dashboard: "Dashboard", tab_transfer: "Transfer",
+      tab_assistant: "Assistant", tab_search: "Search", tab_explorer: "Explorer"
+    },
+    zh: {
+      friends: "好友", signout: "登出",
+      tab_dashboard: "控制台", tab_transfer: "轉帳",
+      tab_assistant: "助理", tab_search: "搜尋", tab_explorer: "瀏覽器"
+    }
+  };
+  let currentLang = localStorage.getItem("cc_lang") || "en";
+
+  function applyLang(lang) {
+    currentLang = lang;
+    localStorage.setItem("cc_lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      if (I18N[lang][key]) el.textContent = I18N[lang][key];
+    });
+    const btn = $("langToggleBtn");
+    if (btn) btn.textContent = lang === "en" ? "EN / 中" : "中 / EN";
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === "en" ? "zh" : "en");
+  }
+
+  // Apply on load
+  applyLang(currentLang);
+
+  // ── Task 3: Friends Modal JS ──────────────────────────────────────────────
+  function openFriendsModal() {
+    const m = $("friendsModal");
+    m.classList.remove("hidden");
+    m.classList.add("flex");
+    $("userDropdown").classList.add("hidden");
+    renderFriendsModalFull();
+  }
+
+  function closeFriendsModalFull() {
+    const m = $("friendsModal");
+    m.classList.add("hidden");
+    m.classList.remove("flex");
+  }
+
+  $("friendsModal").addEventListener("click", e => {
+    if (e.target === $("friendsModal")) {
+      $("friendsModal").classList.add("hidden");
+      $("friendsModal").classList.remove("flex");
+    }
+  });
+
+  async function renderFriendsModal() {
+    const container = $("friendsList");
+    container.innerHTML = `<p class="text-xs text-slate-400">Loading...</p>`;
+    try {
+      const res  = await fetch(`/api/friends/list?account=${encodeURIComponent(state.account)}`);
+      const data = await res.json();
+      if (!data.ok) { container.innerHTML = `<p class="text-xs text-rose-300">${data.error}</p>`; return; }
+
+      const { friends, pending_sent, pending_received } = data;
+
+      // Update badge
+      const badge = $("friendBadge");
+      if (pending_received.length > 0) {
+        badge.textContent = pending_received.length;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+
+      let html = "";
+
+      // ── Add friend row ────────────────────────────────────────────────────
+      html += `
+        <div class="space-y-2 border-b border-white/10 pb-4 mb-4">
+          <p class="field-label">${currentLang === "zh" ? "添加好友" : "Add Friend"}</p>
+          <div class="flex gap-2">
+            <input id="friendTargetInput" class="input-field text-sm" placeholder="Account ID" />
+            <button onclick="sendFriendReq()" class="btn-primary shrink-0 text-sm px-3 py-1.5">
+              ${currentLang === "zh" ? "傳送" : "Send"}
+            </button>
+          </div>
+          <p id="friendReqMsg" class="text-xs min-h-4 text-mint"></p>
+        </div>`;
+
+      // ── Pending received ──────────────────────────────────────────────────
+      if (pending_received.length) {
+        html += `<p class="field-label">${currentLang === "zh" ? "待處理請求" : "Pending Requests"}</p>`;
+        html += pending_received.map(r => `
+          <div class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <span class="flex-1 text-sm font-medium">${escHtml(r)}</span>
+            <button onclick="respondReq('${escHtml(r)}', true)" class="text-xs rounded-lg px-2 py-1 bg-mint/20 text-mint hover:bg-mint/30">${currentLang === "zh" ? "接受" : "Accept"}</button>
+            <button onclick="respondReq('${escHtml(r)}', false)" class="text-xs rounded-lg px-2 py-1 bg-rose-400/10 text-rose-300 hover:bg-rose-400/20">${currentLang === "zh" ? "拒絕" : "Reject"}</button>
+          </div>`).join("");
+        html += `<div class="mb-4"></div>`;
+      }
+
+      // ── Pending sent ──────────────────────────────────────────────────────
+      if (pending_sent.length) {
+        html += `<p class="field-label">${currentLang === "zh" ? "已發送" : "Sent"}</p>`;
+        html += pending_sent.map(t => `
+          <div class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <span class="flex-1 text-sm text-slate-400">${escHtml(t)}</span>
+            <span class="text-xs text-slate-500">${currentLang === "zh" ? "等待中" : "Pending"}</span>
+          </div>`).join("");
+        html += `<div class="mb-4"></div>`;
+      }
+
+      // ── Friend list ───────────────────────────────────────────────────────
+      if (friends.length) {
+        html += `<p class="field-label mt-2">${currentLang === "zh" ? "好友列表" : "Friends"}</p>`;
+        html += friends.map(f => `
+          <div class="flex items-center gap-3 rounded-xl border border-mint/20 bg-mint/5 px-3 py-2">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-xs font-bold text-abyss">${escHtml(f.slice(0,2).toUpperCase())}</div>
+            <span class="flex-1 text-sm font-medium">${escHtml(f)}</span>
+            <span class="text-mint text-xs">✓</span>
+          </div>`).join("");
+      } else if (!pending_received.length && !pending_sent.length) {
+        html += `<p class="text-sm text-slate-400 text-center py-4">${currentLang === "zh" ? "還沒有好友，發送請求開始吧！" : "No friends yet — send a request!"}</p>`;
+      }
+
+      container.innerHTML = html;
+    } catch (_) {
+      container.innerHTML = `<p class="text-xs text-rose-300">Network error.</p>`;
+    }
+  }
+
+  // ── renderFriendsModalFull: populates the new 4-section modal ─────────────
+  async function renderFriendsModalFull() {
+    const listEl    = $("friendsList");
+    const pendSec   = $("idxFriendPendingSection");
+    const pendEl    = $("idxFriendPendingList");
+    const sentSec   = $("idxFriendSentSection");
+    const sentEl    = $("idxFriendSentList");
+    if (listEl) listEl.innerHTML = `<p class="text-xs text-slate-400">載入中…</p>`;
+    try {
+      const res  = await fetch(`/api/friends/list?account=${encodeURIComponent(state.account)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      const { friends, pending_received, pending_sent } = data;
+
+      // Badge
+      const badge = $("friendBadge");
+      if (badge) {
+        badge.textContent = pending_received.length > 0 ? pending_received.length : "";
+        badge.classList.toggle("hidden", pending_received.length === 0);
+      }
+
+      // Friend list
+      if (listEl) {
+        listEl.innerHTML = friends.length
+          ? friends.map(f => `
+            <div class="flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-800/50 px-4 py-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-mint to-trust text-xs font-bold text-abyss">${escHtml(f.slice(0,2).toUpperCase())}</div>
+              <span class="flex-1 text-sm font-medium">${escHtml(f)}</span>
+              <span class="text-mint text-xs">✓ 好友</span>
+            </div>`).join("")
+          : `<p class="text-sm text-slate-400 py-2">你目前還沒有加入任何好友。</p>`;
+      }
+
+      // Pending received
+      if (pending_received.length > 0 && pendSec && pendEl) {
+        pendSec.classList.remove("hidden");
+        pendEl.innerHTML = pending_received.map(r => `
+          <div class="flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-800/50 px-4 py-3">
+            <span class="flex-1 text-sm font-medium">${escHtml(r)}</span>
+            <button onclick="respondReq('${escHtml(r)}', true)" class="rounded-lg bg-mint/20 px-3 py-1.5 text-xs font-semibold text-mint hover:bg-mint/30 transition">接受</button>
+            <button onclick="respondReq('${escHtml(r)}', false)" class="rounded-lg bg-rose-400/10 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-400/20 transition">拒絕</button>
+          </div>`).join("");
+      } else if (pendSec) {
+        pendSec.classList.add("hidden");
+      }
+
+      // Pending sent
+      if (pending_sent.length > 0 && sentSec && sentEl) {
+        sentSec.classList.remove("hidden");
+        sentEl.innerHTML = pending_sent.map(t => `
+          <div class="flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-800/30 px-4 py-2.5 text-sm text-slate-400">
+            <span class="flex-1">${escHtml(t)}</span>
+            <span class="text-xs">等待中…</span>
+          </div>`).join("");
+      } else if (sentSec) {
+        sentSec.classList.add("hidden");
+      }
+
+    } catch (err) {
+      if (listEl) listEl.innerHTML = `<p class="text-xs text-rose-300">載入失敗：${escHtml(err.message)}</p>`;
+    }
+  }
+
+  async function renderFriendsModal() {
+    // Legacy: kept for compatibility; now delegates to full version
+    await renderFriendsModalFull();
+  }
+
+  async function sendFriendReq() {
+    const target = ($("friendTargetInput")?.value || "").trim();
+    const msg    = $("friendReqMsg");
+    if (!target) { msg.textContent = currentLang === "zh" ? "請輸入帳號" : "Enter an account ID."; msg.className = "text-xs min-h-4 text-rose-300"; return; }
+    try {
+      const res  = await fetch("/api/friends/request", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: state.account, target }),
+      });
+      const data = await res.json();
+      msg.textContent = data.ok ? (currentLang === "zh" ? "請求已傳送！" : "Request sent!") : data.error;
+      msg.className   = `text-xs min-h-4 ${data.ok ? "text-mint" : "text-rose-300"}`;
+      if (data.ok) renderFriendsModalFull();
+    } catch (_) { if (msg) { msg.textContent = "Network error."; msg.className = "text-xs min-h-4 text-rose-300"; } }
+  }
+
+  async function respondReq(requester, accept) {
+    try {
+      const res  = await fetch("/api/friends/respond", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: state.account, requester, accept }),
+      });
+      const data = await res.json();
+      if (data.ok) renderFriendsModalFull();
+    } catch (_) {}
+  }
+
+  // ── Task 4 helper: populate friend target picker in shop/puzzle social items
+  async function getFriendList() {
+    try {
+      const res  = await fetch(`/api/friends/list?account=${encodeURIComponent(state.account)}`);
+      const data = await res.json();
+      return data.ok ? data.friends : [];
+    } catch (_) { return []; }
+  }
+
+  // Expose globally so puzzle.html / shop.html (opened in new windows with
+  // the same session) can also call the friend badge refresh on login.
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
 </script>
 </div>
 </body>

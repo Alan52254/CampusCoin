@@ -80,6 +80,17 @@ def _init_db():
                 embedding_text TEXT
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS friends (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                requester TEXT NOT NULL,
+                target TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at REAL,
+                updated_at REAL,
+                UNIQUE(requester, target)
+            )
+        """)
 
 
 def _migrate_from_json():
@@ -302,6 +313,90 @@ def get_all_puzzles_from_db() -> list:
             res["category_label"] = _CAT_LABELS.get(res["category"], res.get("category_label", "謎題"))
             puzzles.append(res)
     return puzzles
+
+# ── Friend System Methods ────────────────────────────────────────────────────
+
+def send_friend_request(requester: str, target: str) -> dict:
+    """
+    Creates a pending friend request from requester → target.
+    Returns {"ok": bool, "error": str|None, "status": str|None}.
+    """
+    if requester == target:
+        return {"ok": False, "error": "You cannot add yourself as a friend."}
+    now = time.time()
+    # Normalise pair so (A→B) and (B→A) are different rows (B accepts A's request)
+    with db_transaction() as conn:
+        # Check for existing relationship in either direction
+        cur = conn.execute(
+            """SELECT status FROM friends
+               WHERE (requester=? AND target=?) OR (requester=? AND target=?)""",
+            (requester, target, target, requester)
+        )
+        row = cur.fetchone()
+        if row:
+            s = row["status"]
+            if s == "accepted":
+                return {"ok": False, "error": "You are already friends."}
+            if s == "pending":
+                return {"ok": False, "error": "A friend request already exists."}
+        try:
+            conn.execute(
+                "INSERT INTO friends (requester, target, status, created_at, updated_at) VALUES (?, ?, 'pending', ?, ?)",
+                (requester, target, now, now)
+            )
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+    return {"ok": True, "status": "pending"}
+
+
+def respond_friend_request(account: str, requester: str, accept: bool) -> dict:
+    """
+    `account` responds to a pending request from `requester`.
+    accept=True → status='accepted'; accept=False → row deleted.
+    """
+    now = time.time()
+    with db_transaction() as conn:
+        cur = conn.execute(
+            "SELECT id, status FROM friends WHERE requester=? AND target=? AND status='pending'",
+            (requester, account)
+        )
+        row = cur.fetchone()
+        if not row:
+            return {"ok": False, "error": "No pending request found."}
+        if accept:
+            conn.execute(
+                "UPDATE friends SET status='accepted', updated_at=? WHERE id=?",
+                (now, row["id"])
+            )
+            return {"ok": True, "status": "accepted"}
+        else:
+            conn.execute("DELETE FROM friends WHERE id=?", (row["id"],))
+            return {"ok": True, "status": "rejected"}
+
+
+def get_friends(account: str) -> dict:
+    """
+    Returns {"friends": [...], "pending_sent": [...], "pending_received": [...]}.
+    """
+    with db_transaction() as conn:
+        rows = conn.execute(
+            "SELECT requester, target, status FROM friends WHERE requester=? OR target=?",
+            (account, account)
+        ).fetchall()
+
+    friends, sent, received = [], [], []
+    for row in rows:
+        r, t, s = row["requester"], row["target"], row["status"]
+        if s == "accepted":
+            other = t if r == account else r
+            friends.append(other)
+        elif s == "pending":
+            if r == account:
+                sent.append(t)
+            else:
+                received.append(r)
+    return {"friends": friends, "pending_sent": sent, "pending_received": received}
+
 
 # Initialize database upon import
 _init_db()

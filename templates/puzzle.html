@@ -90,7 +90,15 @@
 <div id="socialModal">
   <div class="glass w-full max-w-sm rounded-[24px] p-6 space-y-4 animate-pop">
     <p class="font-semibold" id="socialModalTitle">指定目標帳號</p>
-    <input id="socialTarget" class="input-field" placeholder="輸入對方帳號（留空則使用在自己）">
+    <!-- Task 4: Friend quick-picker -->
+    <div id="puzzleFriendPickerWrap" class="hidden">
+      <p class="text-xs text-slate-400 mb-1">從好友選擇</p>
+      <select id="puzzleFriendPicker" class="input-field text-sm"
+        onchange="document.getElementById('socialTarget').value = this.value">
+        <option value="">— 選擇好友 —</option>
+      </select>
+    </div>
+    <input id="socialTarget" class="input-field" placeholder="或直接輸入對方帳號（留空則使用在自己）">
     <p class="text-xs text-slate-400">留空 = 使用在自己身上</p>
     <div class="flex gap-3">
       <button id="socialConfirmBtn" class="btn-primary flex-1">送出</button>
@@ -100,6 +108,7 @@
     <p id="socialMsg" class="text-xs text-center text-rose-300 min-h-4"></p>
   </div>
 </div>
+
 
 <!-- ── Choose-3 modal ─────────────────────────────────────────────────────── -->
 <div id="choose3Modal" style="position:fixed;inset:0;z-index:400;background:rgba(4,16,25,.9);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;">
@@ -352,11 +361,30 @@ async function useItemFromBag(itemId) {
     $("socialModalTitle").textContent = `「${info.emoji} ${info.name}」— 指定目標帳號`;
     $("socialTarget").value = "";
     $("socialMsg").textContent = "";
+
+    // Task 4: Load friend list into picker
+    const pickerWrap = $("puzzleFriendPickerWrap");
+    const picker     = $("puzzleFriendPicker");
+    try {
+      const res  = await fetch(`/api/friends/list?account=${encodeURIComponent(ACCOUNT)}`);
+      const data = await res.json();
+      if (data.ok && data.friends.length > 0) {
+        picker.innerHTML = `<option value="">— 選擇好友 —</option>` +
+          data.friends.map(f => `<option value="${f}">${f}</option>`).join("");
+        pickerWrap.classList.remove("hidden");
+      } else {
+        pickerWrap.classList.add("hidden");
+      }
+    } catch (_) {
+      pickerWrap.classList.add("hidden");
+    }
+
     $("socialModal").style.display = "flex";
     return;
   }
   await doUseItem(itemId, "");
 }
+
 
 async function doUseItem(itemId, target) {
   try {
