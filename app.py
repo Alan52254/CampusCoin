@@ -1,6 +1,7 @@
 import csv
 import io
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -317,24 +318,51 @@ def api_register():
 
 @app.post("/api/verify")
 def api_verify():
-    payload = request.get_json(silent=True) or {}
-    account = (payload.get("account") or "b1128015").strip()
+    data = request.get_json(silent=True) or {}
+    account = str(data.get("account") or "b1128015").strip()
 
-    with ledger_lock():
+    if not account:
+        return jsonify({
+            "ok": False,
+            "message": "Missing account.",
+            "error": "Missing account",
+            "issues": ["Missing account"],
+            "overview": None,
+        }), 200
+
+    try:
         issues = verify_chain()
+        overview = build_dashboard_payload(account)
+
         if issues:
-            return jsonify({"ok": False, "issues": issues, "overview": build_dashboard_payload(account)}), 400
+            return jsonify({
+                "ok": False,
+                "message": "Chain verification failed.",
+                "error": "Chain verification failed.",
+                "issues": issues,
+                "overview": overview,
+            }), 200
 
-        block_index, _ = append_transaction("angel", account, 10)
+        with ledger_lock():
+            block_index, _ = append_transaction("angel", account, 10)
 
-    return jsonify(
-        {
+        return jsonify({
             "ok": True,
             "message": f"Chain verified. angel rewarded {account} with 10 CPC.",
             "reward_block": block_index,
+            "reward_amount": 10,
             "overview": build_dashboard_payload(account),
-        }
-    )
+            "issues": [],
+        }), 200
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "message": "Verification service error.",
+            "error": str(exc),
+            "issues": [str(exc)],
+            "overview": build_dashboard_payload(account) if account else None,
+        }), 200
 
 
 @app.post("/api/assistant")
@@ -446,6 +474,7 @@ def api_minigame_score():
 import random
 
 BLOCK_STORAGE_DIR = Path("shared_storage")
+TAMPER_BACKUP_DIR = BLOCK_STORAGE_DIR / "_tamper_backups"
 
 @app.post("/api/demo/tamper")
 def api_demo_tamper():
@@ -455,13 +484,19 @@ def api_demo_tamper():
     )
 
     if len(block_files) <= 1:
-        return jsonify({"error": "Not enough blocks to tamper."}), 400
+        return jsonify({"ok": False, "error": "Not enough blocks to tamper."}), 200
+
+    TAMPER_BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
     candidates = block_files[1:]
     target = random.choice(candidates)
     original = target.read_text(encoding="utf-8")
-
     tampered_block_number = int(target.stem)
+
+    # Only backup if not already backed up (preserve the first-ever clean state)
+    backup_path = TAMPER_BACKUP_DIR / target.name
+    if not backup_path.exists():
+        backup_path.write_text(original, encoding="utf-8")
 
     try:
         payload = json.loads(original)
@@ -482,6 +517,7 @@ def api_demo_tamper():
             )
         else:
             target.write_text(original + "\n# TAMPERED_FOR_DEMO\n", encoding="utf-8")
+
     except Exception:
         target.write_text(original + "\n# TAMPERED_FOR_DEMO\n", encoding="utf-8")
 
@@ -490,7 +526,32 @@ def api_demo_tamper():
         "message": f"Block #{tampered_block_number} was intentionally corrupted.",
         "block_number": tampered_block_number,
         "file": str(target)
-    })
+    }), 200
+
+
+@app.post("/api/demo/restore")
+def api_demo_restore():
+    if not TAMPER_BACKUP_DIR.exists():
+        return jsonify({
+            "ok": False,
+            "message": "No tamper backup found. Run tamper first."
+        }), 200
+
+    restored = []
+    for backup_file in TAMPER_BACKUP_DIR.glob("*.txt"):
+        target = BLOCK_STORAGE_DIR / backup_file.name
+        shutil.copy2(backup_file, target)
+        restored.append(backup_file.name)
+
+    # Clear backups after restoring
+    for backup_file in TAMPER_BACKUP_DIR.glob("*.txt"):
+        backup_file.unlink(missing_ok=True)
+
+    return jsonify({
+        "ok": True,
+        "message": f"Restored {len(restored)} tampered block(s).",
+        "restored_files": restored
+    }), 200
 
 
 @app.get("/api/search")

@@ -1,4 +1,4 @@
-Sha256 of previous block: b8ea2bd6c2ba21f389665049b721260ce47af5970ad36da8798fdeefdadb5761
+Sha256 of previous block: a85907f12f480ca131d646df5efa1bfca59f017be0cca5a4108045587f03dd30
 Next block: 14.txt
 B, C, 10
 b1128015, C, 4

@@ -451,6 +451,10 @@
           <button id="tamperBlockBtn" type="button" class="rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20">
             ⚠️ Corrupt Random Block (For Demo)
           </button>
+
+          <button id="restoreBlockBtn" type="button" class="rounded-2xl border border-mint/30 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint transition hover:bg-mint/20">
+            ♻️ Restore Tampered Blocks
+          </button>
         </div>
 
         <p id="demoPanelMessage" class="mt-4 min-h-5 text-sm text-slate-300"></p>
@@ -502,6 +506,7 @@
     const bootData = JSON.parse(document.getElementById("boot-data").textContent);
     const state = { account: bootData.account, password: "" };
     const $ = (id) => document.getElementById(id);
+    let verifyInFlight = false;
 
     const balanceValue = $("balanceValue");
     const transactionCount = $("transactionCount");
@@ -696,11 +701,11 @@
               body: JSON.stringify({ account: actionPreview.account })
             });
             const result = await response.json();
-            if (!response.ok) {
-              addChatBubble(`Verification failed: ${(result.issues || []).join(" | ")}`, "assistant");
+            if (!result.ok) {
+              addChatBubble(`Verification failed: ${((result.issues || []).join(" | ")) || result.error || "unknown"}`, "assistant");
               if (result.overview) applyOverview(result.overview);
             } else {
-              addChatBubble(`${result.message} Reward in Block #${result.reward_block}.`, "assistant");
+              addChatBubble(`${result.message}${result.reward_block ? ` Reward in Block #${result.reward_block}.` : ""}`, "assistant");
               applyOverview(result.overview);
             }
           } catch (error) {
@@ -835,20 +840,34 @@
           headers: { "Content-Type": "application/json" }
         });
         const data = await res.json();
-
-        if (!res.ok) {
-          msg.textContent = data.error || "Tamper request failed.";
-          return;
-        }
-
-        msg.textContent = data.message;
+        msg.textContent = data.message || data.error || "Tamper request finished.";
       } catch {
         msg.textContent = "Network error while tampering block.";
       }
     }
 
+    async function restoreTamperedBlocks() {
+      const msg = $("demoPanelMessage");
+      if (!msg) return;
+
+      msg.textContent = "Restoring tampered blocks...";
+
+      try {
+        const res = await fetch("/api/demo/restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        msg.textContent = data.message || data.error || "Restore request finished.";
+      } catch {
+        msg.textContent = "Network error while restoring blocks.";
+      }
+    }
+
     const tamperBlockBtn = $("tamperBlockBtn");
     if (tamperBlockBtn) tamperBlockBtn.addEventListener("click", tamperRandomBlockForDemo);
+    const restoreBlockBtn = $("restoreBlockBtn");
+    if (restoreBlockBtn) restoreBlockBtn.addEventListener("click", restoreTamperedBlocks);
     document.querySelectorAll(".tab-btn").forEach((button) => button.addEventListener("click", () => showTab(button.dataset.tab)));
     document.querySelectorAll(".prompt-chip").forEach((chip) => chip.addEventListener("click", () => { $("assistantInput").value = chip.textContent.trim(); }));
 
@@ -890,32 +909,58 @@
       }
     });
 
-    $("verifyButton").addEventListener("click", async () => {
-      verifyMessage.textContent = "Running chain verification...";
-      try {
-        const response = await fetch("/api/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ account: state.account })
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          const issues = Array.isArray(data.issues) ? data.issues : [];
-          verifyMessage.innerHTML = `
-            <div class="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-              <p class="font-semibold">Chain verification failed.</p>
-              <p class="mt-2">${issues.length ? issues.join(" | ") : (data.error || "Unknown integrity error.")}</p>
-            </div>
-          `;
-          if (data.overview) applyOverview(data.overview);
-          return;
-        }
-        verifyMessage.textContent = `${data.message} Reward in Block #${data.reward_block}.`;
-        applyOverview(data.overview);
-      } catch (error) {
-        verifyMessage.textContent = "Network error.";
-      }
-    });
+    function bindVerifyButton() {
+        const btn = $("verifyButton");
+        if (!btn) return;
+
+        btn.onclick = async () => {
+          if (verifyInFlight) return;
+
+          verifyInFlight = true;
+          btn.disabled = true;
+          verifyMessage.textContent = "Running chain verification...";
+
+          try {
+            const response = await fetch("/api/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ account: state.account })
+            });
+
+            const data = await response.json();
+
+            if (!data.ok) {
+              const issues = Array.isArray(data.issues) ? data.issues : [];
+              verifyMessage.innerHTML = `
+                <div class="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  <p class="font-semibold">Chain verification failed.</p>
+                  <p class="mt-2">${issues.length ? issues.join(" | ") : (data.error || "Unknown integrity error.")}</p>
+                </div>
+              `;
+              if (data.overview) applyOverview(data.overview);
+              return;
+            }
+
+            verifyMessage.innerHTML = `
+              <div class="rounded-2xl border border-mint/20 bg-mint/10 px-4 py-3 text-sm text-mint">
+                ${data.reward_block ? `${data.message} Reward in Block #${data.reward_block}.` : (data.message || "Verification completed successfully.")}
+              </div>
+            `;
+            if (data.overview) applyOverview(data.overview);
+
+          } catch (e) {
+            verifyMessage.innerHTML = `
+              <div class="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                Network error during verification.
+              </div>
+            `;
+          } finally {
+            verifyInFlight = false;
+            btn.disabled = false;
+          }
+        };
+      };
+    }
 
     $("clearChatBtn").addEventListener("click", async () => {
       try {
@@ -984,6 +1029,7 @@
         const data = await doLogin(account, password);
         applyOverview(data.overview);
         $("appShell").classList.remove("hidden");
+        bindVerifyButton();
       } catch (error) {
         sessionStorage.removeItem(SESSION_KEY);
         window.location.href = "/login";

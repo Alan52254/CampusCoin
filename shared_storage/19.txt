@@ -1,7 +1,9 @@
-Sha256 of previous block: c4537861edaf1add4a1b9b08f273dc575ca4b8e95d502e7c9999d34cc030c1c2
+Sha256 of previous block: d3e1b0acd745675a612fc27822125fff6e7a37b864734f69f455e851a8222901
 Next block: 20.txt
 guest, A, 9
 b1128015, A, 2
 B, C, 7
 guest, B, 8
 B, guest, 3
+
+# TAMPERED_FOR_DEMO

@@ -1,4 +1,4 @@
-Sha256 of previous block: e6636a2849d77cec2f2529c40b1ea45806f5d4cd43a051d2f0e8ea345851d85d
+Sha256 of previous block: be0ebfb1e08cb9b84f55426f34389992fcc05746833e19ac1c2b79f9f4dcec70
 Next block: 9.txt
 C, guest, 8
 guest, A, 2
