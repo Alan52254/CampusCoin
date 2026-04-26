@@ -827,5 +827,74 @@ def api_friends_respond():
     return jsonify(result), code
 
 
+# ── Suika game ────────────────────────────────────────────────────────────────
+
+@app.get("/suika")
+def suika_page():
+    account = request.args.get("account", "")
+    return render_template("suika.html", account=account)
+
+
+@app.post("/api/suika/start")
+def api_suika_start():
+    """消耗本局有效的大西瓜道具效果，回傳給前端。"""
+    payload = request.get_json(silent=True) or {}
+    account = (payload.get("account") or "").strip()
+    if not account:
+        return jsonify({"ok": False, "error": "account required."}), 400
+
+    active = {}
+    if SHOP_AVAILABLE:
+        if has_effect(account, "suika_wild"):
+            active["suika_wild"] = True
+            clear_effect(account, "suika_wild")
+        if has_effect(account, "suika_boom"):
+            active["suika_boom"] = True
+            clear_effect(account, "suika_boom")
+        # cap boost is checked on reward, not consumed here
+        if has_effect(account, "suika_cap_boost"):
+            active["suika_cap_boost"] = True
+
+    return jsonify({"ok": True, "active_effects": active, "overview": build_dashboard_payload(account)})
+
+
+@app.post("/api/suika/reward")
+def api_suika_reward():
+    from state_db import mark_reward_granted
+    import uuid
+    payload = request.get_json(silent=True) or {}
+    account = (payload.get("account") or "").strip()
+    raw_cpc = int(payload.get("cpc", 0))
+
+    if not account:
+        return jsonify({"ok": False, "error": "account required."}), 400
+    if raw_cpc <= 0:
+        return jsonify({"ok": False, "error": "分數不足，無法領取 CPC。"}), 400
+
+    # Apply cap boost effect if present
+    cap            = 500
+    active_effects = []
+    if SHOP_AVAILABLE and has_effect(account, "suika_cap_boost"):
+        cap = 1000
+        clear_effect(account, "suika_cap_boost")
+        active_effects.append("suika_cap_boost")
+
+    cpc = min(raw_cpc, cap)
+
+    reward_key = f"suika:{account}:{uuid.uuid4()}"
+    if mark_reward_granted(account, reward_key, cpc):
+        with ledger_lock():
+            block_index, _ = append_transaction("angel", account, cpc)
+        return jsonify({
+            "ok": True,
+            "cpc": cpc,
+            "message": f"領取成功！獲得 {cpc} CPC",
+            "block_index": block_index,
+            "active_effects": active_effects,
+            "overview": build_dashboard_payload(account),
+        })
+    return jsonify({"ok": False, "error": "領取失敗。"}), 400
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=False)

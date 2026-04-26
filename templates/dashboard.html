@@ -278,6 +278,10 @@
           class="no-underline text-sm font-semibold px-4 py-2.5 rounded-2xl border border-yellow-300/30 bg-yellow-300/10 text-yellow-300 hover:bg-yellow-300/20 transition">
           商店 ↗
         </a>
+        <a id="suikaLink" href="/suika" target="_blank" rel="noopener"
+          class="no-underline text-sm font-semibold px-4 py-2.5 rounded-2xl border border-red-400/30 bg-red-400/10 text-red-300 hover:bg-red-400/20 transition">
+          🍉 大西瓜 ↗
+        </a>
       </div>
     </div>
 
@@ -574,6 +578,7 @@
       state.account = data.account;
       document.getElementById("puzzleLink").href = `/puzzle?account=${encodeURIComponent(data.account)}`;
       document.getElementById("shopLink").href   = `/shop?account=${encodeURIComponent(data.account)}`;
+      document.getElementById("suikaLink").href  = `/suika?account=${encodeURIComponent(data.account)}&back=${encodeURIComponent('/dashboard?account=' + encodeURIComponent(data.account))}`;
       balanceValue.textContent = data.balance;
       transactionCount.textContent = data.transaction_count;
       latestBlock.textContent = data.latest_block;

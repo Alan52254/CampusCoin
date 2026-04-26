@@ -146,6 +146,19 @@ def use_item(account: str, item_id: str, target: str = "") -> dict:
         set_effect(account, "choose_3", True)
         message = "傳說骰已啟動！下一題將從 3 道謎題中選一道。"
 
+    # ── 大西瓜遊戲效果 ───────────────────────────────────────────────────────
+    elif effect == "suika_cap_boost":
+        set_effect(account, "suika_cap_boost", True)
+        message = "🍉 西瓜護符已啟動！下一局大西瓜遊戲 CPC 上限翻倍至 1000！"
+
+    elif effect == "suika_wild":
+        set_effect(account, "suika_wild", True)
+        message = "🎱 萬能球已備妥！下一局大西瓜遊戲，可自由指定下一顆球的種類！"
+
+    elif effect == "suika_boom":
+        set_effect(account, "suika_boom", True)
+        message = "☄️ 隕石清場已就緒！下一局大西瓜遊戲，點擊目標球即可消除所有同類型！"
+
     # ── 裝飾效果（永久） ─────────────────────────────────────────────────────
     elif effect in ("title_crown", "title_master", "hide_leaderboard"):
         set_effect(account, effect, True)

@@ -153,6 +153,38 @@ ITEMS: list[dict] = [
         "category": "special",
     },
 
+    # ── 成大西瓜道具 ──────────────────────────────────────────────────────────
+    {
+        "id": "suika_amulet",
+        "name": "西瓜護符",
+        "emoji": "🍉",
+        "description": "下一局大西瓜遊戲 CPC 獎勵上限翻倍（500 → 1000）。遊戲開始後自動啟用，結算時生效。",
+        "price": 400,
+        "type": "consumable",
+        "effect": "suika_cap_boost",
+        "category": "suika",
+    },
+    {
+        "id": "suika_wild",
+        "name": "萬能球",
+        "emoji": "🎱",
+        "description": "下一局大西瓜遊戲，可以指定下一顆要投放的球是哪種類型，精準佈局！",
+        "price": 300,
+        "type": "consumable",
+        "effect": "suika_wild",
+        "category": "suika",
+    },
+    {
+        "id": "suika_boom",
+        "name": "隕石清場",
+        "emoji": "☄️",
+        "description": "下一局大西瓜遊戲，啟動後點擊任一顆球，場上所有同類型的球全部消除！",
+        "price": 350,
+        "type": "consumable",
+        "effect": "suika_boom",
+        "category": "suika",
+    },
+
     # ── 裝飾稱號 ──────────────────────────────────────────────────────────────
     {
         "id": "crown",
@@ -212,5 +244,6 @@ CATEGORIES = [
     {"id": "gamble",   "label": "賭運道具"},
     {"id": "social",   "label": "社交道具"},
     {"id": "special",  "label": "特殊功能"},
+    {"id": "suika",    "label": "🍉 大西瓜道具"},
     {"id": "cosmetic", "label": "裝飾稱號"},
 ]
