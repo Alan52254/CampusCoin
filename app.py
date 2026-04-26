@@ -398,6 +398,101 @@ def api_health():
     return jsonify({"ok": True, "llm_enabled": LLM_AVAILABLE})
 
 
+import json
+from datetime import datetime
+
+MINIGAME_SCORE_FILE = Path("shared_storage/minigame_scores.json")
+
+def _load_minigame_scores():
+    if not MINIGAME_SCORE_FILE.exists():
+        return []
+    try:
+        return json.loads(MINIGAME_SCORE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+def _save_minigame_scores(rows):
+    MINIGAME_SCORE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    MINIGAME_SCORE_FILE.write_text(
+        json.dumps(rows, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+@app.get("/api/minigame/leaderboard")
+def api_minigame_leaderboard():
+    rows = _load_minigame_scores()
+    rows = sorted(rows, key=lambda x: x.get("score", 0), reverse=True)[:10]
+    return jsonify({"leaderboard": rows})
+
+@app.post("/api/minigame/score")
+def api_minigame_score():
+    data = request.get_json(silent=True) or {}
+    account = str(data.get("account", "")).strip()
+    score = int(data.get("score", 0))
+
+    if not account:
+        return jsonify({"error": "Missing account"}), 400
+
+    rows = _load_minigame_scores()
+    rows.append({
+        "account": account,
+        "score": score,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+    })
+    _save_minigame_scores(rows)
+
+    return jsonify({"ok": True, "account": account, "score": score})
+
+import random
+
+BLOCK_STORAGE_DIR = Path("shared_storage")
+
+@app.post("/api/demo/tamper")
+def api_demo_tamper():
+    block_files = sorted(
+        [p for p in BLOCK_STORAGE_DIR.glob("*.txt") if p.stem.isdigit()],
+        key=lambda p: int(p.stem)
+    )
+
+    if len(block_files) <= 1:
+        return jsonify({"error": "Not enough blocks to tamper."}), 400
+
+    candidates = block_files[1:]
+    target = random.choice(candidates)
+    original = target.read_text(encoding="utf-8")
+
+    tampered_block_number = int(target.stem)
+
+    try:
+        payload = json.loads(original)
+
+        if isinstance(payload, dict) and isinstance(payload.get("transactions"), list) and payload["transactions"]:
+            first_tx = payload["transactions"][0]
+            if "amount" in first_tx:
+                try:
+                    first_tx["amount"] = int(first_tx["amount"]) + 999
+                except Exception:
+                    first_tx["amount"] = f"{first_tx['amount']}_tampered"
+            else:
+                first_tx["tampered"] = True
+
+            target.write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+        else:
+            target.write_text(original + "\n# TAMPERED_FOR_DEMO\n", encoding="utf-8")
+    except Exception:
+        target.write_text(original + "\n# TAMPERED_FOR_DEMO\n", encoding="utf-8")
+
+    return jsonify({
+        "ok": True,
+        "message": f"Block #{tampered_block_number} was intentionally corrupted.",
+        "block_number": tampered_block_number,
+        "file": str(target)
+    })
+
+
 @app.get("/api/search")
 def api_search():
     account      = request.args.get("account", "b1128015")

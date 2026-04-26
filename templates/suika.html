@@ -56,8 +56,8 @@
 
 <!-- Header -->
 <div class="flex items-center gap-3 px-4 pt-3 pb-2 max-w-2xl mx-auto">
-  <a id="backLink" href="/"
-     class="glass rounded-xl px-4 py-1.5 text-sm text-trust hover:bg-white/10 transition shrink-0">← 返回</a>
+  <button id="backLink" type="button" onclick="goBack()"
+     class="glass rounded-xl px-4 py-1.5 text-sm text-trust hover:bg-white/10 transition shrink-0">← 返回</button>
   <h1 class="text-base font-bold text-glow">🍉 長庚西瓜遊戲</h1>
   <span id="accountBadge" class="ml-auto text-xs text-white/30 font-mono truncate max-w-[100px]"></span>
 </div>
@@ -119,6 +119,21 @@
     <div class="glass rounded-2xl p-3 hidden" id="effectsPanel">
       <div class="text-[10px] text-white/35 uppercase tracking-widest mb-2">⚡ 雲端加成</div>
       <div id="effectsList" class="space-y-1.5"></div>
+    </div>
+
+    <!-- Inventory Panel -->
+    <div class="glass rounded-2xl p-3 hidden" id="inventoryPanel">
+      <div class="text-[10px] text-white/35 uppercase tracking-widest mb-2">🎒 道具面板</div>
+      <div id="inventoryList" class="space-y-1.5"></div>
+      <p id="watermelonItemMessage" class="mt-2 text-[10px] text-glow"></p>
+    </div>
+
+    <!-- Leaderboard Panel -->
+    <div class="glass rounded-2xl p-3">
+      <div class="text-[10px] text-white/35 uppercase tracking-widest mb-2">🏆 排行榜</div>
+      <div id="watermelonLeaderboardList" class="space-y-1.5">
+        <p class="text-[10px] text-white/40">Loading...</p>
+      </div>
     </div>
 
     <div class="glass rounded-2xl p-3 overflow-y-auto" style="max-height:230px">
@@ -335,6 +350,7 @@ function triggerGameOver() {
     document.getElementById('modalStatus').textContent='⚠️ 請登入後才能領取 CPC';
   }
   document.getElementById('gameOverOverlay').classList.remove('hidden');
+  if (account) submitWatermelonScore(score);
 }
 
 // ── Drop ──────────────────────────────────────────────────────
@@ -656,12 +672,133 @@ function restartGame(){
   document.getElementById('clearBtn').classList.add('hidden');
   document.getElementById('clearHint').classList.add('hidden');
   drawNextPreview();
-  if(account)loadGameEffects();
+  if(account) {
+    loadGameEffects();
+    loadWatermelonLeaderboard();
+  }
 }
-function goBack(){location.href=backUrl;}
+function goBack(){
+  // suika is always opened via target="_blank" rel="noopener" from dashboard.
+  // rel="noopener" forces window.opener=null, so we can't rely on it.
+  // window.close() is the correct escape for this popup tab.
+  // If the user navigated here directly (no parent tab), close() is a no-op
+  // and we fall back to backUrl after a short delay.
+  const closed = window.close();
+  // Fallback: if still here after 300ms, hard-navigate to backUrl
+  setTimeout(() => {
+    if (!window.closed) location.href = backUrl;
+  }, 300);
+}
 
 // ── Cloud integration ─────────────────────────────────────────
+// Maps item_id -> {name, emoji, desc} for display
+let shopItemMeta = {};
+let watermelonInventoryCache = [];
+
+async function ensureShopMeta() {
+  if (Object.keys(shopItemMeta).length > 0) return;
+  try {
+    const res = await fetch('/api/shop/items');
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.items)) {
+      data.items.forEach(item => {
+        shopItemMeta[item.id] = { name: item.name, emoji: item.emoji || '', desc: item.desc || '' };
+      });
+    }
+  } catch (e) { console.warn('shop meta fetch failed', e); }
+}
+
+async function loadWatermelonInventory() {
+  if (!account) return;
+  try {
+    await ensureShopMeta();
+    const res = await fetch(`/api/shop/inventory?account=${encodeURIComponent(account)}`);
+    const data = await res.json();
+    const list = document.getElementById("inventoryList");
+    const panel = document.getElementById("inventoryPanel");
+
+    // get_inventory returns {item_id: count} dict, not an array
+    const inv = (data.ok && data.inventory && typeof data.inventory === 'object') ? data.inventory : {};
+    const entries = Object.entries(inv).filter(([, qty]) => qty > 0);
+
+    if (entries.length > 0) {
+      panel.classList.remove("hidden");
+      watermelonInventoryCache = entries.map(([id, qty]) => ({ id, qty }));
+      list.innerHTML = entries.map(([id, qty]) => {
+        const meta = shopItemMeta[id] || { name: id, emoji: '🎒', desc: '' };
+        return `
+        <button type="button"
+          class="w-full flex items-center justify-between rounded-lg p-1.5 hover:bg-white/10 border border-white/5 transition text-left"
+          onclick="useWatermelonItem('${id}')">
+          <span class="text-[12px]">${meta.emoji}</span>
+          <p class="text-[11px] font-semibold text-white/90 truncate flex-1 mx-1.5">${meta.name}</p>
+          <span class="text-[10px] text-white/50 shrink-0">x${qty}</span>
+        </button>`;
+      }).join("");
+    } else {
+      panel.classList.add("hidden");
+    }
+  } catch (e) {
+    console.warn('loadWatermelonInventory error:', e);
+  }
+}
+
+async function useWatermelonItem(itemId) {
+  const msg = document.getElementById("watermelonItemMessage");
+  msg.textContent = "使用中...";
+  try {
+    const res = await fetch("/api/shop/use", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ account, item_id: itemId, target: account })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      msg.textContent = "✅ " + data.message;
+      loadWatermelonInventory();
+      loadGameEffects(); // Refresh active effects
+    } else {
+      msg.textContent = "❌ " + data.error;
+    }
+  } catch (e) {
+    msg.textContent = "❌ 連線失敗";
+  }
+  setTimeout(() => msg.textContent = "", 3000);
+}
+
+async function loadWatermelonLeaderboard() {
+  const list = document.getElementById("watermelonLeaderboardList");
+  if (!list) return;
+  try {
+    const res = await fetch("/api/minigame/leaderboard");
+    const data = await res.json();
+    const rows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+    if (!rows.length) {
+      list.innerHTML = `<p class="text-[10px] text-white/40">尚無紀錄</p>`;
+      return;
+    }
+    list.innerHTML = rows.map((row, i) => `
+      <div class="flex justify-between items-center text-[10px] py-0.5">
+        <span class="text-white/80">${i+1}. ${row.account}</span>
+        <span class="text-mint font-bold">${row.score}</span>
+      </div>
+    `).join("");
+  } catch (e) {
+    list.innerHTML = `<p class="text-[10px] text-red-400">載入失敗</p>`;
+  }
+}
+
+async function submitWatermelonScore(finalScore) {
+  if (!account) return;
+  await fetch("/api/minigame/score", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ account, score: finalScore })
+  });
+  await loadWatermelonLeaderboard();
+}
+
 async function loadGameEffects(){
+  loadWatermelonInventory();
+  loadWatermelonLeaderboard();
   try {
     const [ovRes,fxRes]=await Promise.all([
       fetch(`/api/overview?account=${encodeURIComponent(account)}`),

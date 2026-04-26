@@ -1,7 +1,0 @@
-Sha256 of previous block: 5763727a391513cc8d6cfa07498030e666daa4177376a9bbb1be7f7784ade652
-Next block: 34.txt
-demo, angel, 10
-demo, angel, 10
-demo, angel, 10
-demo, angel, 10
-demo, angel, 10

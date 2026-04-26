@@ -1,4 +1,0 @@
-Sha256 of previous block: 0f4c1797af94c598a2efbfc423efdc18591f3c590644058695b028c3b65b72fd
-Next block: None
-demo, angel, 350
-demo, angel, 300
